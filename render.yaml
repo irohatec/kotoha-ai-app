@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kotoha-ai-app
+    env: node
+    plan: free
+    root: .
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false  # Renderのダッシュボードで手動設定します
+      - key: FIREBASE_PROJECT_ID
+        value: "kotoha-personalize-app" # ここにご自身のプロジェクトIDを設定
+    healthCheckPath: /api/health
+
