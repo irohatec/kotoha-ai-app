@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 const rootDir = __dirname;
 const publicDir = path.join(__dirname, "public");
 
-// 静的配信（public があれば優先、その後に root も配信）
+// 静的配信（public があれば優先、その後 root も配信）
 if (fs.existsSync(publicDir)) app.use(express.static(publicDir));
 app.use(express.static(rootDir));
 
@@ -41,4 +41,10 @@ app.get("*", (_req, res) => {
   const publicIndex = path.join(publicDir, "index.html");
   const rootIndex = path.join(rootDir, "index.html");
   if (fs.existsSync(publicIndex)) return res.sendFile(publicIndex);
-  if (fs.existsSync(rootIndex)) r
+  if (fs.existsSync(rootIndex)) return res.sendFile(rootIndex);
+  return res.status(404).send("Not Found");
+});
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
