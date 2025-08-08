@@ -10,6 +10,20 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ---- 基盤強化ここから ----
+// JSONボディ受け取り（最大1MB）
+app.use(express.json({ limit: "1mb" }));
+
+// CORS（依存を増やさずヘッダで許可）
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+// ---- 基盤強化ここまで ----
+
 // 静的配信（public 配下）
 const publicDir = path.join(__dirname, "public");
 app.use(express.static(publicDir));
@@ -28,26 +42,21 @@ app.get("/api/env-check", (_req, res) => {
   res.status(200).json({ hasGeminiKey });
 });
 
-// ★ 新規：Gemini API 接続テスト（GET）
-// 期待レスポンス例: { ok: true, model: "gemini-1.5-flash", text: "PONG" }
+// Gemini API 接続テスト（GET）
 app.get("/api/gemini-test", async (_req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ ok: false, error: "GEMINI_API_KEY not set" });
     }
-
     const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
     const body = {
-      contents: [
-        { role: "user", parts: [{ text: "Reply with exactly: PONG" }] }
-      ],
+      contents: [{ role: "user", parts: [{ text: "Reply with exactly: PONG" }] }],
       generationConfig: { temperature: 0, maxOutputTokens: 20 }
     };
 
-    // タイムアウト（12秒）
     const ac = new AbortController();
     const timeout = setTimeout(() => ac.abort(), 12000);
 
@@ -57,7 +66,6 @@ app.get("/api/gemini-test", async (_req, res) => {
       body: JSON.stringify(body),
       signal: ac.signal
     });
-
     clearTimeout(timeout);
 
     if (!r.ok) {
@@ -66,7 +74,6 @@ app.get("/api/gemini-test", async (_req, res) => {
     }
 
     const data = await r.json().catch(() => ({}));
-    // 念のため堅牢にテキスト抽出
     let text = "";
     try {
       const cands = data?.candidates ?? [];
@@ -75,9 +82,7 @@ app.get("/api/gemini-test", async (_req, res) => {
           if (typeof p.text === "string") text += p.text;
         }
       }
-    } catch {
-      // noop
-    }
+    } catch {}
 
     return res.status(200).json({ ok: true, model, text });
   } catch (e) {
