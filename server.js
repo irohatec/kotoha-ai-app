@@ -1,149 +1,194 @@
-// server.js — 愛媛限定回答＋任意ログ保存（Firebaseは環境変数があれば自動有効）
-import express from "express";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import admin from 'firebase-admin';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ---- 基本設定（同一オリジン想定のためCORSなし）----
-app.use(express.json({ limit: "1mb" }));
-app.use(express.static(__dirname)); // ルート直下の index.html を配信
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ---- Firestore（任意：FIREBASE_SERVICE_ACCOUNT があれば有効化）----
-let db = null;
-let admin = null;
-try {
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || "";
-  if (raw) {
-    // 依存が無い環境でも落ちないように動的 import
-    admin = (await import("firebase-admin")).default;
-    const sa = JSON.parse(raw);
-    if (!admin.apps.length) {
-      admin.initializeApp({ credential: admin.credential.cert(sa) });
+// Firebase Admin 初期化
+if (!admin.apps.length) {
+  admin.initializeApp({
+    projectId: process.env.FIREBASE_PROJECT_ID || 'kotoha-personalize-app',
+  });
+}
+const db = admin.firestore();
+
+// Security
+app.use(helmet({ contentSecurityPolicy: false })); // 本番は要調整
+// CORS
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? [process.env.RENDER_EXTERNAL_URL]
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limit
+const rateLimiter = new RateLimiterMemory({ keyPrefix: 'middleware', points: 15, duration: 60 });
+const rateLimiterMiddleware = (req, res, next) => {
+  rateLimiter.consume(req.ip).then(() => next()).catch(() => res.status(429).json({ error: 'Too many requests.' }));
+};
+
+// Static
+app.use(express.static(path.join(__dirname, '.'), {
+  setHeaders: (res, p) => { if (p.endsWith('.js')) res.set('Content-Type', 'application/javascript; charset=utf-8'); }
+}));
+
+// API routes
+app.use('/api', rateLimiterMiddleware);
+
+// ============ Chat ============ //
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, context, userId } = req.body;
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Invalid message' });
     }
-    db = admin.firestore();
-    console.log("Firestore enabled");
-  } else {
-    console.log("Firestore disabled (no FIREBASE_SERVICE_ACCOUNT)");
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'Server configuration error: API key is missing.' });
+    }
+
+    let userProfile = null;
+    if (userId) {
+      const snap = await db.collection('kotoha_users').doc(userId).get();
+      if (snap.exists) userProfile = snap.data().profile || null;
+    }
+
+    const response = await callGeminiAPI(message.trim(), { ...(context || {}), userProfile });
+    res.json({ success: true, response });
+  } catch (error) {
+    console.error('Chat API error:', error);
+    res.status(500).json({ error: 'Chat request failed', message: error.message });
   }
-} catch (e) {
-  // 依存未インストール or JSON不正でもアプリは起動させる
-  db = null;
-  console.warn("Firestore init skipped:", e?.message || e);
+});
+
+// -------- Gemini API呼び出し -------- //
+async function callGeminiAPI(message, context = {}) {
+  const { userProfile, category } = context;
+
+  // City-first 方針を強く明示
+  const stayLocation = (userProfile && userProfile.stayLocation) ? String(userProfile.stayLocation) : '';
+  const displayName  = (userProfile && userProfile.displayName) ? String(userProfile.displayName) : '';
+  const nationality  = (userProfile && userProfile.nationality) ? String(userProfile.nationality) : '';
+  const languagesArr = (userProfile && Array.isArray(userProfile.languages)) ? userProfile.languages : [];
+
+  let systemPrompt = `
+あなたは「Kotoha AI」。愛媛県での滞在をサポートする非常に親切で有能なAIアシスタントです。
+
+# ユーザー情報
+- 名前: ${displayName || '（未設定）'}
+- 国籍: ${nationality || '（未設定）'}
+- 滞在地: ${stayLocation || '（未設定）'}
+- 使用言語: ${languagesArr.length ? languagesArr.join(', ') : '（未設定）'}
+
+# 相談カテゴリ
+- ${category || 'general'}
+
+# 回答ポリシー（最重要）
+1) ユーザーの「滞在地（市区町村）」に合致する情報を**最優先**で返してください。
+2) 市区町村レベルの確かな情報がなければ、**県内の代替策**を提示してください。
+3) それでも不十分な場合は、**一般的なガイダンス**を補います。
+4) 滞在地が未設定・あいまい・情報が薄い場合は、最初に**1つだけ簡単な確認質問**を行い、即回答に続けてください（質問で会話が止まらないように）。
+5) 重要情報は誤解を避けるため、日本語を基本に、必要なら最後に英語補足を簡潔に付けても構いません。
+
+# 出力フォーマット
+必ず以下の見出しで返してください（該当が無い見出しは省略OK）：
+## 市内向け（${stayLocation || '滞在地未設定'})
+- （市内での具体的行動、窓口、移動手段、施設の探し方 等）
+
+## 県内の代替
+- （同カテゴリで県内ならこう動ける、調べ方、代表的な機関 等）
+
+## 追加ガイダンス
+- （注意点、持ち物、問い合わせ先（警察110/消防・救急119等）、次の一手）
+
+# 生成ルール
+- 愛媛県の文脈に合わせ、観光客/長期滞在者が**今すぐ取れる行動**を具体化。
+- 固有名詞が不確かな場合は「例：～」「公式サイト/市役所に確認」で表現。
+- 緊急性が高い場合は、必ず110/119など公的連絡先を明記。
+- Markdownで簡潔に。箇条書き主体。
+`.trim();
+
+  // Few-shot（市区町村優先の出し分け例）
+  if (stayLocation) {
+    systemPrompt += `
+
+# 参考スタイル例（市区町村優先の出し分け）
+ユーザー: 「バスの乗り方が分からない」
+アシスタント（良い例）:
+## 市内向け（${stayLocation}）
+- まずは市内の主要駅・バスターミナルの案内所を活用
+- 交通ICカードや一日乗車券の有無を確認
+## 県内の代替
+- ${stayLocation}発のJR/路線バスの一般的な探し方
+## 追加ガイダンス
+- 英語表記が少ない場合の対処、困った時の連絡手段 など
+`.trim();
+  }
+
+  const requestBody = {
+    contents: [{ parts: [{ text: systemPrompt + "\n\n# ユーザーからの質問\n" + message }] }],
+    generationConfig: { temperature: 0.7, topK: 40, topP: 0.95, maxOutputTokens: 2048 }
+  };
+
+  const fetch = (await import('node-fetch')).default;
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }
+  );
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(\`API request failed with status \${resp.status}: \${t}\`);
+  }
+
+  const data = await resp.json();
+  if (data.candidates?.length && data.candidates[0].content?.parts?.length) {
+    return data.candidates[0].content.parts[0].text;
+  }
+  return '申し訳ありません、その質問にはお答えできません。別の質問を試してみてください。';
 }
 
-// ---- ヘルスチェック ----
-app.get("/healthz", (_req, res) => res.status(200).send("ok"));
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({
-    status: "healthy",
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    firebase: db ? "connected" : "disabled",
-    geminiApi: process.env.GEMINI_API_KEY ? "configured" : "missing",
+    firebase: admin.apps.length > 0 ? 'connected' : 'disconnected',
+    geminiApi: process.env.GEMINI_API_KEY ? 'configured' : 'missing'
   });
 });
 
-// ---- AI相談（愛媛限定＋プロファイル反映＋任意ログ保存）----
-// 入力: { message, userId?, profile?: { stayArea?, lang? } }
-// 出力: { success: boolean, response?: string, error?: string }
-app.post("/api/chat", async (req, res) => {
-  try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ success: false, error: "GEMINI_API_KEY not set" });
-    }
-
-    const userMsg = (req.body?.message || "").toString().trim();
-    if (!userMsg) {
-      return res.status(400).json({ success: false, error: "message is required" });
-    }
-
-    const profile = req.body?.profile || {};
-    const stayArea = (profile.stayArea || "愛媛県").toString();
-    const language = (profile.lang || "ja").toLowerCase();
-
-    const system = [
-      "あなたは愛媛県の滞在者支援アシスタントです。",
-      "回答は原則として愛媛県内の情報に限定してください。県外情報は参考程度の注意喚起に留めます。",
-      "行政・医療・安全に関わる情報は、できるだけ公式の窓口・電話番号・検索語など、次の行動に繋がる形で簡潔に案内してください。",
-      "不明な点は推測せず『分かりません』と述べ、問い合わせ先や確認方法を提案してください。",
-      `ユーザーの滞在地（優先すべきエリア）: ${stayArea}`,
-      language === "en"
-        ? "If the user writes in English, answer in English. Otherwise, use concise Japanese."
-        : "基本は日本語で、短く・具体的に回答してください。"
-    ].join("\n");
-
-    const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-    const body = {
-      contents: [
-        { role: "user", parts: [{ text: `${system}\n\nユーザーの質問: ${userMsg}` }] }
-      ],
-      generationConfig: { temperature: 0.6, maxOutputTokens: 400 }
-    };
-
-    // タイムアウト 15s
-    const ac = new AbortController();
-    const timeout = setTimeout(() => ac.abort(), 15000);
-
-    const r = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: ac.signal
-    });
-    clearTimeout(timeout);
-
-    if (!r.ok) {
-      const errTxt = await r.text().catch(() => "");
-      return res.status(502).json({ success: false, error: `gemini ${r.status}`, detail: errTxt });
-    }
-
-    const data = await r.json().catch(() => ({}));
-    let text = "";
-    try {
-      const parts = data?.candidates?.[0]?.content?.parts || [];
-      for (const p of parts) if (typeof p.text === "string") text += p.text;
-    } catch {}
-    text = (text || "").trim();
-    if (!text) return res.status(500).json({ success: false, error: "empty_response" });
-
-    // 任意ログ保存（dbが有効な時のみ）
-    try {
-      if (db) {
-        await db.collection("kotoha_chat_logs").add({
-          ts: admin.firestore.FieldValue.serverTimestamp(),
-          userId: req.body?.userId || null,
-          stayArea,
-          message: userMsg,
-          response: text.slice(0, 4000)
-        });
-      }
-    } catch (e) {
-      console.warn("log skipped:", e?.message || e);
-    }
-
-    return res.status(200).json({ success: true, response: text });
-  } catch (e) {
-    const isAbort = e?.name === "AbortError";
-    return res.status(500).json({ success: false, error: isAbort ? "timeout" : String(e) });
-  }
+// Fallback to frontend
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'API endpoint not found' });
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ---- ルート & SPAキャッチオール（常に index.html を返す）----
-app.get("*", (_req, res) => {
-  const idx = path.join(__dirname, "index.html");
-  if (fs.existsSync(idx)) return res.sendFile(idx);
-  return res.status(404).send("Not Found");
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error', message: 'サーバー内部エラーが発生しました。' });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`🚀 Kotoha AI server running on port ${PORT}`);
+  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
