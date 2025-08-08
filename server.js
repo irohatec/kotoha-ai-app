@@ -10,9 +10,8 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ---- 基盤強化 ----
-app.use(express.json({ limit: "1mb" })); // JSONボディ受け取り
-// CORS（依存を増やさずヘッダで許可）
+// ---- 基盤 ----
+app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -22,25 +21,25 @@ app.use((req, res, next) => {
 });
 // ---- ここまで ----
 
-// 静的配信（public 配下）
+// 静的配信
 const publicDir = path.join(__dirname, "public");
 app.use(express.static(publicDir));
 
 // ヘルスチェック
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
-// API動作確認
+// 動作確認
 app.get("/api/ping", (_req, res) => {
   res.status(200).json({ pong: true, time: new Date().toISOString() });
 });
 
-// 環境変数の存在チェック（値は返さない）
+// 環境変数チェック
 app.get("/api/env-check", (_req, res) => {
   const hasGeminiKey = !!process.env.GEMINI_API_KEY;
   res.status(200).json({ hasGeminiKey });
 });
 
-// Gemini API 接続テスト（GET）
+// Gemini 接続テスト（GET）
 app.get("/api/gemini-test", async (_req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -86,9 +85,7 @@ app.get("/api/gemini-test", async (_req, res) => {
   }
 });
 
-// ★ 新規：SNS最小生成API（POST）
-// 入力: { "prompt": "短いテーマ" }
-// 出力: { ok: true, text: "<短文>" }
+// SNS最小生成（POST）
 app.post("/api/generate-sns", async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -100,14 +97,11 @@ app.post("/api/generate-sns", async (req, res) => {
     const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-    // 最小要件：日本語・短文・装飾なし
     const systemInstruction =
       "日本語で、短く1文だけを出力してください。絵文字やハッシュタグ、記号、前置きは不要です。出力はテキストのみ。";
 
     const body = {
-      contents: [
-        { role: "user", parts: [{ text: `${systemInstruction}\nテーマ: ${topic}` }] }
-      ],
+      contents: [{ role: "user", parts: [{ text: `${systemInstruction}\nテーマ: ${topic}` }] }],
       generationConfig: { temperature: 0.6, maxOutputTokens: 80 }
     };
 
