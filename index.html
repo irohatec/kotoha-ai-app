@@ -10,49 +10,47 @@
   <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
 
   <style>
-    :root {
-      --primary:#1976d2; --accent:#ff7043; --bg:#f8fafc; --text:#1f2937; --muted:#6b7280;
-      --border:#e5e7eb; --surface:#ffffff;
+    :root{
+      --primary:#1976d2; --primary-2:#1e88e5; --accent:#ff7043;
+      --bg:#f7f9fc; --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --surface:#ffffff;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;color:var(--text);background:var(--bg);line-height:1.6}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
 
-    .app-wrap{max-width:1100px;margin:0 auto;padding:16px}
-
-    /* ヘッダー */
-    header.header{background:linear-gradient(180deg,#1e88e5 0%,#1976d2 100%);color:#fff;border-radius:16px;padding:20px;position:sticky;top:0;z-index:10}
-    header .container{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
-      /* ▼白い箱を消す（透過化） */
-      background:transparent;border:0;box-shadow:none;padding:0;
+    /* -------- Header -------- */
+    header.header{
+      background:linear-gradient(180deg,var(--primary-2) 0%,var(--primary) 100%);
+      color:#fff;border-radius:16px;padding:16px 16px 12px;position:sticky;top:0;z-index:10;
     }
-    .title{margin:0;font-size:32px}
-    .beta{background:rgba(255,255,255,.18);padding:2px 8px;border-radius:999px;margin-left:8px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .title{margin:0;font-size:28px;letter-spacing:.3px}
+    .beta{margin-left:8px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:999px}
     .subtitle{margin:6px 0 0;opacity:.95}
-    .lang-btn,.logout-btn,.install-btn{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;backdrop-filter:blur(6px)}
-    .lang-btn.active{background:#fff;color:#1976d2}
-
-    /* ▼ログアウトを常に前面・右上に固定（ログイン時のみ display切替） */
+    .btn{border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .btn.active{background:#fff;color:var(--primary)}
+    .lang{display:flex;gap:8px}
+    /* 右上固定のユーザー情報（ログイン時のみJSで display:flex） */
     #user-info{position:fixed;top:12px;right:12px;display:none;gap:8px;align-items:center;z-index:10000}
-    #logout-btn{position:relative;z-index:10001;pointer-events:auto}
+    #logout-btn{position:relative;z-index:10001;pointer-events:auto;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
 
-    .progress{margin-top:12px;background:#fff;padding:12px;border-radius:12px;border:1px solid var(--border)}
+    /* -------- Progress -------- */
+    .progress{margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px}
     .bar{height:6px;background:var(--border);border-radius:999px;overflow:hidden}
     .fill{height:100%;width:25%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:inherit;transition:width .25s}
-
     .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;font-size:14px;color:var(--muted)}
     .steps .on{color:var(--text);font-weight:600}
 
+    /* -------- Sections / Cards -------- */
     .section{display:none}.section.active{display:block}
     .card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px}
+    .narrow{max-width:520px;margin:0 auto} /* ログインフォームの幅を制御 */
 
-    .category-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-    .category-card{border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;background:#fff;cursor:pointer}
-    .category-card:hover{border-color:var(--primary);box-shadow:0 0 0 3px rgba(25,118,210,.12)}
-
-    .sample{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px}
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    /* プロフィール・相談などのUI */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px}
+    .chipset{display:flex;gap:8px;flex-wrap:wrap}
     .chip{border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 12px;cursor:pointer}
-
     .chat{margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px}
     .msgs{display:grid;gap:10px;max-height:55vh;overflow:auto}
     .msg{display:flex;gap:10px}
@@ -60,38 +58,37 @@
     .bubble{background:#f8fafc;border:1px solid var(--border);padding:10px 12px;border-radius:12px}
     .ai .bubble{background:#f1f8ff}
     .row{display:flex;gap:8px;margin-top:10px}
-    .row input[type="text"]{flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px}
-    .row button{padding:10px 14px;border-radius:10px;border:1px solid var(--border);cursor:pointer}
+    .row input[type="text"]{flex:1}
     .primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .ghost{background:transparent;border:1px solid var(--border)}
     .footer{text-align:center;color:var(--muted);margin:24px 0}
   </style>
 
-  <!-- Markdown整形（app.js内で marked.parse を使用） -->
+  <!-- Markdown整形（app.js 内の marked.parse 用） -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <div class="app-wrap">
+  <div class="wrap">
     <header class="header">
-      <div class="container">
+      <div class="header-row">
         <div>
           <h1 class="title">Kotoha AI <span class="beta">β</span></h1>
           <p class="subtitle">愛媛県での滞在をサポートするAIアシスタント</p>
         </div>
         <div class="lang">
-          <button id="lang-ja" class="lang-btn active">日本語</button>
-          <button id="lang-en" class="lang-btn">English</button>
+          <button id="lang-ja" class="btn active">日本語</button>
+          <button id="lang-en" class="btn">English</button>
         </div>
       </div>
-      <button id="install-button" class="install-btn" style="display:none">📱 アプリをインストール</button>
     </header>
 
-    <!-- 右上固定のユーザー情報＋ログアウト（JSで display 切替） -->
+    <!-- 右上固定のユーザー情報（ログイン後にJSで display:flex へ） -->
     <div id="user-info">
       <span id="user-display-name">ユーザー</span>
-      <button id="logout-btn" class="logout-btn">ログアウト</button>
+      <button id="logout-btn">ログアウト</button>
     </div>
 
-    <div class="progress card">
+    <div class="progress">
       <div class="bar"><div class="fill" id="progress-fill"></div></div>
       <div class="steps">
         <div class="on" data-step="1">認証</div>
@@ -104,30 +101,30 @@
     <main>
       <!-- 認証 -->
       <section id="section-1" class="section active">
-        <div class="card">
+        <div class="card narrow">
           <h2>ようこそ Kotoha AI へ</h2>
           <p>愛媛県での滞在をより快適にするため、まずはアカウントを作成しましょう</p>
 
-          <form id="login-form" style="display:grid;gap:12px;max-width:520px">
+          <form id="login-form" style="display:grid;gap:12px">
             <h3>ログイン / Sign In</h3>
-            <label>メールアドレス <input type="email" id="login-email" autocomplete="email" placeholder="you@example.com"></label>
-            <label>パスワード <input type="password" id="login-password" autocomplete="current-password" placeholder="8文字以上"></label>
+            <label>メールアドレス<input type="email" id="login-email" autocomplete="email" placeholder="you@example.com"></label>
+            <label>パスワード<input type="password" id="login-password" autocomplete="current-password" placeholder="8文字以上"></label>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" id="login-btn" class="primary">ログイン</button>
-              <button type="button" id="show-signup-btn">アカウント作成へ</button>
-              <button type="button" id="google-login-btn">Googleでログイン</button>
-              <button type="button" id="guest-login-btn">ゲストとして利用</button>
+              <button type="button" id="login-btn" class="btn primary">ログイン</button>
+              <button type="button" id="show-signup-btn" class="btn ghost">アカウント作成へ</button>
+              <button type="button" id="google-login-btn" class="btn ghost">Googleでログイン</button>
+              <button type="button" id="guest-login-btn" class="btn ghost">ゲストとして利用</button>
             </div>
           </form>
 
-          <form id="signup-form" style="display:none;grid:auto/1fr;gap:12px;max-width:520px">
+          <form id="signup-form" style="display:none;grid:auto/1fr;gap:12px">
             <h3>アカウント作成 / Create Account</h3>
-            <label>メールアドレス <input type="email" id="signup-email"></label>
-            <label>パスワード <input type="password" id="signup-password"></label>
-            <label>パスワード確認 <input type="password" id="signup-password-confirm"></label>
+            <label>メールアドレス<input type="email" id="signup-email"></label>
+            <label>パスワード<input type="password" id="signup-password"></label>
+            <label>パスワード確認<input type="password" id="signup-password-confirm"></label>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button type="button" id="signup-btn" class="primary">作成</button>
-              <button type="button" id="show-login-btn">ログインに戻る</button>
+              <button type="button" id="signup-btn" class="btn primary">作成</button>
+              <button type="button" id="show-login-btn" class="btn ghost">ログインに戻る</button>
             </div>
           </form>
         </div>
@@ -139,20 +136,20 @@
           <h2>プロフィール / Profile</h2>
           <p>滞在地・目的などを登録すると、より適切な案内ができます</p>
 
-          <div style="display:grid;gap:12px;max-width:640px">
-            <label>表示名 <input id="display-name" type="text" placeholder="例：テックさん"></label>
-            <label>国籍 <input id="nationality" type="text" placeholder="例：Japan"></label>
+          <div style="display:grid;gap:12px;max-width:720px">
+            <label>表示名<input id="display-name" type="text" placeholder="例：テックさん"></label>
+            <label>国籍<input id="nationality" type="text" placeholder="例：Japan"></label>
             <label>滞在地（例：松山市）<input id="stay-location" type="text" placeholder="例：松山市"></label>
-            <label>滞在目的 <input id="stay-purpose" type="text" placeholder="例：仕事"></label>
+            <label>滞在目的<input id="stay-purpose" type="text" placeholder="例：仕事"></label>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <label>滞在開始 <input id="stay-from" type="date"></label>
-              <label>滞在終了 <input id="stay-to" type="date"></label>
+            <div class="grid-2">
+              <label>滞在開始<input id="stay-from" type="date"></label>
+              <label>滞在終了<input id="stay-to" type="date"></label>
             </div>
 
             <div>
               <div>使用言語</div>
-              <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div class="chipset">
                 <label><input type="checkbox" value="ja">日本語</label>
                 <label><input type="checkbox" value="en">English</label>
                 <label><input type="checkbox" value="zh">中文</label>
@@ -161,8 +158,8 @@
             </div>
 
             <div style="display:flex;gap:8px">
-              <button id="save-profile-btn" class="primary">保存</button>
-              <button id="back-to-consultation-btn">相談へ戻る</button>
+              <button id="save-profile-btn" class="btn primary">保存</button>
+              <button id="back-to-consultation-btn" class="btn ghost">相談へ戻る</button>
             </div>
           </div>
         </div>
@@ -174,9 +171,9 @@
           <h2>相談 / Consultation</h2>
           <p>愛媛県内の情報に絞ってご案内します</p>
 
-          <div class="sample">
+          <div class="card" style="padding:12px;margin-bottom:12px">
             <h4>💡 よくある質問</h4>
-            <div class="chips">
+            <div class="chipset">
               <button class="chip" data-question="バスの乗り方がわかりません。どうすればいいですか？">バスの乗り方は？</button>
               <button class="chip" data-question="病院に行きたいのですが、予約は必要ですか？">病院の予約方法は？</button>
               <button class="chip" data-question="Wi-Fiが使える場所を教えてください。">Wi-Fi利用場所は？</button>
@@ -191,16 +188,15 @@
                 <div class="avatar">🤖</div>
                 <div class="bubble">
                   こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
-                  上記のサンプル質問をクリックするか、直接ご質問を入力してください。<br><br>
-                  Hello! I'm Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.
+                  サンプルをクリックするか、直接ご質問を入力してください。<br><br>
+                  Hello! I'm Kotoha AI. Ask me anything about your stay in Ehime Prefecture.
                 </div>
               </div>
             </div>
-
             <div class="row">
-              <input id="chat-input" type="text" placeholder="例：病院の予約方法は？">
-              <button id="send-button" class="primary">送信</button>
-              <button id="clear-chat-btn">クリア</button>
+              <input id="chat-input" type="text" placeholder="例：病院の予約方法は？" />
+              <button id="send-button" class="btn primary">送信</button>
+              <button id="clear-chat-btn" class="btn ghost">クリア</button>
             </div>
           </div>
         </div>
@@ -220,7 +216,9 @@
     </footer>
   </div>
 
-  <!-- app.js は ES Modules で読み込む（Firebase v10 の import に必須） -->
+  <!-- app.js は ES Modules で読み込む（Firebase v10の import に必須） -->
   <script type="module" src="./app.js"></script>
+  <!-- Markdown整形（app.js 内で marked.parse 用） -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html>
