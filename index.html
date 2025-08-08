@@ -18,90 +18,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <style>
-        /* タイピングインジケーター用のCSS */
-        .typing-indicator .message-bubble {
-            padding: 16px 20px;
-            background-color: #f5f5f5;
-            border-radius: 18px;
-            display: inline-block;
-            max-width: none;
-            width: auto;
-        }
-
-        .typing-dots {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .typing-dots span {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #999;
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-dots span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dots span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.5;
-            }
-            30% {
-                transform: translateY(-10px);
-                opacity: 1;
-            }
-        }
-
-        /* 送信ボタンの状態改善 */
-        .send-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .send-button {
-            transition: all 0.2s ease;
-        }
-
-        /* チャットメッセージのスクロール改善 */
-        .chat-messages {
-            scroll-behavior: smooth;
-        }
-
-        /* メッセージの時間表示改善 */
-        .message-time {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        /* 改行とフォーマットの改善 */
-        .message-bubble code {
-            background-color: #f0f0f0;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: monospace;
-            font-size: 14px;
-        }
-
-        .message-bubble strong {
-            font-weight: 600;
-        }
-
-        .message-bubble em {
-            font-style: italic;
-        }
-    </style>
+    <!-- marked.jsのCDNを追加 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -132,7 +50,7 @@
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
-            <div class="step-indicators">
+            <div class="step-indicators" id="step-indicators">
                 <div class="step active" data-step="1">認証</div>
                 <div class="step" data-step="2">プロフィール</div>
                 <div class="step" data-step="3">相談</div>
@@ -231,11 +149,11 @@
 
                         <div class="form-group">
                             <label for="languages">使用できる言語 / Languages</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-item"><input type="checkbox" value="Japanese" id="lang-japanese"> 日本語 / Japanese</label>
-                                <label class="checkbox-item"><input type="checkbox" value="English" id="lang-english"> 英語 / English</label>
-                                <label class="checkbox-item"><input type="checkbox" value="Chinese" id="lang-chinese"> 中国語 / Chinese</label>
-                                <label class="checkbox-item"><input type="checkbox" value="Korean" id="lang-korean"> 韓国語 / Korean</label>
+                            <div id="languages" class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" value="Japanese"> 日本語 / Japanese</label>
+                                <label class="checkbox-item"><input type="checkbox" value="English"> 英語 / English</label>
+                                <label class="checkbox-item"><input type="checkbox" value="Chinese"> 中国語 / Chinese</label>
+                                <label class="checkbox-item"><input type="checkbox" value="Korean"> 韓国語 / Korean</label>
                             </div>
                         </div>
                         
@@ -311,36 +229,15 @@
                         </div>
                         <div class="chat-container">
                             <div id="chat-messages" class="chat-messages">
-                                <div class="message ai-message">
-                                    <div class="message-avatar">🤖</div>
-                                    <div class="message-content">
-                                        <div class="message-bubble">
-                                            こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
-                                            上記のサンプル質問をクリックするか、直接ご質問を入力してください。<br><br>
-                                            Hello! I'm Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.
-                                        </div>
-                                        <div class="message-time">Kotoha AI</div>
-                                    </div>
-                                </div>
+                                <!-- メッセージはJSで動的に追加 -->
                             </div>
                         </div>
                         <div class="chat-input-container">
-                            <div class="selected-category" id="selected-category" style="display: none;">
-                                <span>選択中:</span>
-                                <span id="selected-category-name"></span>
-                                <button id="clear-category-btn">×</button>
-                            </div>
                             <div class="chat-input-wrapper">
-                                <textarea id="chat-input" placeholder="質問を入力してください... / Please enter your question..." rows="2"></textarea>
+                                <textarea id="chat-input" placeholder="質問を入力してください... / Please enter your question..." rows="1"></textarea>
                                 <button id="send-button" class="send-button" disabled>
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                                 </button>
-                            </div>
-                            <div class="storage-settings">
-                                <label class="checkbox-item">
-                                    <input type="checkbox" id="store-consultation" checked>
-                                    <span>この相談内容を今後の参考のために保存する / Save this consultation for future reference</span>
-                                </label>
                             </div>
                             <div class="chat-controls">
                                 <button class="btn btn-secondary btn-small" id="clear-chat-btn">チャットをクリア / Clear Chat</button>
@@ -377,7 +274,9 @@
                         </div>
                     </div>
                     <div class="button-container">
-                        <button class="btn btn-secondary" id="back-to-consultation-btn">相談に戻る / Back to Consultation</button>
+                        <!-- ▼▼▼ IDを変更しました ▼▼▼ -->
+                        <button class="btn btn-secondary" id="backToConsultationFromHistoryBtn">相談に戻る / Back to Consultation</button>
+                        <!-- ▲▲▲ IDを変更しました ▲▲▲ -->
                         <button class="btn btn-primary" id="export-history-btn">履歴をエクスポート / Export History</button>
                     </div>
                 </div>
