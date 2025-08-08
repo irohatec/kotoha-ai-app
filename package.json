@@ -1,13 +1,25 @@
 {
-  "name": "kotoha-staging",
+  "name": "kotoha-ai-app",
   "version": "1.0.0",
-  "private": true,
+  "description": "AI assistant app for supporting stays in Ehime.",
+  "main": "server.js",
   "type": "module",
-  "engines": { "node": ">=18 <23" },
   "scripts": {
     "start": "node server.js"
   },
+  "author": "Your Name",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "dotenv": "^16.4.5",
+    "rate-limiter-flexible": "^5.0.3",
+    "firebase-admin": "^12.1.0",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
