@@ -1,0 +1,21 @@
+{
+  "name": "Kotoha AI",
+  "short_name": "Kotoha AI",
+  "description": "愛媛県での長期滞在をサポートするAIアシスタント",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e65100",
+  "theme_color": "#e65100",
+  "orientation": "portrait-primary",
+  "categories": ["travel", "lifestyle", "utilities"],
+  "lang": "ja",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiNlNjUxMDAiLz4KPHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgeD0iMzIiIHk9IjMyIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMS41Ij4KPHA+SGVsbG88L3A+CjxwYXRoIGQ9Ik0yMS45OTggMTJjMCA1LjUyMy00LjQ3NyAxMC0xMCAxMGMtMS4zNDUgMC0yLjYzMS0uMjY1LTMuODA1LS43NDZsLTUuMzQxIDEuMzM1Yy0uMzI3LjA4Mi0uNjU0LS4xNjMtLjY1NC0uNDkxVjE4LjMzYy0xLjcwOS0xLjQyNC0zLTMuMzI0LTMuNzA5LTUuNTA5QzIuMTEzIDEyLjA3NiAyIDExLjUzOCAyIDEwLjk5OEMyIDUuNDc1IDYuNDc3IDEgMTIgMXMxMCA0LjQ3NSAxMCAxMXoiLz4KPC9zdmc+CjxyZWN0IHg9IjY0IiB5PSI2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

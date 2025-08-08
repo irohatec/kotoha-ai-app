@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kotoha AI - 愛媛県滞在サポート</title>
+    
+    <meta name="theme-color" content="#e65100">
+    <meta name="description" content="愛媛県での長期滞在をサポートするAIコミュニケーションプラットフォーム">
+    
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* タイピングインジケーター用のCSS */
+        .typing-indicator .message-bubble {
+            padding: 16px 20px;
+            background-color: #f5f5f5;
+            border-radius: 18px;
+            display: inline-block;
+            max-width: none;
+            width: auto;
+        }
+
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #999;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* 送信ボタンの状態改善 */
+        .send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .send-button {
+            transition: all 0.2s ease;
+        }
+
+        /* チャットメッセージのスクロール改善 */
+        .chat-messages {
+            scroll-behavior: smooth;
+        }
+
+        /* メッセージの時間表示改善 */
+        .message-time {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* 改行とフォーマットの改善 */
+        .message-bubble code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .message-bubble strong {
+            font-weight: 600;
+        }
+
+        .message-bubble em {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>Kotoha AI <span class="beta-badge">β</span></h1>
+                    <p class="subtitle">愛媛県での滞在をサポートするAIアシスタント</p>
+                    
+                    <div class="language-switcher">
+                        <button id="lang-ja" class="lang-btn active">日本語</button>
+                        <button id="lang-en" class="lang-btn">English</button>
+                    </div>
+                    
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <span id="user-display-name">ユーザー</span>
+                        <button id="logout-btn" class="logout-btn">ログアウト</button>
+                    </div>
+                </div>
+                
+                <button id="install-button" class="install-btn" style="display: none;">
+                    <span>📱</span> アプリをインストール
+                </button>
+            </div>
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="step-indicators">
+                <div class="step active" data-step="1">認証</div>
+                <div class="step" data-step="2">プロフィール</div>
+                <div class="step" data-step="3">相談</div>
+                <div class="step" data-step="4">履歴</div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <section id="section-1" class="section active">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>ようこそ Kotoha AI へ</h2>
+                        <p>愛媛県での滞在をより快適にするため、まずはアカウントを作成しましょう</p>
+                        <div class="feature-highlights">
+                            <div class="feature-item"><span class="feature-icon">🚌</span><span>交通情報</span></div>
+                            <div class="feature-item"><span class="feature-icon">🏥</span><span>医療サポート</span></div>
+                            <div class="feature-item"><span class="feature-icon">📶</span><span>ネット接続</span></div>
+                            <div class="feature-item"><span class="feature-icon">🎌</span><span>文化・マナー</span></div>
+                        </div>
+                    </div>
+                    
+                    <div id="auth-container" class="auth-container">
+                        <form id="login-form" class="form-container">
+                            <h3>ログイン / Sign In</h3>
+                            <div class="form-group">
+                                <label for="login-email">メールアドレス / Email</label>
+                                <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">パスワード / Password</label>
+                                <input type="password" id="login-password" placeholder="パスワード" autocomplete="current-password">
+                            </div>
+                            <div class="button-container">
+                                <button type="button" class="btn btn-primary" id="login-btn">ログイン / Sign In</button>
+                                <button type="button" class="btn btn-secondary" id="show-signup-btn">アカウント作成 / Create Account</button>
+                                <button type="button" class="btn btn-google" id="google-login-btn">
+                                    <svg viewBox="0 0 48 48" width="18px" height="18px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                                    <span>Googleでログイン</span>
+                                </button>
+                                <button type="button" class="btn btn-ghost" id="guest-login-btn">ゲストとして利用 / Guest Mode</button>
+                            </div>
+                        </form>
+                        
+                        <form id="signup-form" class="form-container" style="display: none;">
+                            <h3>アカウント作成 / Create Account</h3>
+                            <div class="form-group">
+                                <label for="signup-email">メールアドレス / Email</label>
+                                <input type="email" id="signup-email" placeholder="your@email.com" autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="signup-password">パスワード / Password</label>
+                                <input type="password" id="signup-password" placeholder="8文字以上" autocomplete="new-password">
+                            </div>
+                            <div class="form-group">
+                                <label for="signup-password-confirm">パスワード確認 / Confirm Password</label>
+                                <input type="password" id="signup-password-confirm" placeholder="パスワードを再入力" autocomplete="new-password">
+                            </div>
+                            <div class="button-container">
+                                <button type="button" class="btn btn-primary" id="signup-btn">アカウント作成 / Create</button>
+                                <button type="button" class="btn btn-secondary" id="show-login-btn">ログインに戻る / Back to Login</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-2" class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>プロフィール設定 / Profile Setup</h2>
+                        <p>より適切なサポートを提供するため、基本情報を教えてください</p>
+                    </div>
+                    
+                    <form id="profile-form" class="form-container">
+                        <div class="form-group">
+                            <label for="display-name">表示名 / Display Name</label>
+                            <input type="text" id="display-name" placeholder="Taro / John">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nationality">国籍 / Nationality</label>
+                            <select id="nationality">
+                                <option value="">選択してください / Select</option>
+                                <option value="Japan">日本 / Japan</option>
+                                <option value="USA">アメリカ / USA</option>
+                                <option value="Germany">ドイツ / Germany</option>
+                                <option value="France">フランス / France</option>
+                                <option value="UK">イギリス / UK</option>
+                                <option value="Australia">オーストラリア / Australia</option>
+                                <option value="Canada">カナダ / Canada</option>
+                                <option value="South Korea">韓国 / South Korea</option>
+                                <option value="China">中国 / China</option>
+                                <option value="other">その他 / Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="languages">使用できる言語 / Languages</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item"><input type="checkbox" value="Japanese" id="lang-japanese"> 日本語 / Japanese</label>
+                                <label class="checkbox-item"><input type="checkbox" value="English" id="lang-english"> 英語 / English</label>
+                                <label class="checkbox-item"><input type="checkbox" value="Chinese" id="lang-chinese"> 中国語 / Chinese</label>
+                                <label class="checkbox-item"><input type="checkbox" value="Korean" id="lang-korean"> 韓国語 / Korean</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="stay-location">滞在地域 / Stay Location</label>
+                            <select id="stay-location">
+                                <option value="">選択してください / Select</option>
+                                <option value="松山市">松山市 / Matsuyama City</option>
+                                <option value="今治市">今治市 / Imabari City</option>
+                                <option value="新居浜市">新居浜市 / Niihama City</option>
+                                <option value="西条市">西条市 / Saijo City</option>
+                                <option value="宇和島市">宇和島市 / Uwajima City</option>
+                                <option value="other">その他 / Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stay-purpose">滞在目的 / Purpose</label>
+                            <select id="stay-purpose">
+                                <option value="">選択してください / Select</option>
+                                <option value="working_holiday">ワーキングホリデー / Working Holiday</option>
+                                <option value="study">留学 / Study</option>
+                                <option value="work">就労 / Work</option>
+                                <option value="tourism">観光 / Tourism</option>
+                                <option value="family">家族滞在 / Family Visit</option>
+                                <option value="other">その他 / Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stay-period">滞在期間 / Stay Period</label>
+                            <div class="date-range">
+                                <input type="date" id="stay-from">
+                                <span>〜</span>
+                                <input type="date" id="stay-to">
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="button-container">
+                        <button class="btn btn-primary" id="save-profile-btn">プロフィール保存 / Save Profile</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-3" class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>AI相談 / AI Consultation</h2>
+                        <p>カテゴリを選択して、気軽にご質問ください</p>
+                    </div>
+                    <div class="category-selector">
+                        <h3>相談カテゴリ / Category</h3>
+                        <div class="category-grid">
+                            <div class="category-card" data-category="transportation"><div class="category-icon">🚌</div><div class="category-name">交通・移動</div><div class="category-name-en">Transportation</div></div>
+                            <div class="category-card" data-category="medical"><div class="category-icon">🏥</div><div class="category-name">医療・健康</div><div class="category-name-en">Medical & Health</div></div>
+                            <div class="category-card" data-category="connectivity"><div class="category-icon">📶</div><div class="category-name">ネット・通信</div><div class="category-name-en">Internet & Communication</div></div>
+                            <div class="category-card" data-category="accommodation"><div class="category-icon">🏠</div><div class="category-name">住居・宿泊</div><div class="category-name-en">Housing & Accommodation</div></div>
+                            <div class="category-card" data-category="culture"><div class="category-icon">🎌</div><div class="category-name">文化・マナー</div><div class="category-name-en">Culture & Etiquette</div></div>
+                            <div class="category-card" data-category="general"><div class="category-icon">💬</div><div class="category-name">一般相談</div><div class="category-name-en">General</div></div>
+                        </div>
+                    </div>
+                    <div id="consultation-interface" class="consultation-interface">
+                        <div class="sample-questions">
+                            <h4>💡 よくある質問 / Frequently Asked Questions</h4>
+                            <div class="question-chips">
+                                <button class="question-chip" data-question="バスの乗り方がわかりません。どうすればいいですか？">バスの乗り方は？</button>
+                                <button class="question-chip" data-question="病院に行きたいのですが、予約は必要ですか？">病院の予約方法は？</button>
+                                <button class="question-chip" data-question="Wi-Fiが使える場所を教えてください。">Wi-Fi利用場所は？</button>
+                                <button class="question-chip" data-question="日本のマナーで注意すべきことはありますか？">日本のマナーは？</button>
+                                <button class="question-chip" data-question="緊急時はどこに連絡すればいいですか？">緊急時の連絡先は？</button>
+                            </div>
+                        </div>
+                        <div class="chat-container">
+                            <div id="chat-messages" class="chat-messages">
+                                <div class="message ai-message">
+                                    <div class="message-avatar">🤖</div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
+                                            上記のサンプル質問をクリックするか、直接ご質問を入力してください。<br><br>
+                                            Hello! I'm Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.
+                                        </div>
+                                        <div class="message-time">Kotoha AI</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <div class="selected-category" id="selected-category" style="display: none;">
+                                <span>選択中:</span>
+                                <span id="selected-category-name"></span>
+                                <button id="clear-category-btn">×</button>
+                            </div>
+                            <div class="chat-input-wrapper">
+                                <textarea id="chat-input" placeholder="質問を入力してください... / Please enter your question..." rows="2"></textarea>
+                                <button id="send-button" class="send-button" disabled>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                </button>
+                            </div>
+                            <div class="storage-settings">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="store-consultation" checked>
+                                    <span>この相談内容を今後の参考のために保存する / Save this consultation for future reference</span>
+                                </label>
+                            </div>
+                            <div class="chat-controls">
+                                <button class="btn btn-secondary btn-small" id="clear-chat-btn">チャットをクリア / Clear Chat</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-4" class="section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>相談履歴 / Consultation History</h2>
+                        <p>過去の相談内容を確認できます</p>
+                    </div>
+                    <div class="history-container">
+                        <div class="filter-options">
+                            <label for="history-category-filter">カテゴリで絞り込み:</label>
+                            <select id="history-category-filter">
+                                <option value="">すべて / All</option>
+                                <option value="transportation">交通・移動</option>
+                                <option value="medical">医療・健康</option>
+                                <option value="connectivity">ネット・通信</option>
+                                <option value="accommodation">住居・宿泊</option>
+                                <option value="culture">文化・マナー</option>
+                                <option value="general">一般相談</option>
+                            </select>
+                        </div>
+                        <div id="consultation-history" class="consultation-history">
+                            <div class="no-history">
+                                <p>まだ相談履歴はありません。</p>
+                                <p>No consultation history yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="btn btn-secondary" id="back-to-consultation-btn">相談に戻る / Back to Consultation</button>
+                        <button class="btn btn-primary" id="export-history-btn">履歴をエクスポート / Export History</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2025 Kotoha AI - Powered by いろはTEC</p>
+                <p class="footer-note">愛媛新聞社 × いろはTEC 共同プロジェクト</p>
+            </div>
+        </footer>
+    </div>
+    
+    <script type="module" src="./app.js"></script>
+
+</body>
+</html>
