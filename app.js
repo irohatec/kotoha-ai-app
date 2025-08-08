@@ -1,8 +1,6 @@
-// Firebase v10.12.2 本番版 app.js (AI相談機能 統合)
+// Firebase v10.12.2 本番版 app.js
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-// App Checkはセキュリティ上重要なので残します
-import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
 import {
   getAuth,
   GoogleAuthProvider,
@@ -33,63 +31,71 @@ const firebaseConfig = {
   databaseURL: "https://kotoha-personalize-app-default-rtdb.firebaseio.com"
 };
 
+// --- Firebase Initialization ---
 const app = initializeApp(firebaseConfig);
-
-// --- App Check Initialization ---
-// Renderにデプロイ後、サイトキーを設定してこのコメントを解除してください
-// const appCheck = initializeAppCheck(app, {
-//   provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'),
-//   isTokenAutoRefreshEnabled: true
-// });
-
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
 let currentSection = 1;
-let selectedCategory = '';
-let isAIChatting = false;
 
+// --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', () => {
   // --- UI Element References ---
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const authContainer = document.getElementById('auth-container');
+
+  const loginEmailInput = document.getElementById('login-email');
+  const loginPasswordInput = document.getElementById('login-password');
   const loginBtn = document.getElementById('login-btn');
   const showSignupBtn = document.getElementById('show-signup-btn');
   const googleLoginBtn = document.getElementById('google-login-btn');
   const guestLoginBtn = document.getElementById('guest-login-btn');
+  
+  const signupEmailInput = document.getElementById('signup-email');
+  const signupPasswordInput = document.getElementById('signup-password');
+  const signupPasswordConfirmInput = document.getElementById('signup-password-confirm');
   const signupBtn = document.getElementById('signup-btn');
   const showLoginBtn = document.getElementById('show-login-btn');
+
+  const logoutBtn = document.getElementById('logout-btn');
   const userInfo = document.getElementById('user-info');
   const userDisplay = document.getElementById('user-display-name');
-  const saveProfileBtn = document.getElementById('save-profile-btn');
-  const backToConsultationBtn = document.getElementById('back-to-consultation-btn');
-  const chatInput = document.getElementById('chat-input');
-  const sendButton = document.getElementById('send-button');
-  const clearChatBtn = document.getElementById('clear-chat-btn');
-  const chatMessages = document.getElementById('chat-messages');
 
-  // --- Form Switching ---
-  if (showSignupBtn) showSignupBtn.addEventListener('click', () => { loginForm.style.display = 'none'; signupForm.style.display = 'block'; });
-  if (showLoginBtn) showLoginBtn.addEventListener('click', () => { signupForm.style.display = 'none'; loginForm.style.display = 'block'; });
+  // --- Form Switching Logic ---
+  if (showSignupBtn) {
+    showSignupBtn.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    });
+  }
+  if (showLoginBtn) {
+    showLoginBtn.addEventListener('click', () => {
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+  }
 
-  // --- Auth Functions ---
+  // --- Authentication Functions ---
   const handleEmailLogin = () => {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
+    const email = loginEmailInput.value.trim();
+    const password = loginPasswordInput.value;
     if (!email || !password) {
       showMessage('メールアドレスとパスワードを入力してください。', 'error');
       return;
     }
     signInWithEmailAndPassword(auth, email, password)
+      .then(userCredential => {
+        showMessage('ログインしました。', 'success');
+      })
       .catch(handleAuthError);
   };
 
   const handleCreateAccount = () => {
-    const email = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    const confirmPassword = document.getElementById('signup-password-confirm').value;
+    const email = signupEmailInput.value.trim();
+    const password = signupPasswordInput.value;
+    const confirmPassword = signupPasswordConfirmInput.value;
     if (!email || !password) {
       showMessage('メールアドレスとパスワードを入力してください。', 'error');
       return;
@@ -103,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     createUserWithEmailAndPassword(auth, email, password)
+      .then(userCredential => {
+        showMessage('アカウントを作成しました。', 'success');
+      })
       .catch(handleAuthError);
   };
 
@@ -124,30 +133,45 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   const handleLogout = () => {
-    signOut(auth).catch(error => {
-        console.error('ログアウト中にエラーが発生しました:', error);
+    if (!confirm('ログアウトしますか？')) return;
+    
+    signOut(auth)
+      .then(() => {
+        showMessage('ログアウトしました。', 'success');
+      })
+      .catch(error => {
         showMessage(`ログアウトエラー: ${error.message}`, 'error');
-    });
+      });
   };
 
-  // --- Auth Event Listeners ---
+  // --- Event Listeners ---
   if (loginBtn) loginBtn.addEventListener('click', handleEmailLogin);
   if (signupBtn) signupBtn.addEventListener('click', handleCreateAccount);
   if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleLogin);
   if (guestLoginBtn) guestLoginBtn.addEventListener('click', handleGuestLogin);
-  
+
+  // ログアウトボタンのイベント設定（問題解決済みの方法）
   const setupLogoutButton = () => {
     const btn = document.getElementById('logout-btn');
     if (btn) {
-      // 既存のリスナーをクリアして重複を防ぐ
-      btn.replaceWith(btn.cloneNode(true));
-      document.getElementById('logout-btn').addEventListener('click', handleLogout);
+      // z-indexを設定してヘッダーより前面に表示
+      btn.style.position = 'relative';
+      btn.style.zIndex = '9999';
+      btn.style.pointerEvents = 'auto';
+      
+      // クリックイベントを設定
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLogout();
+      });
     }
   };
 
   // --- Auth State Change Listener ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // ログイン状態
       currentUser = user;
       const displayName = user.displayName || user.email || 'ゲスト';
       
@@ -155,8 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userDisplay) userDisplay.textContent = displayName;
       if (authContainer) authContainer.style.display = 'none';
 
-      setupLogoutButton();
+      // ログアウトボタンを設定
+      setTimeout(setupLogoutButton, 100);
 
+      // Firestoreへのユーザーデータ保存
       const userRef = doc(db, 'kotoha_users', user.uid);
       try {
         const userSnap = await getDoc(userRef);
@@ -173,225 +199,90 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (dbError) {
         console.error("Firestore操作エラー:", dbError);
       }
-
-      await loadProfileFormFromFirestore();
-
+      
+      // プロフィールセクションへ移動
       if (currentSection === 1) {
         showSection(2);
       }
     } else {
+      // ログアウト状態
       currentUser = null;
+      
+      // UI状態をリセット
       if (userInfo) userInfo.style.display = 'none';
       if (authContainer) authContainer.style.display = 'block';
       if (loginForm) loginForm.style.display = 'block';
       if (signupForm) signupForm.style.display = 'none';
+
+      // 入力フィールドをクリア
+      [loginEmailInput, loginPasswordInput, signupEmailInput, 
+       signupPasswordInput, signupPasswordConfirmInput].forEach(input => {
+        if (input) input.value = '';
+      });
+
+      // プロフィールフォームをクリア
+      const displayNameInput = document.getElementById('display-name');
+      const nationalitySelect = document.getElementById('nationality');
+      const stayLocationSelect = document.getElementById('stay-location');
+      const stayPurposeSelect = document.getElementById('stay-purpose');
+      const stayFromInput = document.getElementById('stay-from');
+      const stayToInput = document.getElementById('stay-to');
+
+      if (displayNameInput) displayNameInput.value = '';
+      if (nationalitySelect) nationalitySelect.value = '';
+      if (stayLocationSelect) stayLocationSelect.value = '';
+      if (stayPurposeSelect) stayPurposeSelect.value = '';
+      if (stayFromInput) stayFromInput.value = '';
+      if (stayToInput) stayToInput.value = '';
+
+      // チェックボックスをクリア
+      document.querySelectorAll('#languages input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+
+      // ローカルストレージをクリア
+      try {
+        localStorage.removeItem('kotoha_user_profile');
+        localStorage.removeItem('kotoha_consultation_history');
+        localStorage.removeItem('kotoha_current_session');
+        sessionStorage.clear();
+      } catch (error) {
+        // ストレージクリアエラーは無視
+      }
+
+      // 認証セクションに戻す
       showSection(1);
     }
   });
 
-  getRedirectResult(auth).catch(handleAuthError);
-  
-  // --- Profile Save ---
-  if (saveProfileBtn) saveProfileBtn.addEventListener('click', async () => {
-      if (!currentUser) return showMessage('ログインが必要です。', 'error');
-      const profileData = {
-          displayName: document.getElementById('display-name')?.value ?? '',
-          nationality: document.getElementById('nationality')?.value ?? '',
-          stayLocation: document.getElementById('stay-location')?.value ?? '',
-          stayPurpose: document.getElementById('stay-purpose')?.value ?? '',
-          stayFrom: document.getElementById('stay-from')?.value ?? '',
-          stayTo: document.getElementById('stay-to')?.value ?? '',
-          languages: Array.from(document.querySelectorAll('#languages input[type="checkbox"]:checked')).map(cb => cb.value),
-      };
-      try {
-        await setDoc(doc(db, 'kotoha_users', currentUser.uid), { profile: profileData }, { merge: true });
-        showMessage('プロフィールを保存しました。', 'success');
-        showSection(3);
-      } catch (e) {
-        showMessage('プロフィール保存失敗: ' + e.message, 'error');
-      }
+  // Google認証のリダイレクト結果を処理
+  getRedirectResult(auth).catch(error => {
+    handleAuthError(error);
   });
-  if (backToConsultationBtn) backToConsultationBtn.addEventListener('click', () => showSection(3));
 
-  // --- AI相談画面の全機能を実装 ---
-
-  // 1. 上部ナビゲーションボタン
-  document.querySelectorAll('.step').forEach(step => {
-    step.addEventListener('click', () => {
-      const sectionNum = parseInt(step.dataset.step);
-      if (!currentUser && sectionNum > 1) {
-        showMessage('この機能を利用するにはログインが必要です。', 'warning');
+  // プロフィール保存ボタンの処理
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener('click', () => {
+      if (!currentUser) {
+        showMessage('ログインが必要です。', 'error');
         return;
       }
-      showSection(sectionNum);
-    });
-  });
-
-  // 2. 相談カテゴリの選択機能
-  document.querySelectorAll('.category-card').forEach(card => {
-    card.addEventListener('click', function() {
-      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
-      this.classList.add('active');
-      selectedCategory = this.dataset.category;
-      const categoryName = this.querySelector('.category-name').textContent;
-      showMessage(`${categoryName} を選択しました。`, 'info');
-      updateSendButtonState();
-    });
-  });
-
-  // 3. 質問入力と送信ボタンの有効/無効化
-  const updateSendButtonState = () => {
-    sendButton.disabled = chatInput.value.trim() === '' || isAIChatting;
-  };
-  chatInput.addEventListener('input', updateSendButtonState);
-
-  // 4. チャットクリア機能
-  if (clearChatBtn) {
-    clearChatBtn.addEventListener('click', () => {
-      chatMessages.innerHTML = '';
-      appendInitialAIMessage();
-      showMessage('チャットをクリアしました。', 'info');
+      showMessage('プロフィールを保存しました。', 'success');
+      showSection(3);
     });
   }
 
-  // 5. 送信ボタンのクリック処理 (AI呼び出し)
-  if (sendButton) {
-    sendButton.addEventListener('click', handleSendMessage);
-  }
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  });
-  
-  // 6. サンプル質問のクリック処理
-  document.querySelectorAll('.question-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const question = chip.textContent.trim();
-      chatInput.value = question;
-      handleSendMessage();
+  // 戻るボタンの処理
+  const backToConsultationBtn = document.getElementById('back-to-consultation-btn');
+  if (backToConsultationBtn) {
+    backToConsultationBtn.addEventListener('click', () => {
+      showSection(3);
     });
-  });
-
-  // AIにメッセージを送信し、応答を受け取るメインの関数
-  async function handleSendMessage() {
-    const userMessage = chatInput.value.trim();
-    if (userMessage === '' || isAIChatting) return;
-
-    appendChatMessage('user', userMessage);
-    chatInput.value = '';
-    isAIChatting = true;
-    updateSendButtonState();
-    appendTypingIndicator();
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          userId: currentUser ? currentUser.uid : null,
-          context: {
-            category: selectedCategory
-          }
-        }),
-      });
-
-      removeTypingIndicator();
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'サーバーでエラーが発生しました。');
-      }
-
-      const data = await response.json();
-      const formattedResponse = marked.parse(data.response);
-      appendChatMessage('ai', formattedResponse);
-
-    } catch (error) {
-      console.error('AIチャットエラー:', error);
-      removeTypingIndicator();
-      appendChatMessage('ai', `申し訳ありません、エラーが発生しました。<br>${error.message}`);
-    } finally {
-      isAIChatting = false;
-      updateSendButtonState();
-    }
   }
 });
 
 // --- Utility Functions ---
-
-function appendChatMessage(sender, htmlContent) {
-  const chatMessages = document.getElementById('chat-messages');
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${sender}-message`;
-  
-  const avatar = sender === 'ai' ? '🤖' : '👤';
-  const senderName = sender === 'ai' ? 'Kotoha AI' : 'あなた';
-
-  messageDiv.innerHTML = `
-    <div class="message-avatar">${avatar}</div>
-    <div class="message-content">
-        <div class="message-bubble">${htmlContent}</div>
-        <div class="message-time">${senderName}</div>
-    </div>
-  `;
-  chatMessages.appendChild(messageDiv);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function appendInitialAIMessage() {
-  const initialHTML = `こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
-    上記のサンプル質問をクリックするか、直接ご質問を入力してください。<br><br>
-    Hello! I'm Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.`;
-  appendChatMessage('ai', initialHTML);
-}
-
-function appendTypingIndicator() {
-  const chatMessages = document.getElementById('chat-messages');
-  const indicatorHTML = `
-    <div class="message ai-message" id="typing-indicator">
-      <div class="message-avatar">🤖</div>
-      <div class="message-content">
-        <div class="message-bubble">
-          <div class="typing-dots">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  chatMessages.insertAdjacentHTML('beforeend', indicatorHTML);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function removeTypingIndicator() {
-  const indicator = document.getElementById('typing-indicator');
-  if (indicator) indicator.remove();
-}
-
-async function loadProfileFormFromFirestore() {
-  if (!currentUser) return;
-  const userRef = doc(getFirestore(), 'kotoha_users', currentUser.uid);
-  const snap = await getDoc(userRef);
-  if (snap.exists() && snap.data().profile) {
-    const data = snap.data().profile;
-    document.getElementById('display-name') && (document.getElementById('display-name').value = data.displayName ?? '');
-    document.getElementById('nationality') && (document.getElementById('nationality').value = data.nationality ?? '');
-    document.getElementById('stay-location') && (document.getElementById('stay-location').value = data.stayLocation ?? '');
-    document.getElementById('stay-purpose') && (document.getElementById('stay-purpose').value = data.stayPurpose ?? '');
-    document.getElementById('stay-from') && (document.getElementById('stay-from').value = data.stayFrom ?? '');
-    document.getElementById('stay-to') && (document.getElementById('stay-to').value = data.stayTo ?? '');
-    if (Array.isArray(data.languages)) {
-      document.querySelectorAll('#languages input[type="checkbox"]').forEach(cb => {
-        cb.checked = data.languages.includes(cb.value);
-      });
-    }
-  }
-}
 
 function showSection(sectionNum) {
   document.querySelectorAll('.section').forEach(section => {
@@ -410,7 +301,11 @@ function showSection(sectionNum) {
 function updateStepIndicators() {
   document.querySelectorAll('.step').forEach(step => {
     const stepNum = parseInt(step.getAttribute('data-step'));
-    step.classList.toggle('active', stepNum <= currentSection);
+    if (stepNum <= currentSection) {
+      step.classList.add('active');
+    } else {
+      step.classList.remove('active');
+    }
   });
 }
 
