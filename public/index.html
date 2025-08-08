@@ -3,26 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kotoha Staging - Heartbeat</title>
+  <title>Kotoha Staging - Test UI</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif; line-height: 1.6; padding: 24px; }
-    .card { max-width: 640px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; }
-    .ok { font-weight: 700; }
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif; line-height: 1.6; padding: 24px; max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    textarea, input, button { font: inherit; }
+    textarea { width: 100%; min-height: 96px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; }
+    button { padding: 10px 16px; border-radius: 8px; border: 1px solid #e5e7eb; cursor: pointer; }
     code { background: #f3f4f6; padding: 2px 6px; border-radius: 6px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>✅ 表示テスト（ハートビート版）</h1>
-    <p>このページが見えていれば、<strong>ルート <code>/</code></strong> はOKです。</p>
-    <p>ヘルスチェック：<strong class="ok" id="status">チェック中...</strong></p>
-    <p>別タブで <code>/healthz</code> でも確認できます。</p>
+    <h1>✅ 表示テスト / ヘルスチェック</h1>
+    <p>ホーム（/）が表示できています。<a href="/healthz"><code>/healthz</code></a> は <em>ok</em> を返すはず。</p>
   </div>
+
+  <div class="card">
+    <h2>🧪 SNS最小生成APIテスト</h2>
+    <p>テーマを入力して <strong>生成</strong> を押すと、<code>POST /api/generate-sns</code> を呼び出します。</p>
+    <label for="prompt">テーマ</label>
+    <textarea id="prompt" placeholder="例：営業DXのROI"></textarea>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button id="run">生成</button>
+      <button id="ping">/api/ping</button>
+      <button id="env">/api/env-check</button>
+    </div>
+    <h3>結果</h3>
+    <div id="out" class="mono"></div>
+  </div>
+
   <script>
-    fetch("/healthz")
-      .then(r => r.text())
-      .then(t => document.getElementById("status").textContent = t)
-      .catch(() => document.getElementById("status").textContent = "error");
+    const out = document.getElementById('out');
+    const show = (obj) => out.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+
+    document.getElementById('run').onclick = async () => {
+      const prompt = document.getElementById('prompt').value.trim() || '中小企業のDX推進';
+      show('送信中...');
+      try {
+        const r = await fetch('/api/generate-sns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await r.json().catch(() => ({}));
+        show(data);
+      } catch (e) {
+        show(String(e));
+      }
+    };
+
+    document.getElementById('ping').onclick = async () => {
+      show('確認中...');
+      try {
+        const r = await fetch('/api/ping');
+        show(await r.json());
+      } catch (e) { show(String(e)); }
+    };
+
+    document.getElementById('env').onclick = async () => {
+      show('確認中...');
+      try {
+        const r = await fetch('/api/env-check');
+        show(await r.json());
+      } catch (e) { show(String(e)); }
+    };
   </script>
 </body>
 </html>
