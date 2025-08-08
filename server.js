@@ -10,10 +10,8 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ---- 基盤強化ここから ----
-// JSONボディ受け取り（最大1MB）
-app.use(express.json({ limit: "1mb" }));
-
+// ---- 基盤強化 ----
+app.use(express.json({ limit: "1mb" })); // JSONボディ受け取り
 // CORS（依存を増やさずヘッダで許可）
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -22,7 +20,7 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
-// ---- 基盤強化ここまで ----
+// ---- ここまで ----
 
 // 静的配信（public 配下）
 const publicDir = path.join(__dirname, "public");
@@ -46,9 +44,8 @@ app.get("/api/env-check", (_req, res) => {
 app.get("/api/gemini-test", async (_req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ ok: false, error: "GEMINI_API_KEY not set" });
-    }
+    if (!apiKey) return res.status(500).json({ ok: false, error: "GEMINI_API_KEY not set" });
+
     const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -78,11 +75,69 @@ app.get("/api/gemini-test", async (_req, res) => {
     try {
       const cands = data?.candidates ?? [];
       if (cands[0]?.content?.parts?.length) {
-        for (const p of cands[0].content.parts) {
-          if (typeof p.text === "string") text += p.text;
-        }
+        for (const p of cands[0].content.parts) if (typeof p.text === "string") text += p.text;
       }
     } catch {}
+
+    return res.status(200).json({ ok: true, model, text });
+  } catch (e) {
+    const isAbort = e?.name === "AbortError";
+    return res.status(500).json({ ok: false, error: isAbort ? "timeout" : String(e) });
+  }
+});
+
+// ★ 新規：SNS最小生成API（POST）
+// 入力: { "prompt": "短いテーマ" }
+// 出力: { ok: true, text: "<短文>" }
+app.post("/api/generate-sns", async (req, res) => {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ ok: false, error: "GEMINI_API_KEY not set" });
+
+    const userPrompt = (req.body?.prompt || "").toString().trim();
+    const topic = userPrompt || "中小企業のDX推進に関する短い一文";
+
+    const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+    // 最小要件：日本語・短文・装飾なし
+    const systemInstruction =
+      "日本語で、短く1文だけを出力してください。絵文字やハッシュタグ、記号、前置きは不要です。出力はテキストのみ。";
+
+    const body = {
+      contents: [
+        { role: "user", parts: [{ text: `${systemInstruction}\nテーマ: ${topic}` }] }
+      ],
+      generationConfig: { temperature: 0.6, maxOutputTokens: 80 }
+    };
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 15000);
+
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: ac.signal
+    });
+    clearTimeout(timeout);
+
+    if (!r.ok) {
+      const errTxt = await r.text().catch(() => "");
+      return res.status(502).json({ ok: false, status: r.status, err: errTxt });
+    }
+
+    const data = await r.json().catch(() => ({}));
+    let text = "";
+    try {
+      const cands = data?.candidates ?? [];
+      if (cands[0]?.content?.parts?.length) {
+        for (const p of cands[0].content.parts) if (typeof p.text === "string") text += p.text;
+      }
+    } catch {}
+
+    text = (text || "").trim();
+    if (!text) return res.status(500).json({ ok: false, error: "empty_response" });
 
     return res.status(200).json({ ok: true, model, text });
   } catch (e) {
