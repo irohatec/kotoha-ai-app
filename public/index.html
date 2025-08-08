@@ -50,9 +50,7 @@
         });
         const data = await r.json().catch(() => ({}));
         show(data);
-      } catch (e) {
-        show(String(e));
-      }
+      } catch (e) { show(String(e)); }
     };
 
     document.getElementById('ping').onclick = async () => {
