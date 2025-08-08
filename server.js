@@ -6,16 +6,21 @@ import { fileURLToPath } from "url";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// __dirname をESMで再現
+// __dirname（ESM）
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 静的配信ディレクトリ（後で index.html を置く）
+// 静的配信（public 配下）
 const publicDir = path.join(__dirname, "public");
 app.use(express.static(publicDir));
 
 // ヘルスチェック
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+
+// ★ 新規：API動作確認エンドポイント
+app.get("/api/ping", (_req, res) => {
+  res.status(200).json({ pong: true, time: new Date().toISOString() });
+});
 
 // ルート & SPAキャッチオール
 app.get("*", (_req, res) => {
@@ -23,7 +28,6 @@ app.get("*", (_req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    // まだ index.html が無くても 200 を返してサイトが「壊れた」状態に見えないようにする
     res
       .status(200)
       .type("html")
@@ -34,7 +38,7 @@ app.get("*", (_req, res) => {
 </head><body>
 <h1>✅ サーバは稼働中</h1>
 <p><code>/healthz</code> は <strong>ok</strong> を返します。</p>
-<p>次のステップ：<code>public/index.html</code> を追加してください。</p>
+<p>API確認：<code>/api/ping</code> にアクセスするとJSONを返します。</p>
 </body></html>`);
   }
 });
