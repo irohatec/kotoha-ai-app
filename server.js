@@ -17,9 +17,15 @@ app.use(express.static(publicDir));
 // ヘルスチェック
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
-// ★ 新規：API動作確認エンドポイント
+// API動作確認
 app.get("/api/ping", (_req, res) => {
   res.status(200).json({ pong: true, time: new Date().toISOString() });
+});
+
+// ★ 新規：環境変数の存在チェック（キー値は返さない）
+app.get("/api/env-check", (_req, res) => {
+  const hasGeminiKey = !!process.env.GEMINI_API_KEY;
+  res.status(200).json({ hasGeminiKey });
 });
 
 // ルート & SPAキャッチオール
