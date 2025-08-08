@@ -13,7 +13,9 @@ dotenv.config();
 
 // ES6 modules で __dirname を取得
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(path.join(__filename, '..')); // プロジェクトルートを指すように調整
+// ▼▼▼ ここを修正しました ▼▼▼
+const __dirname = path.dirname(__filename);
+// ▲▲▲ 修正箇所 ▲▲▲
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,7 +51,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Rate limiting
 const rateLimiter = new RateLimiterMemory({
     keyPrefix: 'middleware',
-    points: 15, // 少し緩和
+    points: 15,
     duration: 60,
 });
 
