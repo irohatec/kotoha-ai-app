@@ -371,11 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const displayName = document.getElementById('display-name')?.value ?? '';
       const nationality = document.getElementById('nationality')?.value ?? '';
+      const primaryLanguage = document.getElementById('primary-language')?.value ?? '';
       const stayLocation = document.getElementById('stay-location')?.value ?? '';
       const stayPurpose = document.getElementById('stay-purpose')?.value ?? '';
       const stayFrom = document.getElementById('stay-from')?.value ?? '';
       const stayTo = document.getElementById('stay-to')?.value ?? '';
-      const languages = Array.from(document.querySelectorAll('#languages input[type="checkbox"]:checked')).map(cb => cb.value);
       
       const userRef = doc(db, 'kotoha_users', currentUser.uid);
       try {
@@ -383,11 +383,11 @@ document.addEventListener('DOMContentLoaded', () => {
           profile: {
             displayName,
             nationality,
+            primaryLanguage,
             stayLocation,
             stayPurpose,
             stayFrom,
             stayTo,
-            languages,
           }
         }, { merge: true });
         showMessage('プロフィールを保存しました。', 'success');
@@ -724,6 +724,7 @@ function generateBetterResponse(userMessage, category) {
 function clearProfileForm() {
   const displayNameInput = document.getElementById('display-name');
   const nationalitySelect = document.getElementById('nationality');
+  const primaryLanguageSelect = document.getElementById('primary-language');
   const stayLocationSelect = document.getElementById('stay-location');
   const stayPurposeSelect = document.getElementById('stay-purpose');
   const stayFromInput = document.getElementById('stay-from');
@@ -731,14 +732,11 @@ function clearProfileForm() {
   
   if (displayNameInput) displayNameInput.value = '';
   if (nationalitySelect) nationalitySelect.value = '';
+  if (primaryLanguageSelect) primaryLanguageSelect.value = '';
   if (stayLocationSelect) stayLocationSelect.value = '';
   if (stayPurposeSelect) stayPurposeSelect.value = '';
   if (stayFromInput) stayFromInput.value = '';
   if (stayToInput) stayToInput.value = '';
-  
-  document.querySelectorAll('#languages input[type="checkbox"]').forEach(cb => {
-    cb.checked = false;
-  });
 }
 
 // --- Firestore→フォーム反映関数 ---
@@ -755,6 +753,7 @@ async function loadProfileFormFromFirestore() {
       
       const displayNameField = document.getElementById('display-name');
       const nationalityField = document.getElementById('nationality');
+      const primaryLanguageField = document.getElementById('primary-language');
       const stayLocationField = document.getElementById('stay-location');
       const stayPurposeField = document.getElementById('stay-purpose');
       const stayFromField = document.getElementById('stay-from');
@@ -762,16 +761,11 @@ async function loadProfileFormFromFirestore() {
       
       if (displayNameField) displayNameField.value = data.displayName ?? '';
       if (nationalityField) nationalityField.value = data.nationality ?? '';
+      if (primaryLanguageField) primaryLanguageField.value = data.primaryLanguage ?? '';
       if (stayLocationField) stayLocationField.value = data.stayLocation ?? '';
       if (stayPurposeField) stayPurposeField.value = data.stayPurpose ?? '';
       if (stayFromField) stayFromField.value = data.stayFrom ?? '';
       if (stayToField) stayToField.value = data.stayTo ?? '';
-      
-      if (Array.isArray(data.languages)) {
-        document.querySelectorAll('#languages input[type="checkbox"]').forEach(cb => {
-          cb.checked = data.languages.includes(cb.value);
-        });
-      }
     } else {
       clearProfileForm();
     }
