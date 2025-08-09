@@ -538,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- AIチャット送信（サーバーAPI使用版） ---
+  // --- AIチャット送信（サーバーAPI使用版）- プロフィール情報を含むよう修正 ---
   async function handleSendMessage() {
     if (!chatInput || !chatInput.value.trim() || isAIChatting) {
       return;
@@ -565,7 +565,18 @@ document.addEventListener('DOMContentLoaded', () => {
     appendTypingIndicator();
     
     try {
-      // サーバーのAI APIを呼び出し
+      // プロフィール情報を取得
+      let userProfile = null;
+      if (currentUser) {
+        const userRef = doc(db, 'kotoha_users', currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists() && userSnap.data().profile) {
+          userProfile = userSnap.data().profile;
+          console.log('Sending user profile:', userProfile);
+        }
+      }
+      
+      // サーバーのAI APIを呼び出し（プロフィール情報を含む）
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -573,7 +584,8 @@ document.addEventListener('DOMContentLoaded', () => {
           message: userMessage,
           userId: currentUser ? currentUser.uid : null,
           context: {
-            category: selectedCategory
+            category: selectedCategory,
+            userProfile: userProfile
           }
         }),
       });
