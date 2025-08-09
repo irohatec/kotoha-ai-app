@@ -131,6 +131,358 @@ const translations = {
     // 共通
     logout: 'Logout',
     select: 'Select'
+  },
+  ko: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: '에히메현 체류를 지원하는 AI 어시스턴트',
+    
+    // 認証画面
+    welcomeTitle: 'Kotoha AI에 오신 것을 환영합니다',
+    welcomeDesc: '에히메현에서의 체류를 더욱 편안하게 하기 위해 먼저 계정을 만들어 주세요',
+    loginTitle: '로그인',
+    signupTitle: '계정 생성',
+    email: '이메일 주소',
+    password: '비밀번호',
+    passwordConfirm: '비밀번호 확인',
+    loginBtn: '로그인',
+    signupBtn: '계정 생성',
+    googleLoginBtn: 'Google로 로그인',
+    guestLoginBtn: '게스트로 이용',
+    showSignupBtn: '계정 생성',
+    showLoginBtn: '로그인으로 돌아가기',
+    
+    // プロフィール画면
+    profileTitle: '프로필 설정',
+    profileDesc: '더 적절한 지원을 제공하기 위해 기본 정보를 알려주세요',
+    displayName: '표시 이름',
+    nationality: '국적',
+    primaryLanguage: '사용 언어',
+    stayLocation: '체류 지역',
+    stayPurpose: '체류 목적',
+    stayPeriod: '체류 기간',
+    saveProfileBtn: '프로필 저장',
+    
+    // 相談画면
+    consultationTitle: 'AI 상담',
+    consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
+    categoryTitle: '상담 카테고리',
+    
+    // 履歴画면
+    historyTitle: '상담 이력',
+    historyDesc: '과거 상담 내용을 확인할 수 있습니다',
+    
+    // 共通
+    logout: '로그아웃',
+    select: '선택해 주세요'
+  },
+  zh: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: '支持爱媛县居留的AI助理',
+    
+    // 認証画面
+    welcomeTitle: '欢迎使用 Kotoha AI',
+    welcomeDesc: '为了让您在爱媛县的居留更加舒适，请先创建账户',
+    loginTitle: '登录',
+    signupTitle: '创建账户',
+    email: '电子邮箱',
+    password: '密码',
+    passwordConfirm: '确认密码',
+    loginBtn: '登录',
+    signupBtn: '创建账户',
+    googleLoginBtn: 'Google登录',
+    guestLoginBtn: '作为访客使用',
+    showSignupBtn: '创建账户',
+    showLoginBtn: '返回登录',
+    
+    // プロフィール画面
+    profileTitle: '个人资料设置',
+    profileDesc: '为了提供更合适的支持，请告诉我们您的基本信息',
+    displayName: '显示姓名',
+    nationality: '国籍',
+    primaryLanguage: '使用语言',
+    stayLocation: '居留地区',
+    stayPurpose: '居留目的',
+    stayPeriod: '居留期间',
+    saveProfileBtn: '保存个人资料',
+    
+    // 相談画面
+    consultationTitle: 'AI咨询',
+    consultationDesc: '请选择类别，随时提问',
+    categoryTitle: '咨询类别',
+    
+    // 履歴画面
+    historyTitle: '咨询历史',
+    historyDesc: '您可以查看过往的咨询内容',
+    
+    // 共通
+    logout: '退出登录',
+    select: '请选择'
+  },
+  es: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Asistente de IA para tu estancia en la Prefectura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenido a Kotoha AI',
+    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime más cómoda',
+    loginTitle: 'Iniciar Sesión',
+    signupTitle: 'Crear Cuenta',
+    email: 'Correo Electrónico',
+    password: 'Contraseña',
+    passwordConfirm: 'Confirmar Contraseña',
+    loginBtn: 'Iniciar Sesión',
+    signupBtn: 'Crear Cuenta',
+    googleLoginBtn: 'Iniciar con Google',
+    guestLoginBtn: 'Usar como Invitado',
+    showSignupBtn: 'Crear Cuenta',
+    showLoginBtn: 'Volver a Iniciar Sesión',
+    
+    // プロフィール画面
+    profileTitle: 'Configuración del Perfil',
+    profileDesc: 'Proporcione su información básica para un mejor soporte',
+    displayName: 'Nombre para Mostrar',
+    nationality: 'Nacionalidad',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Ubicación de Estancia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estancia',
+    saveProfileBtn: 'Guardar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta AI',
+    consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
+    categoryTitle: 'Categoría',
+    
+    // 履歴画面
+    historyTitle: 'Historial de Consultas',
+    historyDesc: 'Ver tus registros de consultas anteriores',
+    
+    // 共通
+    logout: 'Cerrar Sesión',
+    select: 'Seleccionar'
+  },
+  fr: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistant IA pour votre séjour dans la Préfecture d\'Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenue sur Kotoha AI',
+    welcomeDesc: 'Créez un compte pour rendre votre séjour dans la Préfecture d\'Ehime plus confortable',
+    loginTitle: 'Se Connecter',
+    signupTitle: 'Créer un Compte',
+    email: 'Adresse Email',
+    password: 'Mot de Passe',
+    passwordConfirm: 'Confirmer le Mot de Passe',
+    loginBtn: 'Se Connecter',
+    signupBtn: 'Créer un Compte',
+    googleLoginBtn: 'Se connecter avec Google',
+    guestLoginBtn: 'Utiliser comme Invité',
+    showSignupBtn: 'Créer un Compte',
+    showLoginBtn: 'Retour à la Connexion',
+    
+    // プロフィール画面
+    profileTitle: 'Configuration du Profil',
+    profileDesc: 'Veuillez fournir vos informations de base pour un meilleur support',
+    displayName: 'Nom d\'Affichage',
+    nationality: 'Nationalité',
+    primaryLanguage: 'Langue Principale',
+    stayLocation: 'Lieu de Séjour',
+    stayPurpose: 'Objectif',
+    stayPeriod: 'Période de Séjour',
+    saveProfileBtn: 'Sauvegarder le Profil',
+    
+    // 相談画面
+    consultationTitle: 'Consultation IA',
+    consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
+    categoryTitle: 'Catégorie',
+    
+    // 履歴画面
+    historyTitle: 'Historique des Consultations',
+    historyDesc: 'Voir vos enregistrements de consultations précédentes',
+    
+    // 共通
+    logout: 'Se Déconnecter',
+    select: 'Sélectionner'
+  },
+  de: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'KI-Assistent für Ihren Aufenthalt in der Präfektur Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Willkommen bei Kotoha AI',
+    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Präfektur Ehime komfortabler zu gestalten',
+    loginTitle: 'Anmelden',
+    signupTitle: 'Konto Erstellen',
+    email: 'E-Mail-Adresse',
+    password: 'Passwort',
+    passwordConfirm: 'Passwort Bestätigen',
+    loginBtn: 'Anmelden',
+    signupBtn: 'Konto Erstellen',
+    googleLoginBtn: 'Mit Google anmelden',
+    guestLoginBtn: 'Als Gast verwenden',
+    showSignupBtn: 'Konto Erstellen',
+    showLoginBtn: 'Zurück zur Anmeldung',
+    
+    // プロフィール画面
+    profileTitle: 'Profil-Einrichtung',
+    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen für bessere Unterstützung an',
+    displayName: 'Anzeigename',
+    nationality: 'Nationalität',
+    primaryLanguage: 'Hauptsprache',
+    stayLocation: 'Aufenthaltsort',
+    stayPurpose: 'Zweck',
+    stayPeriod: 'Aufenthaltsdauer',
+    saveProfileBtn: 'Profil Speichern',
+    
+    // 相談画面
+    consultationTitle: 'KI-Beratung',
+    consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
+    categoryTitle: 'Kategorie',
+    
+    // 履歴画面
+    historyTitle: 'Beratungshistorie',
+    historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
+    
+    // 共通
+    logout: 'Abmelden',
+    select: 'Auswählen'
+  },
+  it: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente AI per il tuo soggiorno nella Prefettura di Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Benvenuto in Kotoha AI',
+    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime più confortevole',
+    loginTitle: 'Accedi',
+    signupTitle: 'Crea Account',
+    email: 'Indirizzo Email',
+    password: 'Password',
+    passwordConfirm: 'Conferma Password',
+    loginBtn: 'Accedi',
+    signupBtn: 'Crea Account',
+    googleLoginBtn: 'Accedi con Google',
+    guestLoginBtn: 'Usa come Ospite',
+    showSignupBtn: 'Crea Account',
+    showLoginBtn: 'Torna al Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configurazione Profilo',
+    profileDesc: 'Fornisci le tue informazioni di base per un migliore supporto',
+    displayName: 'Nome Visualizzato',
+    nationality: 'Nazionalità',
+    primaryLanguage: 'Lingua Principale',
+    stayLocation: 'Luogo di Soggiorno',
+    stayPurpose: 'Scopo',
+    stayPeriod: 'Periodo di Soggiorno',
+    saveProfileBtn: 'Salva Profilo',
+    
+    // 相談画面
+    consultationTitle: 'Consulenza AI',
+    consultationDesc: 'Seleziona una categoria e fai domande liberamente',
+    categoryTitle: 'Categoria',
+    
+    // 履歴画面
+    historyTitle: 'Cronologia Consultazioni',
+    historyDesc: 'Visualizza i tuoi record di consultazioni precedenti',
+    
+    // 共通
+    logout: 'Disconnetti',
+    select: 'Seleziona'
+  },
+  pt: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente de IA para sua estadia na Prefeitura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bem-vindo ao Kotoha AI',
+    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortável',
+    loginTitle: 'Entrar',
+    signupTitle: 'Criar Conta',
+    email: 'Endereço de Email',
+    password: 'Senha',
+    passwordConfirm: 'Confirmar Senha',
+    loginBtn: 'Entrar',
+    signupBtn: 'Criar Conta',
+    googleLoginBtn: 'Entrar com Google',
+    guestLoginBtn: 'Usar como Convidado',
+    showSignupBtn: 'Criar Conta',
+    showLoginBtn: 'Voltar ao Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configuração do Perfil',
+    profileDesc: 'Forneça suas informações básicas para melhor suporte',
+    displayName: 'Nome de Exibição',
+    nationality: 'Nacionalidade',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Local de Estadia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estadia',
+    saveProfileBtn: 'Salvar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta de IA',
+    consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
+    categoryTitle: 'Categoria',
+    
+    // 履歴画面
+    historyTitle: 'Histórico de Consultas',
+    historyDesc: 'Veja seus registros de consultas anteriores',
+    
+    // 共通
+    logout: 'Sair',
+    select: 'Selecionar'
+  },
+  ru: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'ИИ-помощник для вашего пребывания в префектуре Эхимэ',
+    
+    // 認証画面
+    welcomeTitle: 'Добро пожаловать в Kotoha AI',
+    welcomeDesc: 'Создайте аккаунт, чтобы сделать ваше пребывание в префектуре Эхимэ более комфортным',
+    loginTitle: 'Войти',
+    signupTitle: 'Создать Аккаунт',
+    email: 'Электронная Почта',
+    password: 'Пароль',
+    passwordConfirm: 'Подтвердить Пароль',
+    loginBtn: 'Войти',
+    signupBtn: 'Создать Аккаунт',
+    googleLoginBtn: 'Войти через Google',
+    guestLoginBtn: 'Использовать как Гость',
+    showSignupBtn: 'Создать Аккаунт',
+    showLoginBtn: 'Вернуться к Входу',
+    
+    // プロフィール画面
+    profileTitle: 'Настройка Профиля',
+    profileDesc: 'Предоставьте вашу основную информацию для лучшей поддержки',
+    displayName: 'Отображаемое Имя',
+    nationality: 'Национальность',
+    primaryLanguage: 'Основной Язык',
+    stayLocation: 'Место Пребывания',
+    stayPurpose: 'Цель',
+    stayPeriod: 'Период Пребывания',
+    saveProfileBtn: 'Сохранить Профиль',
+    
+    // 相談画면
+    consultationTitle: 'ИИ-Консультация',
+    consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
+    categoryTitle: 'Категория',
+    
+    // 履歴画面
+    historyTitle: 'История Консультаций',
+    historyDesc: 'Просмотрите ваши предыдущие записи консультаций',
+    
+    // 共通
+    logout: 'Выйти',
+    select: 'Выбрать'
   }
 };
 
@@ -394,11 +746,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (primaryLanguageSelect) {
     primaryLanguageSelect.addEventListener('change', (e) => {
       const selectedLang = e.target.value;
-      // 日本語と英語のみ自動切り替え（他言語は今後実装）
-      if (selectedLang === '日本語') {
-        switchLanguage('ja');
-      } else if (selectedLang === 'English') {
-        switchLanguage('en');
+      // 言語コードマッピング
+      const languageCodeMap = {
+        '日本語': 'ja',
+        'English': 'en', 
+        '한국어': 'ko',
+        '中文': 'zh',
+        'Español': 'es',
+        'Français': 'fr',
+        'Deutsch': 'de',
+        'Italiano': 'it',
+        'Português': 'pt',
+        'Русский': 'ru'
+      };
+      
+      const langCode = languageCodeMap[selectedLang];
+      if (langCode) {
+        switchLanguage(langCode);
       }
     });
   }
@@ -1016,10 +1380,22 @@ async function loadProfileFormFromFirestore() {
       
       // 言語設定があれば自動でページ言語も切り替え
       if (data.primaryLanguage) {
-        if (data.primaryLanguage === '日本語') {
-          switchLanguage('ja');
-        } else if (data.primaryLanguage === 'English') {
-          switchLanguage('en');
+        const languageCodeMap = {
+          '日本語': 'ja',
+          'English': 'en', 
+          '한국어': 'ko',
+          '中文': 'zh',
+          'Español': 'es',
+          'Français': 'fr',
+          'Deutsch': 'de',
+          'Italiano': 'it',
+          'Português': 'pt',
+          'Русский': 'ru'
+        };
+        
+        const langCode = languageCodeMap[data.primaryLanguage];
+        if (langCode) {
+          switchLanguage(langCode);
         }
       }
     } else {
