@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - ログアウト確実化（機能最小）+ Markdown整形、デザイン変更なし
+// Firebase v10.12.2 本番版 app.js - デザイン非変更・機能のみ追加版
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -41,7 +41,7 @@ let selectedCategory = '';
 let shouldStoreConsultation = true;
 let isAIChatting = false;
 
-// よくある質問→カテゴリ
+// 質問とカテゴリのマッピング
 const questionToCategory = {
   'バスの乗り方がわかりません。どうすればいいですか？': 'transportation',
   '病院に行きたいのですが、予約は必要ですか？': 'medical',
@@ -50,30 +50,30 @@ const questionToCategory = {
   '緊急時はどこに連絡すればいいですか？': 'general'
 };
 
-// メッセージからカテゴリ推測
+// 質問からカテゴリを推測する関数
 function guessCategory(userMessage) {
   const message = userMessage.toLowerCase();
-  if (message.includes('バス') || message.includes('電車') || message.includes('交通') ||
+  if (message.includes('バス') || message.includes('電車') || message.includes('交通') || 
       message.includes('移動') || message.includes('タクシー') || message.includes('アクセス') ||
       message.includes('train') || message.includes('bus') || message.includes('transport')) {
     return 'transportation';
   }
-  if (message.includes('病院') || message.includes('医療') || message.includes('薬') ||
+  if (message.includes('病院') || message.includes('医療') || message.includes('薬') || 
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
       message.includes('hospital') || message.includes('doctor') || message.includes('medicine')) {
     return 'medical';
   }
-  if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') ||
+  if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') || 
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
       message.includes('internet') || message.includes('network')) {
     return 'connectivity';
   }
-  if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') ||
+  if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') || 
       message.includes('住居') || message.includes('部屋') ||
       message.includes('hotel') || message.includes('accommodation') || message.includes('room')) {
     return 'accommodation';
   }
-  if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') ||
+  if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') || 
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
       message.includes('culture') || message.includes('manner') || message.includes('etiquette')) {
     return 'culture';
@@ -81,58 +81,9 @@ function guessCategory(userMessage) {
   return 'general';
 }
 
-// --- 軽量Markdownレンダラー（外部lib不使用・安全化） ---
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-}
-function renderMarkdownBasic(md) {
-  if (!md || typeof md !== 'string') return '';
-  let text = escapeHtml(md);
-
-  // リンク [text](url)
-  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-    (_m, p1, p2) => `<a href="${p2}" target="_blank" rel="noopener noreferrer">${p1}</a>`);
-
-  // 強調
-  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  text = text.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
-  // インラインコード
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // 見出し
-  text = text.replace(/^###\s*(.+)$/gm, '<strong>$1</strong>');
-  text = text.replace(/^##\s*(.+)$/gm, '<strong>$1</strong>');
-  text = text.replace(/^#\s*(.+)$/gm, '<strong>$1</strong>');
-
-  // 箇条書き
-  const lines = text.split(/\r?\n/);
-  let html = '';
-  let inList = false;
-  const flushList = () => { if (inList) { html += '</ul>'; inList = false; } };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const m = line.match(/^\s*[-*]\s+(.+)$/);
-    if (m) {
-      if (!inList) { html += '<ul>'; inList = true; }
-      html += `<li>${m[1]}</li>`;
-      continue;
-    }
-    if (/^\s*$/.test(line)) {
-      flushList();
-      html += '<br>';
-      continue;
-    }
-    flushList();
-    html += line + '<br>';
-  }
-  flushList();
-  html = html.replace(/(<br>){3,}/g, '<br><br>');
-  return html;
-}
-
-// --- DOMContentLoaded ---
+// --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Auth/UI要素
+  // --- UI Element References ---
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const authContainer = document.getElementById('auth-container');
@@ -150,8 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const userInfo = document.getElementById('user-info');
   const userDisplay = document.getElementById('user-display-name');
 
-  // ステップ
+  // --- Section Navigation Buttons ---
   const stepIndicators = document.querySelectorAll('.step');
+
+  // デザインに影響しないステップナビ（クリックのみ）
   function setupStepNavigation() {
     stepIndicators.forEach((step, idx) => {
       const newStep = step.cloneNode(true);
@@ -170,11 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setupStepNavigation();
 
-  // プロフィール
+  // --- Profile Section ---
   const saveProfileBtn = document.getElementById('save-profile-btn');
   const editProfileBtn = document.getElementById('edit-profile-btn');
-
-  // 相談
+  
+  // --- Consultation Section ---
   const categoryCards = document.querySelectorAll('.category-card');
   const selectedCategoryBox = document.getElementById('selected-category');
   const selectedCategoryName = document.getElementById('selected-category-name');
@@ -184,12 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const storeConsultationCheckbox = document.getElementById('store-consultation');
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const chatMessages = document.getElementById('chat-messages');
-
-  // 履歴
+  
+  // --- History Section ---
   const backToConsultationBtn = document.getElementById('back-to-consultation-btn');
   const exportHistoryBtn = document.getElementById('export-history-btn');
 
-  // チャット領域高さ（現状通り）
+  // チャット領域の高さ調整（既存のまま）
   function adjustChatHeight() {
     if (chatMessages) {
       const viewportHeight = window.innerHeight;
@@ -206,30 +159,54 @@ document.addEventListener('DOMContentLoaded', () => {
   adjustChatHeight();
   window.addEventListener('resize', adjustChatHeight);
 
-  // フォーム切替
-  if (showSignupBtn) showSignupBtn.addEventListener('click', () => { loginForm.style.display = 'none'; signupForm.style.display = 'block'; });
-  if (showLoginBtn)  showLoginBtn.addEventListener('click', () => { signupForm.style.display = 'none'; loginForm.style.display = 'block'; });
+  // --- Form Switching Logic ---
+  if (showSignupBtn) {
+    showSignupBtn.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    });
+  }
+  if (showLoginBtn) {
+    showLoginBtn.addEventListener('click', () => {
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+  }
 
-  // 認証
+  // --- Authentication Functions ---
   const handleEmailLogin = () => {
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value;
-    if (!email || !password) { showMessage('メールアドレスとパスワードを入力してください。', 'error'); return; }
+    if (!email || !password) {
+      showMessage('メールアドレスとパスワードを入力してください。', 'error');
+      return;
+    }
     signInWithEmailAndPassword(auth, email, password)
       .then(() => showMessage('ログインしました。', 'success'))
       .catch(handleAuthError);
   };
+
   const handleCreateAccount = () => {
     const email = signupEmailInput.value.trim();
     const password = signupPasswordInput.value;
     const confirmPassword = signupPasswordConfirmInput.value;
-    if (!email || !password) { showMessage('メールアドレスとパスワードを入力してください。', 'error'); return; }
-    if (password.length < 6) { showMessage('パスワードは6文字以上で入力してください。', 'error'); return; }
-    if (password !== confirmPassword) { showMessage('パスワードが一致しません。', 'error'); return; }
+    if (!email || !password) {
+      showMessage('メールアドレスとパスワードを入力してください。', 'error');
+      return;
+    }
+    if (password.length < 6) {
+      showMessage('パスワードは6文字以上で入力してください。', 'error');
+      return;
+    }
+    if (password !== confirmPassword) {
+      showMessage('パスワードが一致しません。', 'error');
+      return;
+    }
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => showMessage('アカウントを作成しました。', 'success'))
       .catch(handleAuthError);
   };
+
   const handleGoogleLogin = () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
@@ -237,31 +214,38 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error.code === 'auth/popup-blocked') {
         showMessage('ポップアップがブロックされました。リダイレクトを試みます。', 'warning');
         signInWithRedirect(auth, provider);
-      } else { handleAuthError(error); }
+      } else {
+        handleAuthError(error);
+      }
     });
   };
-  const handleGuestLogin = () => { signInAnonymously(auth).catch(handleAuthError); };
-  const handleLogout = () => {
-    if (!confirm('ログアウトしますか？')) return;
-    signOut(auth).then(() => showMessage('ログアウトしました。', 'success'))
-                 .catch(error => showMessage(`ログアウトエラー: ${error.message}`, 'error'));
+
+  const handleGuestLogin = () => {
+    signInAnonymously(auth).catch(handleAuthError);
   };
 
-  // ログアウトボタン（機能確実化：イベント + クリック可能性の担保）
+  const handleLogout = () => {
+    if (!confirm('ログアウトしますか？')) return;
+    signOut(auth)
+      .then(() => showMessage('ログアウトしました。', 'success'))
+      .catch(error => {
+        showMessage(`ログアウトエラー: ${error.message}`, 'error');
+      });
+  };
+
+  // --- Logout Button（デザイン変更なし：イベントのみ付与） ---
   const setupLogoutButton = () => {
     const btn = document.getElementById('logout-btn');
     if (btn) {
-      // 見た目に影響を与えない最小設定（クリックを遮られないように）
-      try {
-        btn.style.pointerEvents = 'auto';
-        btn.style.zIndex = '9999';
-        btn.style.position = btn.style.position || 'relative';
-      } catch (_) {}
-      btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); handleLogout(); });
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleLogout();
+      });
     }
   };
 
-  // Auth状態
+  // --- Auth State Change Listener ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
@@ -270,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userDisplay) userDisplay.textContent = displayName;
       if (authContainer) authContainer.style.display = 'none';
       setTimeout(setupLogoutButton, 100);
-
       const userRef = doc(db, 'kotoha_users', user.uid);
       try {
         const userSnap = await getDoc(userRef);
@@ -287,7 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (dbError) {
         console.error("Firestore操作エラー:", dbError);
       }
-
       await loadProfileFormFromFirestore();
       showSection(2);
     } else {
@@ -296,26 +278,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (authContainer) authContainer.style.display = 'block';
       if (loginForm) loginForm.style.display = 'block';
       if (signupForm) signupForm.style.display = 'none';
-      [loginEmailInput, loginPasswordInput, signupEmailInput, signupPasswordInput, signupPasswordConfirmInput]
-        .forEach(input => { if (input) input.value = ''; });
+      [loginEmailInput, loginPasswordInput, signupEmailInput,
+        signupPasswordInput, signupPasswordConfirmInput].forEach(input => {
+        if (input) input.value = '';
+      });
       clearProfileForm();
       try {
         localStorage.removeItem('kotoha_user_profile');
         localStorage.removeItem('kotoha_consultation_history');
         localStorage.removeItem('kotoha_current_session');
         sessionStorage.clear();
-      } catch (_) {}
+      } catch (error) { }
       showSection(1);
     }
   });
 
-  getRedirectResult(auth).catch(handleAuthError);
+  getRedirectResult(auth).catch(error => {
+    handleAuthError(error);
+  });
 
-  // プロフィール保存
+  // --- プロフィール保存 ---
   const PROFILE_STORAGE_KEY = 'kotoha_user_profile';
+
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', async () => {
-      if (!currentUser) { showMessage('ログインが必要です。', 'error'); return; }
+      if (!currentUser) {
+        showMessage('ログインが必要です。', 'error');
+        return;
+      }
       const displayName = document.getElementById('display-name')?.value ?? '';
       const nationality = document.getElementById('nationality')?.value ?? '';
       const stayLocation = document.getElementById('stay-location')?.value ?? '';
@@ -339,13 +329,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (editProfileBtn) {
-    editProfileBtn.addEventListener('click', (e) => { e.preventDefault(); showSection(2); });
-  }
-  if (backToConsultationBtn) {
-    backToConsultationBtn.addEventListener('click', () => { showSection(3); });
+    editProfileBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showSection(2);
+    });
   }
 
-  // カテゴリ選択
+  if (backToConsultationBtn) {
+    backToConsultationBtn.addEventListener('click', () => {
+      showSection(3);
+    });
+  }
+
   function selectCategory(categoryValue) {
     selectedCategory = categoryValue;
     if (selectedCategoryBox) selectedCategoryBox.style.display = 'block';
@@ -354,13 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card.getAttribute('data-category') === categoryValue) {
         card.classList.add('selected', 'active');
         if (selectedCategoryName) {
-          const el = card.querySelector('.category-name');
-          if (el) selectedCategoryName.textContent = el.textContent;
+          const categoryNameElement = card.querySelector('.category-name');
+          if (categoryNameElement) selectedCategoryName.textContent = categoryNameElement.textContent;
         }
       }
     });
     updateSendButton();
   }
+
   categoryCards.forEach((card) => {
     card.addEventListener('click', () => {
       const categoryValue = card.getAttribute('data-category');
@@ -368,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showMessage(`${card.querySelector('.category-name').textContent} を選択しました。`, 'info');
     });
   });
+
   if (clearCategoryBtn) {
     clearCategoryBtn.addEventListener('click', () => {
       selectedCategory = '';
@@ -377,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // よくある質問→入力
   document.querySelectorAll('.question-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       const question = btn.getAttribute('data-question') || btn.textContent.trim();
@@ -391,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 送信ボタン制御
   function updateSendButton() {
     const inputValue = chatInput ? chatInput.value.trim() : '';
     const hasInput = inputValue.length > 0;
@@ -403,8 +398,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendButton) {
       const shouldEnable = hasInput && hasCategory && !isAIChatting;
       sendButton.disabled = !shouldEnable;
+      // デザイン変更禁止：見た目（opacity/cursor等）は触らない
     }
   }
+
   if (chatInput) {
     chatInput.addEventListener('input', updateSendButton);
     chatInput.addEventListener('keydown', (e) => {
@@ -414,13 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
   if (storeConsultationCheckbox) {
     storeConsultationCheckbox.addEventListener('change', () => {
       shouldStoreConsultation = storeConsultationCheckbox.checked;
     });
   }
 
-  // プロフィール取得（フォーム優先→ローカルキャッシュ）
   const PROFILE_KEY = 'kotoha_user_profile';
   function getUserProfileForContext() {
     const displayName = document.getElementById('display-name')?.value?.trim() ?? '';
@@ -440,16 +437,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return { displayName, nationality, stayLocation, stayPurpose, stayFrom, stayTo, languages };
   }
 
-  // 送信処理（サーバAPI）
   async function handleSendMessage() {
     if (!chatInput || !chatInput.value.trim() || isAIChatting) return;
-
     const userMessage = chatInput.value.trim();
     if (!selectedCategory) {
       const guessedCategory = guessCategory(userMessage);
       selectCategory(guessedCategory);
     }
-    const userProfile = getUserProfileForContext(); // 滞在地含む
+    const userProfile = getUserProfileForContext(); // ← 滞在地含む
 
     appendChatMessage('user', userMessage);
     chatInput.value = '';
@@ -479,21 +474,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const data = await response.json();
-
-      // Markdown → HTML（markedがあれば優先、無ければ軽量版）
       let formattedResponse = data.response;
-      if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+      if (typeof marked !== 'undefined') {
         formattedResponse = marked.parse(data.response);
-      } else {
-        formattedResponse = renderMarkdownBasic(data.response);
       }
-
       appendChatMessage('ai', formattedResponse);
 
     } catch (error) {
       console.error('AI chat error:', error);
       removeTypingIndicator();
-      const fallbackResponse = renderMarkdownBasic(generateBetterResponse(userMessage, selectedCategory));
+      const fallbackResponse = generateBetterResponse(userMessage, selectedCategory);
       appendChatMessage('ai', fallbackResponse);
       showMessage('AI接続エラー。ローカル応答を表示しています。', 'warning');
     } finally {
@@ -501,11 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSendButton();
     }
   }
+
   if (sendButton) {
     sendButton.addEventListener('click', handleSendMessage);
   }
 
-  // チャットクリア
   if (clearChatBtn) {
     clearChatBtn.addEventListener('click', () => {
       if (confirm('チャットをクリアしますか？')) {
@@ -528,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- タイピングインジケーター ---
+// --- タイピングインジケーター関連 ---
 function appendTypingIndicator() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -549,6 +539,7 @@ function appendTypingIndicator() {
   chatMessages.insertAdjacentHTML('beforeend', indicatorHTML);
   scrollToBottom();
 }
+
 function removeTypingIndicator() {
   const indicator = document.getElementById('typing-indicator');
   if (indicator) indicator.remove();
@@ -558,28 +549,28 @@ function removeTypingIndicator() {
 function generateBetterResponse(userMessage, category) {
   const responses = {
     transportation: [
-      "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n- バス：ICカード「い～カード」が便利\n- 市内電車：道後温泉や松山城へのアクセスに最適\n- タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
-      "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n- 松山市内：市内電車・バスで十分\n- 今治・新居浜：JR予讃線が便利\n- しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
+      "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n🚌 バス：ICカード「い～カード」が便利\n🚃 市内電車：道後温泉や松山城へのアクセスに最適\n🚗 タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
+      "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n• 松山市内：市内電車・バスで十分\n• 今治・新居浜：JR予讃線が便利\n• しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
     ],
     medical: [
-      "愛媛県での医療についてサポートします！\n\n【主要病院】\n- 愛媛大学医学部附属病院（東温市）\n- 松山赤十字病院（松山市）\n- 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番／医療相談：#7119（24時間）",
-      "医療機関について詳しくお答えします。\n\n【薬局・ドラッグストア】\nマツモトキヨシ、ウエルシア、ツルハドラッグ等\n\n【英語対応】\n松山市内の一部病院で英語対応可。事前に電話確認をおすすめします。\n\n【保険】\n海外旅行保険や国民健康保険についてもご案内できます。"
+      "愛媛県での医療についてサポートします！\n\n【主要病院】\n🏥 愛媛大学医学部附属病院（東温市）\n🏥 松山赤十字病院（松山市）\n🏥 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番\n医療相談：#7119（24時間）",
+      "医療機関について詳しくお答えします。\n\n【薬局・ドラッグストア】\nマツモトキヨシ、ウエルシア、ツルハドラッグが各地にあります。\n\n【英語対応】\n松山市内の一部病院では英語対応可能です。\n事前に電話で確認することをお勧めします。\n\n【保険】\n海外旅行保険や国民健康保険について、不明点があればお聞きください。"
     ],
     connectivity: [
-      "愛媛でのインターネット環境についてご案内します！\n\n【無料Wi-Fi】\n- 松山空港・JR松山駅\n- コンビニ（セブン、ローソン等）\n- カフェ（スタバ、ドトール等）\n- 松山市役所・図書館\n\n【SIMカード】家電量販店でプリペイドSIM購入可能",
-      "ネット環境の目安：\n- 短期：コンビニのプリペイドSIM\n- 1ヶ月：格安SIM（月3,000〜5,000円）\n- 長期：大手キャリア契約\n\n滞在期間とデータ量を教えていただければ、最適プランを提案します。"
+      "愛媛でのインターネット環境についてご案内します！\n\n【無料Wi-Fi】\n📶 松山空港・JR松山駅\n📶 コンビニ（セブン、ローソン等）\n📶 カフェ（スタバ、ドトール等）\n📶 松山市役所・図書館\n\n【SIMカード】\n家電量販店でプリペイドSIM購入可能\n\n【推奨プラン】\n短期：コンビニプリペイド\n長期：格安SIM（楽天モバイル等）",
+      "ネット環境について詳しくサポートします。\n\n【市内Wi-Fi】\n松山市内では「Matsuyama City Wi-Fi」が利用可能です。\n\n【データプラン比較】\n• 1週間以下：プリペイドSIM（2,000-3,000円）\n• 1ヶ月程度：格安SIM（月3,000-5,000円）\n• 長期滞在：大手キャリア契約\n\n滞在期間とデータ使用量を教えていただければ、最適なプランをご提案します！"
     ],
     accommodation: [
-      "愛媛での宿泊について：\n\n【おすすめエリア】\n- 道後温泉周辺：温泉旅館・観光便利\n- 松山市駅周辺：交通アクセス良好\n- 大街道周辺：繁華街・買い物便利\n\n【価格目安】\n- ビジネスホテル：6,000-10,000円/泊\n- 民泊：4,000-8,000円/泊\n- シェアハウス：40,000-60,000円/月",
-      "長期滞在向け：\n- マンスリーマンション\n- シェアハウス（国際交流しやすい）\n- Airbnb等\n\n平日は料金が安く、連泊割引もあり。必要書類や条件もご案内します。"
+      "愛媛での宿泊についてご案内します！\n\n【おすすめエリア】\n🏨 道後温泉周辺：温泉旅館・観光便利\n🏨 松山市駅周辺：交通アクセス良好\n🏨 大街道周辺：繁華街・買い物便利\n\n【価格目安】\nビジネスホテル：6,000-10,000円/泊\n民泊：4,000-8,000円/泊\nシェアハウス：40,000-60,000円/月\n\n予約は早めがお得です！",
+      "住居・宿泊オプションについて詳しくお答えします。\n\n【長期滞在向け】\n• マンスリーマンション\n• シェアハウス（国際交流も可能）\n• 民泊（Airbnb等）\n\n【予約のコツ】\n平日は料金が安く、連泊割引もあります。\n\n【必要書類】\n長期滞在の場合、住民票登録が必要な場合があります。\n\nご希望の条件を詳しく教えてください！"
     ],
     culture: [
-      "日本のマナー基礎：\n- 挨拶：軽いお辞儀\n- 靴：玄関で脱ぐ\n- 食事：「いただきます」「ごちそうさま」\n\n公共交通では通話控えめ・優先席付近は注意。愛媛名物は鯛めし・じゃこ天・みかんなど。",
-      "コミュニケーションのコツ：\n- 丁寧な言葉と笑顔\n- 困ったら「すみません」で声かけ\n\n季節行事：春は花見、夏は祭り、秋はみかん狩り。"
+      "愛媛・日本の文化とマナーについてご説明します！\n\n【基本マナー】\n🙏 挨拶：軽いお辞儀と「おはようございます」\n👟 靴：玄関で脱ぐ（スリッパに履き替え）\n🍽️ 食事：「いただきます」「ごちそうさま」\n\n【公共交通】\n電車内での通話は控えめに\n優先席では携帯の電源OFF\n\n【愛媛特有】\n🍊 みかんは愛媛の誇り！\n♨️ 道後温泉では入浴マナーを守って",
+      "日本・愛媛の文化について詳しくお答えします。\n\n【コミュニケーション】\n愛媛の人は温和で親切です。困った時は「すみません」と声をかけてください。\n\n【食事文化】\n• 愛媛グルメ：じゃこ天、鯛めし、みかん\n• 居酒屋では「乾杯」でスタート\n• チップの習慣はありません\n\n【季節行事】\n春：お花見、夏：祭り、秋：みかん狩り\n\n具体的なシチュエーションでのマナーもお答えできます！"
     ],
     general: [
-      "愛媛スタートガイド：\n- 観光：松山城／道後温泉／しまなみ海道\n- グルメ：鯛めし・じゃこ天・みかん\n- 買い物：大街道・銀天街\n\n質問があれば具体的にお知らせください！",
-      "生活情報：\n- 日用品：コンビニ24h、スーパー（フジ・マルナカ・イオン）\n- 100均：ダイソー・セリア\n- 便利アプリ：Google翻訳／Yahoo!天気\n- 緊急：警察110／消防・救急119"
+      "愛媛での生活・観光についてお答えします！\n\n【観光スポット】\n🏯 松山城：市内中心の歴史ある城\n♨️ 道後温泉：日本最古の温泉地\n🌉 しまなみ海道：サイクリングで有名\n\n【愛媛グルメ】\n🐟 鯛めし（郷土料理）\n🐠 じゃこ天（練り物）\n🍊 愛媛みかん（11-3月が旬）\n\n【ショッピング】\n大街道・銀天街が松山の繁華街です！",
+      "愛媛での生活について幅広くサポートします！\n\n【日用品】\nコンビニ：24時間、基本的な物は揃います\nスーパー：フジ、マルナカ、イオンが主要\n100円ショップ：ダイソー、セリア\n\n【便利アプリ】\n• Google翻訳（カメラ機能で看板翻訳）\n• Yahoo!天気（詳細な天気予報）\n\n【緊急連絡先】\n警察：110、消防・救急：119\n\n他にも知りたいことがあれば何でもお聞きください！"
     ]
   };
   const categoryResponses = responses[category] || responses.general;
@@ -601,6 +592,7 @@ function clearProfileForm() {
   if (stayPurposeSelect) stayPurposeSelect.value = '';
   if (stayFromInput) stayFromInput.value = '';
   if (stayToInput) stayToInput.value = '';
+  document.querySelectorAll('#languages input[type="checkbox"]').forEach(cb => cb.checked = false);
 }
 
 // --- Firestore→フォーム反映 ---
@@ -637,7 +629,7 @@ async function loadProfileFormFromFirestore() {
   }
 }
 
-// --- Section/Step ---
+// --- Section・Step Utility ---
 function showSection(sectionNum) {
   document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
   const target = document.getElementById(`section-${sectionNum}`);
@@ -650,6 +642,7 @@ function showSection(sectionNum) {
     console.error(`Section ${sectionNum} not found`);
   }
 }
+
 function updateStepIndicators() {
   document.querySelectorAll('.step').forEach(step => {
     const stepNum = parseInt(step.getAttribute('data-step'));
@@ -657,6 +650,7 @@ function updateStepIndicators() {
     step.classList.toggle('active', shouldBeActive);
   });
 }
+
 function updateProgress() {
   const progressFill = document.getElementById('progress-fill');
   if (progressFill) {
@@ -665,7 +659,7 @@ function updateProgress() {
   }
 }
 
-// --- Chat表示 ---
+// --- Chat表示ユーティリティ ---
 function appendChatMessage(type, htmlContent) {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -685,6 +679,7 @@ function appendChatMessage(type, htmlContent) {
   chatMessages.appendChild(messageDiv);
   scrollToBottom();
 }
+
 function scrollToBottom() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -696,12 +691,12 @@ function scrollToBottom() {
   setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 300);
 }
 
-// --- メッセージ表示（ログのみ） ---
+// --- メッセージ表示（デザイン変更禁止：ログのみ） ---
 function showMessage(text, type = 'info') {
   console.log(`[${type}] ${text}`);
 }
 
-// --- 認証エラー ---
+// --- エラーハンドリング ---
 function handleAuthError(error) {
   console.error('Auth error:', error);
   let msg = 'エラーが発生しました。';
