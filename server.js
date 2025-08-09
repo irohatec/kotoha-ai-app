@@ -6,38 +6,28 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
-import admin from 'firebase-admin';
+// firebase-admin はサーバー側では不要なため削除しました
+// import admin from 'firebase-admin';
 
 // 環境変数の読み込み
 dotenv.config();
 
 // ES6 modules で __dirname を取得
 const __filename = fileURLToPath(import.meta.url);
-// ▼▼▼ ここを修正しました ▼▼▼
 const __dirname = path.dirname(__filename);
-// ▲▲▲ 修正箇所 ▲▲▲
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Firebase Admin初期化
-if (!admin.apps.length) {
-    admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID || 'kotoha-personalize-app',
-    });
-}
-
-const db = admin.firestore();
-
 // Security middleware
 app.use(helmet({
-    contentSecurityPolicy: false // Renderでのデプロイを容易にするため、一旦無効化。本番では要調整
+    contentSecurityPolicy: false
 }));
 
 // CORS configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production'
-        ? [process.env.RENDER_EXTERNAL_URL]
+        ? [process.env.RENDER_EXTERNAL_URL, `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`]
         : ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
     optionsSuccessStatus: 200
@@ -74,7 +64,7 @@ app.use('/api', rateLimiterMiddleware);
 // AI Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, context, userId } = req.body;
+        const { message, context } = req.body;
 
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({ error: 'Invalid message' });
@@ -83,13 +73,8 @@ app.post('/api/chat', async (req, res) => {
             return res.status(500).json({ error: 'Server configuration error: API key is missing.' });
         }
 
-        let userProfile = null;
-        if (userId) {
-            const userDoc = await db.collection('kotoha_users').doc(userId).get();
-            if (userDoc.exists) userProfile = userDoc.data().profile;
-        }
-
-        const response = await callGeminiAPI(message.trim(), { ...context, userProfile });
+        // サーバー側ではユーザープロファイルは直接扱わず、クライアントから渡されたコンテキストのみ利用
+        const response = await callGeminiAPI(message.trim(), context);
         
         res.json({ success: true, response });
 
@@ -160,7 +145,6 @@ app.get('/api/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        firebase: admin.apps.length > 0 ? 'connected' : 'disconnected',
         geminiApi: process.env.GEMINI_API_KEY ? 'configured' : 'missing'
     });
 });
