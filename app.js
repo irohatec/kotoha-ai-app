@@ -17,7 +17,14 @@ import {
   getFirestore,
   doc,
   setDoc,
-  getDoc
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // --- Firebase Configuration ---
@@ -83,6 +90,9 @@ const translations = {
     // 履歴画面
     historyTitle: '相談履歴',
     historyDesc: '過去の相談内容を確認できます',
+    backToConsultation: '相談に戻る',
+    exportHistory: '履歴をエクスポート',
+    noHistory: 'まだ相談履歴はありません。',
     
     // 共通
     logout: 'ログアウト',
@@ -127,6 +137,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Consultation History',
     historyDesc: 'View your past consultation records',
+    backToConsultation: 'Back to Consultation',
+    exportHistory: 'Export History',
+    noHistory: 'No consultation history yet.',
     
     // 共通
     logout: 'Logout',
@@ -171,6 +184,9 @@ const translations = {
     // 履歴画면
     historyTitle: '상담 이력',
     historyDesc: '과거 상담 내용을 확인할 수 있습니다',
+    backToConsultation: '상담으로 돌아가기',
+    exportHistory: '이력 내보내기',
+    noHistory: '아직 상담 이력이 없습니다.',
     
     // 共通
     logout: '로그아웃',
@@ -215,6 +231,9 @@ const translations = {
     // 履歴画面
     historyTitle: '咨询历史',
     historyDesc: '您可以查看过往的咨询内容',
+    backToConsultation: '返回咨询',
+    exportHistory: '导出历史',
+    noHistory: '还没有咨询历史。',
     
     // 共通
     logout: '退出登录',
@@ -259,6 +278,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Historial de Consultas',
     historyDesc: 'Ver tus registros de consultas anteriores',
+    backToConsultation: 'Volver a Consulta',
+    exportHistory: 'Exportar Historial',
+    noHistory: 'Aún no hay historial de consultas.',
     
     // 共通
     logout: 'Cerrar Sesión',
@@ -303,6 +325,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Historique des Consultations',
     historyDesc: 'Voir vos enregistrements de consultations précédentes',
+    backToConsultation: 'Retour à la Consultation',
+    exportHistory: 'Exporter l\'Historique',
+    noHistory: 'Aucun historique de consultation pour le moment.',
     
     // 共通
     logout: 'Se Déconnecter',
@@ -347,6 +372,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Beratungshistorie',
     historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
+    backToConsultation: 'Zurück zur Beratung',
+    exportHistory: 'Historie Exportieren',
+    noHistory: 'Noch keine Beratungshistorie vorhanden.',
     
     // 共通
     logout: 'Abmelden',
@@ -391,6 +419,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Cronologia Consultazioni',
     historyDesc: 'Visualizza i tuoi record di consultazioni precedenti',
+    backToConsultation: 'Torna alla Consultazione',
+    exportHistory: 'Esporta Cronologia',
+    noHistory: 'Nessuna cronologia di consultazioni ancora.',
     
     // 共通
     logout: 'Disconnetti',
@@ -435,6 +466,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'Histórico de Consultas',
     historyDesc: 'Veja seus registros de consultas anteriores',
+    backToConsultation: 'Voltar à Consulta',
+    exportHistory: 'Exportar Histórico',
+    noHistory: 'Ainda não há histórico de consultas.',
     
     // 共通
     logout: 'Sair',
@@ -479,6 +513,9 @@ const translations = {
     // 履歴画面
     historyTitle: 'История Консультаций',
     historyDesc: 'Просмотрите ваши предыдущие записи консультаций',
+    backToConsultation: 'Вернуться к Консультации',
+    exportHistory: 'Экспорт Истории',
+    noHistory: 'Пока нет истории консультаций.',
     
     // 共通
     logout: 'Выйти',
@@ -601,6 +638,13 @@ function updatePageTexts() {
   const historyDesc = document.querySelector('#section-4 .section-header p');
   if (historyDesc) historyDesc.textContent = t.historyDesc;
   
+  // 履歴画面のボタン
+  const backToConsultationBtn = document.getElementById('back-to-consultation-btn');
+  if (backToConsultationBtn) backToConsultationBtn.textContent = t.backToConsultation;
+  
+  const exportHistoryBtn = document.getElementById('export-history-btn');
+  if (exportHistoryBtn) exportHistoryBtn.textContent = t.exportHistory;
+  
   // ログアウトボタン
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) logoutBtn.textContent = t.logout;
@@ -609,6 +653,11 @@ function updatePageTexts() {
   document.querySelectorAll('select option[value=""]').forEach(option => {
     option.textContent = t.select;
   });
+  
+  // 履歴画面が表示されている場合は再読み込み
+  if (currentSection === 4) {
+    setTimeout(loadConsultationHistory, 100);
+  }
 }
 
 // 質問とカテゴリのマッピング
@@ -1024,6 +1073,88 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- 履歴データの読み込み ---
+  async function loadConsultationHistory() {
+    const historyContainer = document.getElementById('consultation-history');
+    if (!historyContainer || !currentUser) return;
+
+    try {
+      const conversations = await getAllConversations();
+      
+      if (conversations.length === 0) {
+        historyContainer.innerHTML = `
+          <div class="no-history">
+            <p>まだ相談履歴はありません。</p>
+            <p>No consultation history yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // 履歴の表示
+      let historyHTML = '';
+      conversations.forEach(conv => {
+        const date = new Date(conv.timestamp.seconds * 1000);
+        const formattedDate = date.toLocaleDateString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US');
+        const formattedTime = date.toLocaleTimeString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        
+        // カテゴリ名の翻訳
+        const categoryNames = {
+          'transportation': currentLanguage === 'ja' ? '交通・移動' : 'Transportation',
+          'medical': currentLanguage === 'ja' ? '医療・健康' : 'Medical',
+          'connectivity': currentLanguage === 'ja' ? 'ネット・通信' : 'Internet',
+          'accommodation': currentLanguage === 'ja' ? '住居・宿泊' : 'Housing',
+          'culture': currentLanguage === 'ja' ? '文化・マナー' : 'Culture',
+          'general': currentLanguage === 'ja' ? '一般相談' : 'General'
+        };
+        
+        const categoryName = categoryNames[conv.category] || conv.category;
+        
+        historyHTML += `
+          <div class="history-item">
+            <div class="history-header">
+              <span class="history-date">${formattedDate} ${formattedTime}</span>
+              <span class="history-category">${categoryName}</span>
+            </div>
+            <div class="history-content">
+              <div class="history-question">
+                <strong>Q:</strong> ${conv.userMessage}
+              </div>
+              <div class="history-answer">
+                <strong>A:</strong> ${conv.aiResponse.substring(0, 200)}${conv.aiResponse.length > 200 ? '...' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      historyContainer.innerHTML = historyHTML;
+      
+    } catch (error) {
+      console.error('履歴読み込みエラー:', error);
+      historyContainer.innerHTML = `
+        <div class="no-history">
+          <p>履歴の読み込みに失敗しました。</p>
+          <p>Failed to load history.</p>
+        </div>
+      `;
+    }
+  }
+
+  // --- セクション表示時の履歴読み込み ---
+  const originalShowSection = showSection;
+  showSection = function(sectionNum) {
+    originalShowSection(sectionNum);
+    
+    // 履歴画面表示時に履歴を読み込み
+    if (sectionNum === 4) {
+      setTimeout(loadConsultationHistory, 100);
+    }
+  };
+
   // --- カテゴリ選択関数 ---
   function selectCategory(categoryValue) {
     console.log('Selecting category:', categoryValue);
@@ -1146,7 +1277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- AIチャット送信（サーバーAPI使用版）- プロフィール情報を含むよう修正 ---
+  // --- AIチャット送信（サーバーAPI使用版）- プロフィール情報と会話履歴を含むよう修正 ---
   async function handleSendMessage() {
     if (!chatInput || !chatInput.value.trim() || isAIChatting) {
       return;
@@ -1184,7 +1315,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       
-      // サーバーのAI APIを呼び出し（プロフィール情報を含む）
+      // 最近の会話履歴を取得
+      const recentConversations = await getRecentConversations(3);
+      console.log('Recent conversations:', recentConversations);
+      
+      // サーバーのAI APIを呼び出し（プロフィール情報と履歴を含む）
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1193,7 +1328,8 @@ document.addEventListener('DOMContentLoaded', () => {
           userId: currentUser ? currentUser.uid : null,
           context: {
             category: selectedCategory,
-            userProfile: userProfile
+            userProfile: userProfile,
+            recentConversations: recentConversations
           }
         }),
       });
@@ -1211,6 +1347,9 @@ document.addEventListener('DOMContentLoaded', () => {
       let formattedResponse = formatMarkdownResponse(data.response);
       
       appendChatMessage('ai', formattedResponse);
+      
+      // 会話履歴を保存（ユーザー設定に応じて）
+      await saveConversation(userMessage, data.response, selectedCategory);
 
     } catch (error) {
       console.error('AI chat error:', error);
@@ -1220,6 +1359,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const fallbackResponse = generateBetterResponse(userMessage, selectedCategory);
       const formattedFallback = formatMarkdownResponse(fallbackResponse);
       appendChatMessage('ai', formattedFallback);
+      
+      // フォールバック応答も保存
+      await saveConversation(userMessage, fallbackResponse, selectedCategory);
       
       showMessage('AI接続エラー。ローカル応答を表示しています。', 'warning');
     } finally {
@@ -1260,6 +1402,108 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 初期表示時のテキスト更新 ---
   updatePageTexts();
 });
+
+// --- 会話履歴管理機能 ---
+
+// 会話履歴を保存
+async function saveConversation(userMessage, aiResponse, category) {
+  if (!currentUser || !shouldStoreConsultation) {
+    console.log('会話履歴保存スキップ:', { hasUser: !!currentUser, shouldStore: shouldStoreConsultation });
+    return;
+  }
+
+  try {
+    // ユーザープロフィールを取得
+    const userRef = doc(db, 'kotoha_users', currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    const userProfile = userSnap.exists() ? userSnap.data().profile : null;
+
+    // 会話データを作成
+    const conversationData = {
+      timestamp: new Date(),
+      category: category || 'general',
+      userMessage: userMessage.substring(0, 1000), // 1000文字制限
+      aiResponse: aiResponse.substring(0, 2000), // 2000文字制限
+      userLanguage: userProfile?.primaryLanguage || '日本語',
+      stayLocation: userProfile?.stayLocation || ''
+    };
+
+    // Firestoreに保存
+    const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
+    await addDoc(conversationsRef, conversationData);
+    
+    console.log('会話履歴を保存しました:', conversationData);
+
+    // 古い履歴の削除（10件を超えた場合）
+    await cleanOldConversations();
+
+  } catch (error) {
+    console.error('会話履歴保存エラー:', error);
+  }
+}
+
+// 古い会話履歴をクリーンアップ（最新10件のみ保持）
+async function cleanOldConversations() {
+  try {
+    const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
+    const q = query(conversationsRef, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.size > 10) {
+      // 10件を超えた分を削除
+      const docsToDelete = [];
+      snapshot.docs.slice(10).forEach(doc => {
+        docsToDelete.push(deleteDoc(doc.ref));
+      });
+      await Promise.all(docsToDelete);
+      console.log(`古い会話履歴を${docsToDelete.length}件削除しました`);
+    }
+  } catch (error) {
+    console.error('会話履歴クリーンアップエラー:', error);
+  }
+}
+
+// 最近の会話履歴を取得（AI文脈用）
+async function getRecentConversations(limit = 3) {
+  if (!currentUser) return [];
+
+  try {
+    const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
+    const q = query(conversationsRef, orderBy('timestamp', 'desc'), limit(limit));
+    const snapshot = await getDocs(q);
+    
+    const conversations = [];
+    snapshot.forEach(doc => {
+      conversations.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return conversations.reverse(); // 時系列順に並び替え
+  } catch (error) {
+    console.error('会話履歴取得エラー:', error);
+    return [];
+  }
+}
+
+// 全ての会話履歴を取得（履歴画面用）
+async function getAllConversations() {
+  if (!currentUser) return [];
+
+  try {
+    const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
+    const q = query(conversationsRef, orderBy('timestamp', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    const conversations = [];
+    snapshot.forEach(doc => {
+      conversations.push({ id: doc.id, ...doc.data() });
+    });
+    
+    return conversations;
+  } catch (error) {
+    console.error('全会話履歴取得エラー:', error);
+    return [];
+  }
+}
 
 // --- Markdown処理関数 ---
 function formatMarkdownResponse(text) {
