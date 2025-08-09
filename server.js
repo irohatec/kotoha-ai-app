@@ -103,7 +103,7 @@ function getLanguageCode(language) {
 
 // Gemini API call function
 async function callGeminiAPI(message, context = {}) {
-    const { userProfile, category } = context;
+    const { userProfile, category, recentConversations } = context;
     
     let systemPrompt = `あなたは「Kotoha AI」という、愛媛県での滞在をサポートする非常に親切で有能なAIアシスタントです。`;
 
@@ -120,10 +120,26 @@ async function callGeminiAPI(message, context = {}) {
         if (userProfile.nationality) systemPrompt += `- 国籍: ${userProfile.nationality}\n`;
         if (userProfile.primaryLanguage) systemPrompt += `- 使用言語: ${userProfile.primaryLanguage}\n`;
         if (userProfile.stayLocation) systemPrompt += `- 滞在地: ${userProfile.stayLocation}\n`;
+        if (userProfile.stayPurpose) systemPrompt += `- 滞在目的: ${userProfile.stayPurpose}\n`;
+    }
+    
+    // 会話履歴の追加
+    if (recentConversations && recentConversations.length > 0) {
+        systemPrompt += `\n\n# 過去の相談履歴\n`;
+        systemPrompt += `このユーザーとの過去の会話履歴です。文脈を理解して、継続的なサポートを提供してください：\n\n`;
+        
+        recentConversations.forEach((conv, index) => {
+            const date = new Date(conv.timestamp.seconds * 1000).toLocaleDateString('ja-JP');
+            systemPrompt += `## ${index + 1}. ${date} (${conv.category})\n`;
+            systemPrompt += `**ユーザー:** ${conv.userMessage}\n`;
+            systemPrompt += `**AI回答:** ${conv.aiResponse.substring(0, 200)}...\n\n`;
+        });
+        
+        systemPrompt += `上記の履歴を踏まえ、必要に応じて「前回ご相談いただいた〜について」などの言及をして、継続性のある回答をしてください。\n`;
     }
     
     if (category) {
-        systemPrompt += `\n# 相談カテゴリ\n- ${category}\n`;
+        systemPrompt += `\n# 現在の相談カテゴリ\n- ${category}\n`;
     }
 
     systemPrompt += `\n# あなたの役割と指示\n- ユーザー情報と相談カテゴリを強く意識し、パーソナライズされた回答を生成してください。\n- 愛媛県の実情に合わせた、具体的で実践的なアドバイスを心がけてください。\n- 外国人ユーザーにも分かりやすいように、専門用語を避け、丁寧な言葉遣いで説明してください。\n- 回答はMarkdown形式で、見出しやリストを活用して分かりやすく構成してください。\n- 緊急性が高いと判断した場合は、必ず警察(110)や救急(119)などの公的な連絡先を案内してください。\n- 常に親しみやすく、ユーザーに寄り添う姿勢で回答してください。`;
