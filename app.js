@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - 機能のみ追加（軽量Markdown表示対応・デザイン変更なし）
+// Firebase v10.12.2 本番版 app.js - デザイン非変更・機能のみ追加版
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -50,30 +50,30 @@ const questionToCategory = {
   '緊急時はどこに連絡すればいいですか？': 'general'
 };
 
-// 質問からカテゴリを推測
+// 質問からカテゴリを推測する関数
 function guessCategory(userMessage) {
   const message = userMessage.toLowerCase();
-  if (message.includes('バス') || message.includes('電車') || message.includes('交通') ||
+  if (message.includes('バス') || message.includes('電車') || message.includes('交通') || 
       message.includes('移動') || message.includes('タクシー') || message.includes('アクセス') ||
       message.includes('train') || message.includes('bus') || message.includes('transport')) {
     return 'transportation';
   }
-  if (message.includes('病院') || message.includes('医療') || message.includes('薬') ||
+  if (message.includes('病院') || message.includes('医療') || message.includes('薬') || 
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
       message.includes('hospital') || message.includes('doctor') || message.includes('medicine')) {
     return 'medical';
   }
-  if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') ||
+  if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') || 
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
       message.includes('internet') || message.includes('network')) {
     return 'connectivity';
   }
-  if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') ||
+  if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') || 
       message.includes('住居') || message.includes('部屋') ||
       message.includes('hotel') || message.includes('accommodation') || message.includes('room')) {
     return 'accommodation';
   }
-  if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') ||
+  if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') || 
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
       message.includes('culture') || message.includes('manner') || message.includes('etiquette')) {
     return 'culture';
@@ -81,67 +81,9 @@ function guessCategory(userMessage) {
   return 'general';
 }
 
-// --- 軽量Markdownレンダラー（外部ライブラリ不使用・デザイン変更なし） ---
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-}
-function renderMarkdownBasic(md) {
-  if (!md || typeof md !== 'string') return '';
-  // 事前エスケープ
-  let text = escapeHtml(md);
-
-  // リンク [text](url)
-  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-    (_m, p1, p2) => `<a href="${p2}" target="_blank" rel="noopener noreferrer">${p1}</a>`);
-
-  // 太字 **text**
-  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  // 斜体 *text*
-  text = text.replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?:;]|$)/g, '$1<em>$2</em>');
-  // インラインコード `code`
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-  // 見出し ###, ##, #
-  text = text.replace(/^###\s*(.+)$/gm, '<strong>$1</strong>');
-  text = text.replace(/^##\s*(.+)$/gm, '<strong>$1</strong>');
-  text = text.replace(/^#\s*(.+)$/gm, '<strong>$1</strong>');
-
-  // 箇条書き - / * を <ul><li> に（連続行のみリスト化）
-  const lines = text.split(/\r?\n/);
-  let html = '';
-  let inList = false;
-
-  const flushList = () => { if (inList) { html += '</ul>'; inList = false; } };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // - 項目 / * 項目
-    const m = line.match(/^\s*[-*]\s+(.+)$/);
-    if (m) {
-      if (!inList) { html += '<ul>'; inList = true; }
-      html += `<li>${m[1]}</li>`;
-      continue;
-    }
-    // 空行
-    if (/^\s*$/.test(line)) {
-      flushList();
-      html += '<br>';
-      continue;
-    }
-    // 通常段落
-    flushList();
-    html += line + '<br>';
-  }
-  flushList();
-
-  // 連続 <br> を整える（2つ以上は2つに）
-  html = html.replace(/(<br>){3,}/g, '<br><br>');
-  return html;
-}
-
-// --- DOMContentLoaded ---
+// --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', () => {
+  // --- UI Element References ---
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const authContainer = document.getElementById('auth-container');
@@ -159,9 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const userInfo = document.getElementById('user-info');
   const userDisplay = document.getElementById('user-display-name');
 
+  // --- Section Navigation Buttons ---
   const stepIndicators = document.querySelectorAll('.step');
 
-  // クリックイベントのみ（デザイン変更なし）
+  // デザインに影響しないステップナビ（クリックのみ）
   function setupStepNavigation() {
     stepIndicators.forEach((step, idx) => {
       const newStep = step.cloneNode(true);
@@ -180,11 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   setupStepNavigation();
 
-  // --- Profile ---
+  // --- Profile Section ---
   const saveProfileBtn = document.getElementById('save-profile-btn');
   const editProfileBtn = document.getElementById('edit-profile-btn');
-
-  // --- Consultation ---
+  
+  // --- Consultation Section ---
   const categoryCards = document.querySelectorAll('.category-card');
   const selectedCategoryBox = document.getElementById('selected-category');
   const selectedCategoryName = document.getElementById('selected-category-name');
@@ -194,12 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const storeConsultationCheckbox = document.getElementById('store-consultation');
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const chatMessages = document.getElementById('chat-messages');
-
-  // --- History ---
+  
+  // --- History Section ---
   const backToConsultationBtn = document.getElementById('back-to-consultation-btn');
   const exportHistoryBtn = document.getElementById('export-history-btn');
 
-  // 高さ調整（既存動作）
+  // チャット領域の高さ調整（既存のまま）
   function adjustChatHeight() {
     if (chatMessages) {
       const viewportHeight = window.innerHeight;
@@ -216,17 +159,21 @@ document.addEventListener('DOMContentLoaded', () => {
   adjustChatHeight();
   window.addEventListener('resize', adjustChatHeight);
 
-  // フォーム切替
-  if (showSignupBtn) showSignupBtn.addEventListener('click', () => {
-    loginForm.style.display = 'none';
-    signupForm.style.display = 'block';
-  });
-  if (showLoginBtn) showLoginBtn.addEventListener('click', () => {
-    signupForm.style.display = 'none';
-    loginForm.style.display = 'block';
-  });
+  // --- Form Switching Logic ---
+  if (showSignupBtn) {
+    showSignupBtn.addEventListener('click', () => {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    });
+  }
+  if (showLoginBtn) {
+    showLoginBtn.addEventListener('click', () => {
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    });
+  }
 
-  // 認証
+  // --- Authentication Functions ---
   const handleEmailLogin = () => {
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value;
@@ -281,10 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirm('ログアウトしますか？')) return;
     signOut(auth)
       .then(() => showMessage('ログアウトしました。', 'success'))
-      .catch(error => showMessage(`ログアウトエラー: ${error.message}`, 'error'));
+      .catch(error => {
+        showMessage(`ログアウトエラー: ${error.message}`, 'error');
+      });
   };
 
-  // ログアウトボタン：イベント付与のみ
+  // --- Logout Button（デザイン変更なし：イベントのみ付与） ---
   const setupLogoutButton = () => {
     const btn = document.getElementById('logout-btn');
     if (btn) {
@@ -296,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Auth state
+  // --- Auth State Change Listener ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
@@ -305,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userDisplay) userDisplay.textContent = displayName;
       if (authContainer) authContainer.style.display = 'none';
       setTimeout(setupLogoutButton, 100);
-
       const userRef = doc(db, 'kotoha_users', user.uid);
       try {
         const userSnap = await getDoc(userRef);
@@ -345,10 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  getRedirectResult(auth).catch(handleAuthError);
+  getRedirectResult(auth).catch(error => {
+    handleAuthError(error);
+  });
 
-  // プロフィール保存
+  // --- プロフィール保存 ---
   const PROFILE_STORAGE_KEY = 'kotoha_user_profile';
+
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', async () => {
       if (!currentUser) {
@@ -447,6 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendButton) {
       const shouldEnable = hasInput && hasCategory && !isAIChatting;
       sendButton.disabled = !shouldEnable;
+      // デザイン変更禁止：見た目（opacity/cursor等）は触らない
     }
   }
 
@@ -466,7 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // プロフィール取得（フォーム優先→キャッシュ）
   const PROFILE_KEY = 'kotoha_user_profile';
   function getUserProfileForContext() {
     const displayName = document.getElementById('display-name')?.value?.trim() ?? '';
@@ -474,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stayLocation = document.getElementById('stay-location')?.value ?? '';
     const stayPurpose = document.getElementById('stay-purpose')?.value ?? '';
     const stayFrom = document.getElementById('stay-from')?.value ?? '';
-    const stayTo = document.getから 'stay-to'?.value ?? '';
+    const stayTo = document.getElementById('stay-to')?.value ?? '';
     const languages = Array.from(document.querySelectorAll('#languages input[type="checkbox"]:checked')).map(cb => cb.value);
 
     if (!displayName && !nationality && !stayLocation && !stayPurpose && !stayFrom && !stayTo && languages.length === 0) {
@@ -486,17 +437,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return { displayName, nationality, stayLocation, stayPurpose, stayFrom, stayTo, languages };
   }
 
-  // --- 送信 ---
   async function handleSendMessage() {
     if (!chatInput || !chatInput.value.trim() || isAIChatting) return;
     const userMessage = chatInput.value.trim();
-
     if (!selectedCategory) {
       const guessedCategory = guessCategory(userMessage);
       selectCategory(guessedCategory);
     }
-
-    const userProfile = getUserProfileForContext(); // 滞在地含む
+    const userProfile = getUserProfileForContext(); // ← 滞在地含む
 
     appendChatMessage('user', userMessage);
     chatInput.value = '';
@@ -513,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
           userId: currentUser ? currentUser.uid : null,
           context: {
             category: selectedCategory,
-            userProfile // ← プロフィールをAIへ同送
+            userProfile // ← プロフィール（滞在地等）をAIへ同送
           }
         }),
       });
@@ -526,22 +474,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const data = await response.json();
-
-      // Markdown → HTML（外部libがあれば優先、無ければ軽量版）
       let formattedResponse = data.response;
-      if (typeof marked !== 'undefined' && marked?.parse) {
+      if (typeof marked !== 'undefined') {
         formattedResponse = marked.parse(data.response);
-      } else {
-        formattedResponse = renderMarkdownBasic(data.response);
       }
-
       appendChatMessage('ai', formattedResponse);
 
     } catch (error) {
       console.error('AI chat error:', error);
       removeTypingIndicator();
-      // フォールバック応答もMarkdown整形
-      const fallbackResponse = renderMarkdownBasic(generateBetterResponse(userMessage, selectedCategory));
+      const fallbackResponse = generateBetterResponse(userMessage, selectedCategory);
       appendChatMessage('ai', fallbackResponse);
       showMessage('AI接続エラー。ローカル応答を表示しています。', 'warning');
     } finally {
@@ -576,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- タイピングインジケーター ---
+// --- タイピングインジケーター関連 ---
 function appendTypingIndicator() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -597,12 +539,13 @@ function appendTypingIndicator() {
   chatMessages.insertAdjacentHTML('beforeend', indicatorHTML);
   scrollToBottom();
 }
+
 function removeTypingIndicator() {
   const indicator = document.getElementById('typing-indicator');
   if (indicator) indicator.remove();
 }
 
-// --- フォールバック応答（既存） ---
+// --- フォールバック応答 ---
 function generateBetterResponse(userMessage, category) {
   const responses = {
     transportation: [
@@ -686,7 +629,7 @@ async function loadProfileFormFromFirestore() {
   }
 }
 
-// --- Section/Step ---
+// --- Section・Step Utility ---
 function showSection(sectionNum) {
   document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
   const target = document.getElementById(`section-${sectionNum}`);
@@ -716,7 +659,7 @@ function updateProgress() {
   }
 }
 
-// --- Chat表示 ---
+// --- Chat表示ユーティリティ ---
 function appendChatMessage(type, htmlContent) {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -748,12 +691,12 @@ function scrollToBottom() {
   setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 300);
 }
 
-// --- メッセージ表示（デザイン変更なし：ログのみ） ---
+// --- メッセージ表示（デザイン変更禁止：ログのみ） ---
 function showMessage(text, type = 'info') {
   console.log(`[${type}] ${text}`);
 }
 
-// --- 認証エラー ---
+// --- エラーハンドリング ---
 function handleAuthError(error) {
   console.error('Auth error:', error);
   let msg = 'エラーが発生しました。';
