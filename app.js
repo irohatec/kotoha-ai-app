@@ -86,6 +86,21 @@ const translations = {
     consultationTitle: 'AI相談',
     consultationDesc: 'カテゴリを選択して、気軽にご質問ください',
     categoryTitle: '相談カテゴリ',
+    frequentQuestionsTitle: 'よくある質問',
+    frequentQuestions: [
+      'バスの乗り方がわかりません。どうすればいいですか？',
+      '病院に行きたいのですが、予約は必要ですか？',
+      'Wi-Fiが使える場所を教えてください。',
+      '日本のマナーで注意すべきことはありますか？',
+      '緊急時はどこに連絡すればいいですか？'
+    ],
+    frequentQuestionsShort: [
+      'バスの乗り方は？',
+      '病院の予約方法は？',
+      'Wi-Fi利用場所は？',
+      '日本のマナーは？',
+      '緊急時の連絡先は？'
+    ],
     
     // 履歴画面
     historyTitle: '相談履歴',
@@ -133,6 +148,21 @@ const translations = {
     consultationTitle: 'AI Consultation',
     consultationDesc: 'Select a category and feel free to ask questions',
     categoryTitle: 'Category',
+    frequentQuestionsTitle: 'Frequently Asked Questions',
+    frequentQuestions: [
+      "I don't know how to ride the bus. What should I do?",
+      'I want to go to the hospital. Do I need to make an appointment?',
+      'Where can I use Wi-Fi?',
+      'What Japanese manners should I be careful about?',
+      'Who should I contact in an emergency?'
+    ],
+    frequentQuestionsShort: [
+      'How to ride the bus?',
+      'Hospital appointment?',
+      'Wi-Fi locations?',
+      'Japanese manners?',
+      'Emergency contact?'
+    ],
     
     // 履歴画面
     historyTitle: 'Consultation History',
@@ -180,6 +210,21 @@ const translations = {
     consultationTitle: 'AI 상담',
     consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
     categoryTitle: '상담 카테고리',
+    frequentQuestionsTitle: '자주 묻는 질문',
+    frequentQuestions: [
+      '버스 타는 방법을 모르겠습니다. 어떻게 해야 하나요?',
+      '병원에 가고 싶은데 예약이 필요한가요?',
+      'Wi-Fi를 사용할 수 있는 곳을 알려주세요.',
+      '일본의 매너에서 주의해야 할 점이 있나요?',
+      '응급상황 시 어디에 연락해야 하나요?'
+    ],
+    frequentQuestionsShort: [
+      '버스 이용방법은?',
+      '병원 예약방법은?',
+      'Wi-Fi 이용장소는?',
+      '일본 매너는?',
+      '응급시 연락처는?'
+    ],
     
     // 履歴画면
     historyTitle: '상담 이력',
@@ -227,17 +272,21 @@ const translations = {
     consultationTitle: 'AI咨询',
     consultationDesc: '请选择类别，随时提问',
     categoryTitle: '咨询类别',
-    
-    // 履歴画面
-    historyTitle: '咨询历史',
-    historyDesc: '您可以查看过往的咨询内容',
-    backToConsultation: '返回咨询',
-    exportHistory: '导出历史',
-    noHistory: '还没有咨询历史。',
-    
-    // 共通
-    logout: '退出登录',
-    select: '请选择'
+    frequentQuestionsTitle: '常见问题',
+    frequentQuestions: [
+      '不知道怎么坐公交车，应该怎么办？',
+      '想去医院，需要预约吗？',
+      '请告诉我可以使用Wi-Fi的地方。',
+      '在日本礼仪方面有什么需要注意的吗？',
+      '紧急情况下应该联系哪里？'
+    ],
+    frequentQuestionsShort: [
+      '公交车乘坐方法？',
+      '医院预约方法？',
+      'Wi-Fi使用地点？',
+      '日本礼仪？',
+      '紧急联系方式？'
+    ],
   },
   es: {
     // ヘッダー
@@ -274,6 +323,21 @@ const translations = {
     consultationTitle: 'Consulta AI',
     consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
     categoryTitle: 'Categoría',
+    frequentQuestionsTitle: 'Preguntas Frecuentes',
+    frequentQuestions: [
+      'No sé cómo usar el autobús. ¿Qué debo hacer?',
+      'Quiero ir al hospital. ¿Necesito hacer una cita?',
+      '¿Dónde puedo usar Wi-Fi?',
+      '¿Qué modales japoneses debo tener en cuenta?',
+      '¿A quién debo contactar en una emergencia?'
+    ],
+    frequentQuestionsShort: [
+      '¿Cómo usar el autobús?',
+      '¿Cita en el hospital?',
+      '¿Lugares con Wi-Fi?',
+      '¿Modales japoneses?',
+      '¿Contacto de emergencia?'
+    ],
     
     // 履歴画面
     historyTitle: 'Historial de Consultas',
@@ -321,6 +385,21 @@ const translations = {
     consultationTitle: 'Consultation IA',
     consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
     categoryTitle: 'Catégorie',
+    frequentQuestionsTitle: 'Questions Fréquemment Posées',
+    frequentQuestions: [
+      "Je ne sais pas comment prendre le bus. Que dois-je faire ?",
+      "Je veux aller à l'hôpital. Dois-je prendre rendez-vous ?",
+      "Où puis-je utiliser le Wi-Fi ?",
+      "Quelles sont les bonnes manières japonaises à respecter ?",
+      "Qui dois-je contacter en cas d'urgence ?"
+    ],
+    frequentQuestionsShort: [
+      'Comment prendre le bus ?',
+      'Rendez-vous hôpital ?',
+      'Lieux Wi-Fi ?',
+      'Manières japonaises ?',
+      'Contact d\'urgence ?'
+    ],
     
     // 履歴画面
     historyTitle: 'Historique des Consultations',
@@ -368,6 +447,21 @@ const translations = {
     consultationTitle: 'KI-Beratung',
     consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
     categoryTitle: 'Kategorie',
+    frequentQuestionsTitle: 'Häufig Gestellte Fragen',
+    frequentQuestions: [
+      'Ich weiß nicht, wie ich den Bus nehmen soll. Was soll ich tun?',
+      'Ich möchte ins Krankenhaus gehen. Brauche ich einen Termin?',
+      'Wo kann ich Wi-Fi nutzen?',
+      'Welche japanischen Manieren sollte ich beachten?',
+      'Wen soll ich im Notfall kontaktieren?'
+    ],
+    frequentQuestionsShort: [
+      'Wie Bus fahren?',
+      'Krankenhaus Termin?',
+      'Wi-Fi Orte?',
+      'Japanische Manieren?',
+      'Notfall Kontakt?'
+    ],
     
     // 履歴画面
     historyTitle: 'Beratungshistorie',
@@ -415,6 +509,21 @@ const translations = {
     consultationTitle: 'Consulenza AI',
     consultationDesc: 'Seleziona una categoria e fai domande liberamente',
     categoryTitle: 'Categoria',
+    frequentQuestionsTitle: 'Domande Frequenti',
+    frequentQuestions: [
+      'Non so come prendere l\'autobus. Cosa dovrei fare?',
+      'Voglio andare in ospedale. Ho bisogno di un appuntamento?',
+      'Dove posso usare il Wi-Fi?',
+      'Quali buone maniere giapponesi dovrei tenere a mente?',
+      'Chi dovrei contattare in caso di emergenza?'
+    ],
+    frequentQuestionsShort: [
+      'Come prendere l\'autobus?',
+      'Appuntamento ospedale?',
+      'Luoghi Wi-Fi?',
+      'Maniere giapponesi?',
+      'Contatto emergenza?'
+    ],
     
     // 履歴画面
     historyTitle: 'Cronologia Consultazioni',
@@ -462,6 +571,358 @@ const translations = {
     consultationTitle: 'Consulta de IA',
     consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
     categoryTitle: 'Categoria',
+    frequentQuestionsTitle: 'Perguntas Frequentes',
+    frequentQuestions: [
+      'Não sei como pegar o ônibus. O que devo fazer?',
+      'Quero ir ao hospital. Preciso marcar consulta?',
+      'Onde posso usar Wi-Fi?',
+      'Que maneiras japonesas devo observar?',
+      'Quem devo contatar em uma emergência?'
+    ],
+    frequentQuestionsShort: [
+      'Como pegar o ônibus?',
+      'Consulta no hospital?',
+      'Locais com Wi-Fi?',
+      'Maneiras japonesas?',
+      'Contato de emergência?'
+    ],
+    
+    // 履歴画面
+    historyTitle: 'Histórico de Consultas',
+    historyDesc: 'Veja seus registros de consultas anteriores',
+    backToConsultation: 'Voltar à Consulta',
+    exportHistory: 'Exportar Histórico',
+    noHistory: 'Ainda não há histórico de consultas.',
+    
+    // 共通
+    logout: 'Sair',
+    select: 'Selecionar'
+  },
+  ru: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'ИИ-помощник для вашего пребывания в префектуре Эхимэ',
+    
+    // 認証画面
+    welcomeTitle: 'Добро пожаловать в Kotoha AI',
+    welcomeDesc: 'Создайте аккаунт, чтобы сделать ваше пребывание в префектуре Эхимэ более комфортным',
+    loginTitle: 'Войти',
+    signupTitle: 'Создать Аккаунт',
+    email: 'Электронная Почта',
+    password: 'Пароль',
+    passwordConfirm: 'Подтвердить Пароль',
+    loginBtn: 'Войти',
+    signupBtn: 'Создать Аккаунт',
+    googleLoginBtn: 'Войти через Google',
+    guestLoginBtn: 'Использовать как Гость',
+    showSignupBtn: 'Создать Аккаунт',
+    showLoginBtn: 'Вернуться к Входу',
+    
+    // プロフィール画面
+    profileTitle: 'Настройка Профиля',
+    profileDesc: 'Предоставьте вашу основную информацию для лучшей поддержки',
+    displayName: 'Отображаемое Имя',
+    nationality: 'Национальность',
+    primaryLanguage: 'Основной Язык',
+    stayLocation: 'Место Пребывания',
+    stayPurpose: 'Цель',
+    stayPeriod: 'Период Пребывания',
+    saveProfileBtn: 'Сохранить Профиль',
+    
+    // 相談画面
+    consultationTitle: 'ИИ-Консультация',
+    consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
+    categoryTitle: 'Категория',
+    frequentQuestionsTitle: 'Часто Задаваемые Вопросы',
+    frequentQuestions: [
+      'Я не знаю, как ездить на автобусе. Что мне делать?',
+      'Я хочу пойти в больницу. Нужна ли запись?',
+      'Где я могу использовать Wi-Fi?',
+      'Какие японские манеры я должен соблюдать?',
+      'С кем связаться в экстренной ситуации?'
+    ],
+    frequentQuestionsShort: [
+      'Как ездить на автобусе?',
+      'Запись в больницу?',
+      'Места с Wi-Fi?',
+      'Японские манеры?',
+      'Экстренный контакт?'
+    ],
+    
+    // 履歴画面
+    historyTitle: '咨询历史',
+    historyDesc: '您可以查看过往的咨询内容',
+    backToConsultation: '返回咨询',
+    exportHistory: '导出历史',
+    noHistory: '还没有咨询历史。',
+    
+    // 共通
+    logout: '退出登录',
+    select: '请选择'
+  },
+  es: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Asistente de IA para tu estancia en la Prefectura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenido a Kotoha AI',
+    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime más cómoda',
+    loginTitle: 'Iniciar Sesión',
+    signupTitle: 'Crear Cuenta',
+    email: 'Correo Electrónico',
+    password: 'Contraseña',
+    passwordConfirm: 'Confirmar Contraseña',
+    loginBtn: 'Iniciar Sesión',
+    signupBtn: 'Crear Cuenta',
+    googleLoginBtn: 'Iniciar con Google',
+    guestLoginBtn: 'Usar como Invitado',
+    showSignupBtn: 'Crear Cuenta',
+    showLoginBtn: 'Volver a Iniciar Sesión',
+    
+    // プロフィール画面
+    profileTitle: 'Configuración del Perfil',
+    profileDesc: 'Proporcione su información básica para un mejor soporte',
+    displayName: 'Nombre para Mostrar',
+    nationality: 'Nacionalidad',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Ubicación de Estancia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estancia',
+    saveProfileBtn: 'Guardar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta AI',
+    consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
+    categoryTitle: 'Categoría',
+    frequentQuestionsTitle: 'Preguntas Frecuentes',
+    frequentQuestions: [
+      'No sé cómo usar el autobús. ¿Qué debo hacer?',
+      'Quiero ir al hospital. ¿Necesito hacer una cita?',
+      '¿Dónde puedo usar Wi-Fi?',
+      '¿Qué modales japoneses debo tener en cuenta?',
+      '¿A quién debo contactar en una emergencia?'
+    ],
+    
+    // 履歴画面
+    historyTitle: 'Historial de Consultas',
+    historyDesc: 'Ver tus registros de consultas anteriores',
+    backToConsultation: 'Volver a Consulta',
+    exportHistory: 'Exportar Historial',
+    noHistory: 'Aún no hay historial de consultas.',
+    
+    // 共通
+    logout: 'Cerrar Sesión',
+    select: 'Seleccionar'
+  },
+  fr: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistant IA pour votre séjour dans la Préfecture d\'Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenue sur Kotoha AI',
+    welcomeDesc: 'Créez un compte pour rendre votre séjour dans la Préfecture d\'Ehime plus confortable',
+    loginTitle: 'Se Connecter',
+    signupTitle: 'Créer un Compte',
+    email: 'Adresse Email',
+    password: 'Mot de Passe',
+    passwordConfirm: 'Confirmer le Mot de Passe',
+    loginBtn: 'Se Connecter',
+    signupBtn: 'Créer un Compte',
+    googleLoginBtn: 'Se connecter avec Google',
+    guestLoginBtn: 'Utiliser comme Invité',
+    showSignupBtn: 'Créer un Compte',
+    showLoginBtn: 'Retour à la Connexion',
+    
+    // プロフィール画面
+    profileTitle: 'Configuration du Profil',
+    profileDesc: 'Veuillez fournir vos informations de base pour un meilleur support',
+    displayName: 'Nom d\'Affichage',
+    nationality: 'Nationalité',
+    primaryLanguage: 'Langue Principale',
+    stayLocation: 'Lieu de Séjour',
+    stayPurpose: 'Objectif',
+    stayPeriod: 'Période de Séjour',
+    saveProfileBtn: 'Sauvegarder le Profil',
+    
+    // 相談画面
+    consultationTitle: 'Consultation IA',
+    consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
+    categoryTitle: 'Catégorie',
+    frequentQuestionsTitle: 'Questions Fréquemment Posées',
+    frequentQuestions: [
+      "Je ne sais pas comment prendre le bus. Que dois-je faire ?",
+      "Je veux aller à l'hôpital. Dois-je prendre rendez-vous ?",
+      "Où puis-je utiliser le Wi-Fi ?",
+      "Quelles sont les bonnes manières japonaises à respecter ?",
+      "Qui dois-je contacter en cas d'urgence ?"
+    ],
+    
+    // 履歴画面
+    historyTitle: 'Historique des Consultations',
+    historyDesc: 'Voir vos enregistrements de consultations précédentes',
+    backToConsultation: 'Retour à la Consultation',
+    exportHistory: 'Exporter l\'Historique',
+    noHistory: 'Aucun historique de consultation pour le moment.',
+    
+    // 共通
+    logout: 'Se Déconnecter',
+    select: 'Sélectionner'
+  },
+  de: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'KI-Assistent für Ihren Aufenthalt in der Präfektur Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Willkommen bei Kotoha AI',
+    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Präfektur Ehime komfortabler zu gestalten',
+    loginTitle: 'Anmelden',
+    signupTitle: 'Konto Erstellen',
+    email: 'E-Mail-Adresse',
+    password: 'Passwort',
+    passwordConfirm: 'Passwort Bestätigen',
+    loginBtn: 'Anmelden',
+    signupBtn: 'Konto Erstellen',
+    googleLoginBtn: 'Mit Google anmelden',
+    guestLoginBtn: 'Als Gast verwenden',
+    showSignupBtn: 'Konto Erstellen',
+    showLoginBtn: 'Zurück zur Anmeldung',
+    
+    // プロフィール画面
+    profileTitle: 'Profil-Einrichtung',
+    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen für bessere Unterstützung an',
+    displayName: 'Anzeigename',
+    nationality: 'Nationalität',
+    primaryLanguage: 'Hauptsprache',
+    stayLocation: 'Aufenthaltsort',
+    stayPurpose: 'Zweck',
+    stayPeriod: 'Aufenthaltsdauer',
+    saveProfileBtn: 'Profil Speichern',
+    
+    // 相談画面
+    consultationTitle: 'KI-Beratung',
+    consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
+    categoryTitle: 'Kategorie',
+    frequentQuestionsTitle: 'Häufig Gestellte Fragen',
+    frequentQuestions: [
+      'Ich weiß nicht, wie ich den Bus nehmen soll. Was soll ich tun?',
+      'Ich möchte ins Krankenhaus gehen. Brauche ich einen Termin?',
+      'Wo kann ich Wi-Fi nutzen?',
+      'Welche japanischen Manieren sollte ich beachten?',
+      'Wen soll ich im Notfall kontaktieren?'
+    ],
+    
+    // 履歴画面
+    historyTitle: 'Beratungshistorie',
+    historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
+    backToConsultation: 'Zurück zur Beratung',
+    exportHistory: 'Historie Exportieren',
+    noHistory: 'Noch keine Beratungshistorie vorhanden.',
+    
+    // 共通
+    logout: 'Abmelden',
+    select: 'Auswählen'
+  },
+  it: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente AI per il tuo soggiorno nella Prefettura di Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Benvenuto in Kotoha AI',
+    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime più confortevole',
+    loginTitle: 'Accedi',
+    signupTitle: 'Crea Account',
+    email: 'Indirizzo Email',
+    password: 'Password',
+    passwordConfirm: 'Conferma Password',
+    loginBtn: 'Accedi',
+    signupBtn: 'Crea Account',
+    googleLoginBtn: 'Accedi con Google',
+    guestLoginBtn: 'Usa come Ospite',
+    showSignupBtn: 'Crea Account',
+    showLoginBtn: 'Torna al Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configurazione Profilo',
+    profileDesc: 'Fornisci le tue informazioni di base per un migliore supporto',
+    displayName: 'Nome Visualizzato',
+    nationality: 'Nazionalità',
+    primaryLanguage: 'Lingua Principale',
+    stayLocation: 'Luogo di Soggiorno',
+    stayPurpose: 'Scopo',
+    stayPeriod: 'Periodo di Soggiorno',
+    saveProfileBtn: 'Salva Profilo',
+    
+    // 相談画面
+    consultationTitle: 'Consulenza AI',
+    consultationDesc: 'Seleziona una categoria e fai domande liberamente',
+    categoryTitle: 'Categoria',
+    frequentQuestionsTitle: 'Domande Frequenti',
+    frequentQuestions: [
+      'Non so come prendere l\'autobus. Cosa dovrei fare?',
+      'Voglio andare in ospedale. Ho bisogno di un appuntamento?',
+      'Dove posso usare il Wi-Fi?',
+      'Quali buone maniere giapponesi dovrei tenere a mente?',
+      'Chi dovrei contattare in caso di emergenza?'
+    ],
+    
+    // 履歴画面
+    historyTitle: 'Cronologia Consultazioni',
+    historyDesc: 'Visualizza i tuoi record di consultazioni precedenti',
+    backToConsultation: 'Torna alla Consultazione',
+    exportHistory: 'Esporta Cronologia',
+    noHistory: 'Nessuna cronologia di consultazioni ancora.',
+    
+    // 共通
+    logout: 'Disconnetti',
+    select: 'Seleziona'
+  },
+  pt: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente de IA para sua estadia na Prefeitura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bem-vindo ao Kotoha AI',
+    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortável',
+    loginTitle: 'Entrar',
+    signupTitle: 'Criar Conta',
+    email: 'Endereço de Email',
+    password: 'Senha',
+    passwordConfirm: 'Confirmar Senha',
+    loginBtn: 'Entrar',
+    signupBtn: 'Criar Conta',
+    googleLoginBtn: 'Entrar com Google',
+    guestLoginBtn: 'Usar como Convidado',
+    showSignupBtn: 'Criar Conta',
+    showLoginBtn: 'Voltar ao Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configuração do Perfil',
+    profileDesc: 'Forneça suas informações básicas para melhor suporte',
+    displayName: 'Nome de Exibição',
+    nationality: 'Nacionalidade',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Local de Estadia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estadia',
+    saveProfileBtn: 'Salvar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta de IA',
+    consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
+    categoryTitle: 'Categoria',
+    frequentQuestionsTitle: 'Perguntas Frequentes',
+    frequentQuestions: [
+      'Não sei como pegar o ônibus. O que devo fazer?',
+      'Quero ir ao hospital. Preciso marcar consulta?',
+      'Onde posso usar Wi-Fi?',
+      'Que maneiras japonesas devo observar?',
+      'Quem devo contatar em uma emergência?'
+    ],
     
     // 履歴画面
     historyTitle: 'Histórico de Consultas',
@@ -631,6 +1092,24 @@ function updatePageTexts() {
   const categoryTitle = document.querySelector('.category-selector h3');
   if (categoryTitle) categoryTitle.textContent = t.categoryTitle;
   
+  // よくある質問の更新
+  const frequentQuestionsTitle = document.querySelector('.sample-questions h4');
+  if (frequentQuestionsTitle) {
+    frequentQuestionsTitle.innerHTML = `💡 ${t.frequentQuestionsTitle}`;
+  }
+  
+  // よくある質問の内容を更新
+  const questionChips = document.querySelectorAll('.question-chip');
+  if (questionChips && t.frequentQuestions && t.frequentQuestionsShort) {
+    questionChips.forEach((chip, index) => {
+      if (t.frequentQuestions[index] && t.frequentQuestionsShort[index]) {
+        // ボタンテキストは省略版、data-questionは完全版
+        chip.textContent = t.frequentQuestionsShort[index];
+        chip.setAttribute('data-question', t.frequentQuestions[index]);
+      }
+    });
+  }
+  
   // 履歴画面
   const historyTitle = document.querySelector('#section-4 h2');
   if (historyTitle) historyTitle.textContent = t.historyTitle;
@@ -660,13 +1139,77 @@ function updatePageTexts() {
   }
 }
 
-// 質問とカテゴリのマッピング
+// 質問とカテゴリのマッピング（多言語対応）
 const questionToCategory = {
+  // 日本語
   'バスの乗り方がわかりません。どうすればいいですか？': 'transportation',
   '病院に行きたいのですが、予約は必要ですか？': 'medical',
   'Wi-Fiが使える場所を教えてください。': 'connectivity',
   '日本のマナーで注意すべきことはありますか？': 'culture',
-  '緊急時はどこに連絡すればいいですか？': 'general'
+  '緊急時はどこに連絡すればいいですか？': 'general',
+  
+  // 英語
+  "I don't know how to ride the bus. What should I do?": 'transportation',
+  'I want to go to the hospital. Do I need to make an appointment?': 'medical',
+  'Where can I use Wi-Fi?': 'connectivity',
+  'What Japanese manners should I be careful about?': 'culture',
+  'Who should I contact in an emergency?': 'general',
+  
+  // 韓国語
+  '버스 타는 방법을 모르겠습니다. 어떻게 해야 하나요?': 'transportation',
+  '병원에 가고 싶은데 예약이 필요한가요?': 'medical',
+  'Wi-Fi를 사용할 수 있는 곳을 알려주세요.': 'connectivity',
+  '일본의 매너에서 주의해야 할 점이 있나요?': 'culture',
+  '응급상황 시 어디에 연락해야 하나요?': 'general',
+  
+  // 中国語
+  '不知道怎么坐公交车，应该怎么办？': 'transportation',
+  '想去医院，需要预约吗？': 'medical',
+  '请告诉我可以使用Wi-Fi的地方。': 'connectivity',
+  '在日本礼仪方面有什么需要注意的吗？': 'culture',
+  '紧急情况下应该联系哪里？': 'general',
+  
+  // スペイン語
+  'No sé cómo usar el autobús. ¿Qué debo hacer?': 'transportation',
+  'Quiero ir al hospital. ¿Necesito hacer una cita?': 'medical',
+  '¿Dónde puedo usar Wi-Fi?': 'connectivity',
+  '¿Qué modales japoneses debo tener en cuenta?': 'culture',
+  '¿A quién debo contactar en una emergencia?': 'general',
+  
+  // フランス語
+  "Je ne sais pas comment prendre le bus. Que dois-je faire ?": 'transportation',
+  "Je veux aller à l'hôpital. Dois-je prendre rendez-vous ?": 'medical',
+  "Où puis-je utiliser le Wi-Fi ?": 'connectivity',
+  "Quelles sont les bonnes manières japonaises à respecter ?": 'culture',
+  "Qui dois-je contacter en cas d'urgence ?": 'general',
+  
+  // ドイツ語
+  'Ich weiß nicht, wie ich den Bus nehmen soll. Was soll ich tun?': 'transportation',
+  'Ich möchte ins Krankenhaus gehen. Brauche ich einen Termin?': 'medical',
+  'Wo kann ich Wi-Fi nutzen?': 'connectivity',
+  'Welche japanischen Manieren sollte ich beachten?': 'culture',
+  'Wen soll ich im Notfall kontaktieren?': 'general',
+  
+  // イタリア語
+  'Non so come prendere l\'autobus. Cosa dovrei fare?': 'transportation',
+  'Voglio andare in ospedale. Ho bisogno di un appuntamento?': 'medical',
+  'Dove posso usare il Wi-Fi?': 'connectivity',
+  'Quali buone maniere giapponesi dovrei tenere a mente?': 'culture',
+  'Chi dovrei contattare in caso di emergenza?': 'general',
+  
+  // ポルトガル語
+  'Não sei como pegar o ônibus. O que devo fazer?': 'transportation',
+  'Quero ir ao hospital. Preciso marcar consulta?': 'medical',
+  'Onde posso usar Wi-Fi?': 'connectivity',
+  'Que maneiras japonesas devo observar?': 'culture',
+  'Quem devo contatar em uma emergência?': 'general',
+  
+  // ロシア語
+  'Я не знаю, как ездить на автобусе. Что мне делать?': 'transportation',
+  'Я хочу пойти в больницу. Нужна ли запись?': 'medical',
+  'Где я могу использовать Wi-Fi?': 'connectivity',
+  'Какие японские манеры я должен соблюдать?': 'culture',
+  'С кем связаться в экстренной ситуации?': 'general'
 };
 
 // 質問からカテゴリを推測する関数
