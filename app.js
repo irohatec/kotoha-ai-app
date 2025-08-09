@@ -40,6 +40,224 @@ let currentSection = 1;
 let selectedCategory = '';
 let shouldStoreConsultation = true;
 let isAIChatting = false;
+let currentLanguage = 'ja'; // デフォルトは日本語
+
+// 多言語辞書
+const translations = {
+  ja: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: '愛媛県での滞在をサポートするAIアシスタント',
+    
+    // 認証画面
+    welcomeTitle: 'ようこそ Kotoha AI へ',
+    welcomeDesc: '愛媛県での滞在をより快適にするため、まずはアカウントを作成しましょう',
+    loginTitle: 'ログイン',
+    signupTitle: 'アカウント作成',
+    email: 'メールアドレス',
+    password: 'パスワード',
+    passwordConfirm: 'パスワード確認',
+    loginBtn: 'ログイン',
+    signupBtn: 'アカウント作成',
+    googleLoginBtn: 'Googleでログイン',
+    guestLoginBtn: 'ゲストとして利用',
+    showSignupBtn: 'アカウント作成',
+    showLoginBtn: 'ログインに戻る',
+    
+    // プロフィール画面
+    profileTitle: 'プロフィール設定',
+    profileDesc: 'より適切なサポートを提供するため、基本情報を教えてください',
+    displayName: '表示名',
+    nationality: '国籍',
+    primaryLanguage: '使用する言語',
+    stayLocation: '滞在地域',
+    stayPurpose: '滞在目的',
+    stayPeriod: '滞在期間',
+    saveProfileBtn: 'プロフィール保存',
+    
+    // 相談画面
+    consultationTitle: 'AI相談',
+    consultationDesc: 'カテゴリを選択して、気軽にご質問ください',
+    categoryTitle: '相談カテゴリ',
+    
+    // 履歴画面
+    historyTitle: '相談履歴',
+    historyDesc: '過去の相談内容を確認できます',
+    
+    // 共通
+    logout: 'ログアウト',
+    select: '選択してください'
+  },
+  en: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'AI Assistant for Your Stay in Ehime Prefecture',
+    
+    // 認証画面
+    welcomeTitle: 'Welcome to Kotoha AI',
+    welcomeDesc: 'Create an account to make your stay in Ehime Prefecture more comfortable',
+    loginTitle: 'Sign In',
+    signupTitle: 'Create Account',
+    email: 'Email',
+    password: 'Password',
+    passwordConfirm: 'Confirm Password',
+    loginBtn: 'Sign In',
+    signupBtn: 'Create Account',
+    googleLoginBtn: 'Sign in with Google',
+    guestLoginBtn: 'Use as Guest',
+    showSignupBtn: 'Create Account',
+    showLoginBtn: 'Back to Login',
+    
+    // プロフィール画面
+    profileTitle: 'Profile Setup',
+    profileDesc: 'Please provide your basic information for better support',
+    displayName: 'Display Name',
+    nationality: 'Nationality',
+    primaryLanguage: 'Primary Language',
+    stayLocation: 'Stay Location',
+    stayPurpose: 'Purpose',
+    stayPeriod: 'Stay Period',
+    saveProfileBtn: 'Save Profile',
+    
+    // 相談画面
+    consultationTitle: 'AI Consultation',
+    consultationDesc: 'Select a category and feel free to ask questions',
+    categoryTitle: 'Category',
+    
+    // 履歴画面
+    historyTitle: 'Consultation History',
+    historyDesc: 'View your past consultation records',
+    
+    // 共通
+    logout: 'Logout',
+    select: 'Select'
+  }
+};
+
+// 言語切り替え関数
+function switchLanguage(langCode) {
+  currentLanguage = langCode;
+  
+  // ヘッダーボタンの状態更新
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.getElementById(`lang-${langCode}`).classList.add('active');
+  
+  // テキスト更新
+  updatePageTexts();
+}
+
+// ページテキスト更新関数
+function updatePageTexts() {
+  const t = translations[currentLanguage];
+  
+  // ヘッダー
+  const subtitle = document.querySelector('.subtitle');
+  if (subtitle) subtitle.textContent = t.headerSubtitle;
+  
+  // 認証画面
+  const welcomeTitle = document.querySelector('#section-1 h2');
+  if (welcomeTitle) welcomeTitle.textContent = t.welcomeTitle;
+  
+  const welcomeDesc = document.querySelector('#section-1 .section-header p');
+  if (welcomeDesc) welcomeDesc.textContent = t.welcomeDesc;
+  
+  // ログインフォーム
+  const loginFormTitle = document.querySelector('#login-form h3');
+  if (loginFormTitle) loginFormTitle.textContent = t.loginTitle;
+  
+  const emailLabel1 = document.querySelector('label[for="login-email"]');
+  if (emailLabel1) emailLabel1.textContent = t.email;
+  
+  const passwordLabel1 = document.querySelector('label[for="login-password"]');
+  if (passwordLabel1) passwordLabel1.textContent = t.password;
+  
+  const loginBtn = document.getElementById('login-btn');
+  if (loginBtn) loginBtn.textContent = t.loginBtn;
+  
+  const showSignupBtn = document.getElementById('show-signup-btn');
+  if (showSignupBtn) showSignupBtn.textContent = t.showSignupBtn;
+  
+  const googleBtn = document.querySelector('#google-login-btn span');
+  if (googleBtn) googleBtn.textContent = t.googleLoginBtn;
+  
+  const guestBtn = document.getElementById('guest-login-btn');
+  if (guestBtn) guestBtn.textContent = t.guestLoginBtn;
+  
+  // サインアップフォーム
+  const signupFormTitle = document.querySelector('#signup-form h3');
+  if (signupFormTitle) signupFormTitle.textContent = t.signupTitle;
+  
+  const emailLabel2 = document.querySelector('label[for="signup-email"]');
+  if (emailLabel2) emailLabel2.textContent = t.email;
+  
+  const passwordLabel2 = document.querySelector('label[for="signup-password"]');
+  if (passwordLabel2) passwordLabel2.textContent = t.password;
+  
+  const passwordConfirmLabel = document.querySelector('label[for="signup-password-confirm"]');
+  if (passwordConfirmLabel) passwordConfirmLabel.textContent = t.passwordConfirm;
+  
+  const signupBtn = document.getElementById('signup-btn');
+  if (signupBtn) signupBtn.textContent = t.signupBtn;
+  
+  const showLoginBtn = document.getElementById('show-login-btn');
+  if (showLoginBtn) showLoginBtn.textContent = t.showLoginBtn;
+  
+  // プロフィール画面
+  const profileTitle = document.querySelector('#section-2 h2');
+  if (profileTitle) profileTitle.textContent = t.profileTitle;
+  
+  const profileDesc = document.querySelector('#section-2 .section-header p');
+  if (profileDesc) profileDesc.textContent = t.profileDesc;
+  
+  const displayNameLabel = document.querySelector('label[for="display-name"]');
+  if (displayNameLabel) displayNameLabel.textContent = t.displayName;
+  
+  const nationalityLabel = document.querySelector('label[for="nationality"]');
+  if (nationalityLabel) nationalityLabel.textContent = t.nationality;
+  
+  const languageLabel = document.querySelector('label[for="primary-language"]');
+  if (languageLabel) languageLabel.textContent = t.primaryLanguage;
+  
+  const locationLabel = document.querySelector('label[for="stay-location"]');
+  if (locationLabel) locationLabel.textContent = t.stayLocation;
+  
+  const purposeLabel = document.querySelector('label[for="stay-purpose"]');
+  if (purposeLabel) purposeLabel.textContent = t.stayPurpose;
+  
+  const periodLabel = document.querySelector('label[for="stay-period"]');
+  if (periodLabel) periodLabel.textContent = t.stayPeriod;
+  
+  const saveBtn = document.getElementById('save-profile-btn');
+  if (saveBtn) saveBtn.textContent = t.saveProfileBtn;
+  
+  // 相談画面
+  const consultationTitle = document.querySelector('#section-3 h2');
+  if (consultationTitle) consultationTitle.textContent = t.consultationTitle;
+  
+  const consultationDesc = document.querySelector('#section-3 .section-header p');
+  if (consultationDesc) consultationDesc.textContent = t.consultationDesc;
+  
+  const categoryTitle = document.querySelector('.category-selector h3');
+  if (categoryTitle) categoryTitle.textContent = t.categoryTitle;
+  
+  // 履歴画面
+  const historyTitle = document.querySelector('#section-4 h2');
+  if (historyTitle) historyTitle.textContent = t.historyTitle;
+  
+  const historyDesc = document.querySelector('#section-4 .section-header p');
+  if (historyDesc) historyDesc.textContent = t.historyDesc;
+  
+  // ログアウトボタン
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.textContent = t.logout;
+  
+  // セレクトボックスのデフォルトオプション
+  document.querySelectorAll('select option[value=""]').forEach(option => {
+    option.textContent = t.select;
+  });
+}
 
 // 質問とカテゴリのマッピング
 const questionToCategory = {
@@ -158,6 +376,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 初期化時にステップナビゲーションをセットアップ
   setupStepNavigation();
+
+  // --- 言語切り替えボタンのイベントリスナー ---
+  const langJaBtn = document.getElementById('lang-ja');
+  const langEnBtn = document.getElementById('lang-en');
+  
+  if (langJaBtn) {
+    langJaBtn.addEventListener('click', () => switchLanguage('ja'));
+  }
+  
+  if (langEnBtn) {
+    langEnBtn.addEventListener('click', () => switchLanguage('en'));
+  }
+
+  // --- プロフィールの言語選択時の自動切り替え ---
+  const primaryLanguageSelect = document.getElementById('primary-language');
+  if (primaryLanguageSelect) {
+    primaryLanguageSelect.addEventListener('change', (e) => {
+      const selectedLang = e.target.value;
+      // 日本語と英語のみ自動切り替え（他言語は今後実装）
+      if (selectedLang === '日本語') {
+        switchLanguage('ja');
+      } else if (selectedLang === 'English') {
+        switchLanguage('en');
+      }
+    });
+  }
 
   // --- Profile Section ---
   const saveProfileBtn = document.getElementById('save-profile-btn');
@@ -650,6 +894,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  
+  // --- 初期表示時のテキスト更新 ---
+  updatePageTexts();
 });
 
 // --- タイピングインジケーター関連 ---
@@ -766,6 +1013,15 @@ async function loadProfileFormFromFirestore() {
       if (stayPurposeField) stayPurposeField.value = data.stayPurpose ?? '';
       if (stayFromField) stayFromField.value = data.stayFrom ?? '';
       if (stayToField) stayToField.value = data.stayTo ?? '';
+      
+      // 言語設定があれば自動でページ言語も切り替え
+      if (data.primaryLanguage) {
+        if (data.primaryLanguage === '日本語') {
+          switchLanguage('ja');
+        } else if (data.primaryLanguage === 'English') {
+          switchLanguage('en');
+        }
+      }
     } else {
       clearProfileForm();
     }
