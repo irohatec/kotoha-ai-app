@@ -325,8 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
             isAnonymous: user.isAnonymous,
             profile: null
           });
-          // 新規ユーザーの場合のみフォームをクリア
-          clearProfileForm();
         }
       } catch (dbError) {
         console.error("Firestore操作エラー:", dbError);
@@ -346,8 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input) input.value = '';
       });
       
-      // ログアウト時はプロフィールフォームをクリアしない
-      // （次回ログイン時にFirestoreから復元される）
+      clearProfileForm();
       
       try {
         localStorage.removeItem('kotoha_user_profile');
