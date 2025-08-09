@@ -84,18 +84,42 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+// 言語コード変換
+function getLanguageCode(language) {
+    const languageMap = {
+        '日本語': 'Japanese',
+        'English': 'English',
+        '한국어': 'Korean', 
+        '中文': 'Chinese',
+        'Español': 'Spanish',
+        'Français': 'French',
+        'Deutsch': 'German',
+        'Italiano': 'Italian',
+        'Português': 'Portuguese',
+        'Русский': 'Russian'
+    };
+    return languageMap[language] || 'Japanese';
+}
+
 // Gemini API call function
 async function callGeminiAPI(message, context = {}) {
     const { userProfile, category } = context;
     
     let systemPrompt = `あなたは「Kotoha AI」という、愛媛県での滞在をサポートする非常に親切で有能なAIアシスタントです。`;
 
+    // 言語設定の追加
+    let responseLanguage = 'Japanese';
+    if (userProfile && userProfile.primaryLanguage) {
+        responseLanguage = getLanguageCode(userProfile.primaryLanguage);
+        systemPrompt += `\n\n# 重要な言語指示\n**必ず${userProfile.primaryLanguage}で回答してください。質問が日本語で書かれていても、回答は${userProfile.primaryLanguage}で統一してください。**`;
+    }
+
     if (userProfile) {
         systemPrompt += `\n\n# ユーザー情報\n`;
         if (userProfile.displayName) systemPrompt += `- 名前: ${userProfile.displayName}\n`;
         if (userProfile.nationality) systemPrompt += `- 国籍: ${userProfile.nationality}\n`;
+        if (userProfile.primaryLanguage) systemPrompt += `- 使用言語: ${userProfile.primaryLanguage}\n`;
         if (userProfile.stayLocation) systemPrompt += `- 滞在地: ${userProfile.stayLocation}\n`;
-        if (userProfile.languages && userProfile.languages.length > 0) systemPrompt += `- 使用言語: ${userProfile.languages.join(', ')}\n`;
     }
     
     if (category) {
@@ -103,6 +127,11 @@ async function callGeminiAPI(message, context = {}) {
     }
 
     systemPrompt += `\n# あなたの役割と指示\n- ユーザー情報と相談カテゴリを強く意識し、パーソナライズされた回答を生成してください。\n- 愛媛県の実情に合わせた、具体的で実践的なアドバイスを心がけてください。\n- 外国人ユーザーにも分かりやすいように、専門用語を避け、丁寧な言葉遣いで説明してください。\n- 回答はMarkdown形式で、見出しやリストを活用して分かりやすく構成してください。\n- 緊急性が高いと判断した場合は、必ず警察(110)や救急(119)などの公的な連絡先を案内してください。\n- 常に親しみやすく、ユーザーに寄り添う姿勢で回答してください。`;
+
+    // 特定地域の情報を優先する指示を追加
+    if (userProfile && userProfile.stayLocation) {
+        systemPrompt += `\n- 特に${userProfile.stayLocation}の情報を優先して提供してください。一般的な愛媛県情報よりも、${userProfile.stayLocation}特有の情報があれば詳しく案内してください。`;
+    }
 
     const requestBody = {
         contents: [{ parts: [{ text: systemPrompt + "\n\n# ユーザーからの質問\n" + message }] }],
