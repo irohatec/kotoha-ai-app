@@ -1208,10 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       
       // Markdownを適用してAIレスポンスを表示
-      let formattedResponse = data.response;
-      if (typeof marked !== 'undefined') {
-        formattedResponse = marked.parse(data.response);
-      }
+      let formattedResponse = formatMarkdownResponse(data.response);
       
       appendChatMessage('ai', formattedResponse);
 
@@ -1221,7 +1218,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // フォールバック：ローカルレスポンス
       const fallbackResponse = generateBetterResponse(userMessage, selectedCategory);
-      appendChatMessage('ai', fallbackResponse);
+      const formattedFallback = formatMarkdownResponse(fallbackResponse);
+      appendChatMessage('ai', formattedFallback);
       
       showMessage('AI接続エラー。ローカル応答を表示しています。', 'warning');
     } finally {
@@ -1263,7 +1261,55 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePageTexts();
 });
 
-// --- タイピングインジケーター関連 ---
+// --- Markdown処理関数 ---
+function formatMarkdownResponse(text) {
+  try {
+    // marked.jsが利用可能な場合
+    if (typeof marked !== 'undefined' && marked.parse) {
+      // marked.jsの設定
+      marked.setOptions({
+        breaks: true,
+        gfm: true
+      });
+      return marked.parse(text);
+    }
+  } catch (error) {
+    console.warn('marked.js parsing failed:', error);
+  }
+  
+  // フォールバック：手動でMarkdownをHTMLに変換
+  return manualMarkdownToHTML(text);
+}
+
+// 手動Markdown変換関数
+function manualMarkdownToHTML(text) {
+  let html = text;
+  
+  // 見出し変換 (### → <h3>、## → <h2>、# → <h1>)
+  html = html.replace(/^### (.+)$/gm, '<h3 class="ai-heading3">$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2 class="ai-heading2">$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1 class="ai-heading1">$1</h1>');
+  
+  // 太字変換 (**text** → <strong>)
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="ai-bold">$1</strong>');
+  
+  // リスト変換
+  html = html.replace(/^[-•]\s(.+)$/gm, '<li class="ai-list-item">$1</li>');
+  html = html.replace(/(<li class="ai-list-item">.*<\/li>)/s, '<ul class="ai-list">$1</ul>');
+  
+  // 改行変換
+  html = html.replace(/\n\n/g, '</p><p class="ai-paragraph">');
+  html = html.replace(/\n/g, '<br>');
+  
+  // 段落でラップ
+  if (!html.includes('<p') && !html.includes('<h') && !html.includes('<ul')) {
+    html = `<p class="ai-paragraph">${html}</p>`;
+  } else if (!html.startsWith('<')) {
+    html = `<p class="ai-paragraph">${html}`;
+  }
+  
+  return html;
+}
 function appendTypingIndicator() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
