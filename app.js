@@ -1238,7 +1238,175 @@ const questionToCategory = {
   'Recommended tourist spots?': 'general',
   'Ehime specialties?': 'general',
   'Bank operating hours?': 'general',
-  'How to check weather forecast?': 'general'
+  'How to check weather forecast?': 'general',
+  
+  // ドイツ語 - 交通
+  'Wie benutzt man den Bus?': 'transportation',
+  'Wie steigt man in Züge um?': 'transportation',
+  'Wo kann man IC-Karten kaufen?': 'transportation',
+  'Wie ruft man ein Taxi?': 'transportation',
+  'Zugang vom Flughafen Matsuyama?': 'transportation',
+  
+  // ドイツ語 - 医療
+  'Brauche ich eine Reservierung für das Krankenhaus?': 'medical',
+  'Kann ich Versicherung nutzen?': 'medical',
+  'Wo sind Apotheken?': 'medical',
+  'Wo sind Notfallkrankenhäuser?': 'medical',
+  'Englischsprachige Krankenhäuser?': 'medical',
+  
+  // ドイツ語 - ネット
+  'Wo finde ich Wi-Fi?': 'connectivity',
+  'Wo kann man SIM-Karten kaufen?': 'connectivity',
+  'Standort von Internetcafés?': 'connectivity',
+  'Empfohlene Datentarife?': 'connectivity',
+  'Was tun bei langsamem Internet?': 'connectivity',
+  
+  // ドイツ語 - 宿泊
+  'Wie bucht man Hotels?': 'accommodation',
+  'Wie nutzt man Ferienwohnungen?': 'accommodation',
+  'Langzeitunterkunft?': 'accommodation',
+  'Check-in-Zeiten?': 'accommodation',
+  'Gibt es Übernachtungssteuern?': 'accommodation',
+  
+  // ドイツ語 - 文化
+  'Welche japanischen Manieren sollte ich kennen?': 'culture',
+  'Wie verbeugt man sich richtig?': 'culture',
+  'Wo zieht man Schuhe aus?': 'culture',
+  'Essensknigge?': 'culture',
+  'Wie nutzt man heiße Quellen?': 'culture',
+  
+  // ドイツ語 - 一般
+  'Notfallkontaktinformationen?': 'general',
+  'Empfohlene Touristenorte?': 'general',
+  'Ehime-Spezialitäten?': 'general',
+  'Bankgeschäftszeiten?': 'general',
+  'Wie prüft man die Wettervorhersage?': 'general',
+  
+  // イタリア語 - 交通
+  'Come usare l\'autobus?': 'transportation',
+  'Come cambiare treno?': 'transportation',
+  'Dove comprare carte IC?': 'transportation',
+  'Come chiamare un taxi?': 'transportation',
+  'Accesso dall\'aeroporto di Matsuyama?': 'transportation',
+  
+  // イタリア語 - 医療
+  'Ho bisogno di una prenotazione per l\'ospedale?': 'medical',
+  'Posso usare l\'assicurazione?': 'medical',
+  'Dove sono le farmacie?': 'medical',
+  'Dove sono gli ospedali di emergenza?': 'medical',
+  'Ospedali che parlano inglese?': 'medical',
+  
+  // イタリア語 - ネット
+  'Dove trovare Wi-Fi?': 'connectivity',
+  'Dove comprare schede SIM?': 'connectivity',
+  'Posizione degli internet café?': 'connectivity',
+  'Piani dati raccomandati?': 'connectivity',
+  'Cosa fare quando internet è lento?': 'connectivity',
+  
+  // イタリア語 - 宿泊
+  'Come prenotare hotel?': 'accommodation',
+  'Come usare case vacanza?': 'accommodation',
+  'Alloggio a lungo termine?': 'accommodation',
+  'Orari di check-in?': 'accommodation',
+  'Ci sono tasse di soggiorno?': 'accommodation',
+  
+  // イタリア語 - 文化
+  'Quali buone maniere giapponesi dovrei conoscere?': 'culture',
+  'Come inchinarsi correttamente?': 'culture',
+  'Dove togliere le scarpe?': 'culture',
+  'Etichetta durante i pasti?': 'culture',
+  'Come usare le sorgenti termali?': 'culture',
+  
+  // イタリア語 - 一般
+  'Informazioni di contatto di emergenza?': 'general',
+  'Luoghi turistici raccomandati?': 'general',
+  'Specialità di Ehime?': 'general',
+  'Orari di apertura delle banche?': 'general',
+  'Come controllare le previsioni del tempo?': 'general',
+  
+  // ポルトガル語 - 交通
+  'Como usar o ônibus?': 'transportation',
+  'Como fazer transferência de trem?': 'transportation',
+  'Onde comprar cartões IC?': 'transportation',
+  'Como chamar um táxi?': 'transportation',
+  'Acesso do aeroporto de Matsuyama?': 'transportation',
+  
+  // ポルトガル語 - 医療
+  'Preciso de reserva para o hospital?': 'medical',
+  'Posso usar seguro?': 'medical',
+  'Onde estão as farmácias?': 'medical',
+  'Onde estão os hospitais de emergência?': 'medical',
+  'Hospitais que falam inglês?': 'medical',
+  
+  // ポルトガル語 - ネット
+  'Onde encontrar Wi-Fi?': 'connectivity',
+  'Onde comprar cartões SIM?': 'connectivity',
+  'Localização de internet cafés?': 'connectivity',
+  'Planos de dados recomendados?': 'connectivity',
+  'O que fazer quando a internet está lenta?': 'connectivity',
+  
+  // ポルトガル語 - 宿泊
+  'Como reservar hotéis?': 'accommodation',
+  'Como usar aluguéis de temporada?': 'accommodation',
+  'Acomodação de longo prazo?': 'accommodation',
+  'Horários de check-in?': 'accommodation',
+  'Há taxas de acomodação?': 'accommodation',
+  
+  // ポルトガル語 - 文化
+  'Que maneiras japonesas devo conhecer?': 'culture',
+  'Como se curvar corretamente?': 'culture',
+  'Onde tirar os sapatos?': 'culture',
+  'Etiqueta durante as refeições?': 'culture',
+  'Como usar fontes termais?': 'culture',
+  
+  // ポルトガル語 - 一般
+  'Informações de contato de emergência?': 'general',
+  'Locais turísticos recomendados?': 'general',
+  'Especialidades de Ehime?': 'general',
+  'Horários de funcionamento dos bancos?': 'general',
+  'Como verificar a previsão do tempo?': 'general',
+  
+  // ロシア語 - 交通
+  'Как пользоваться автобусом?': 'transportation',
+  'Как пересаживаться на поездах?': 'transportation',
+  'Где купить IC-карты?': 'transportation',
+  'Как вызвать такси?': 'transportation',
+  'Проезд из аэропорта Мацуяма?': 'transportation',
+  
+  // ロシア語 - 医療
+  'Нужна ли запись в больницу?': 'medical',
+  'Можно ли использовать страховку?': 'medical',
+  'Где находятся аптеки?': 'medical',
+  'Где находятся больницы скорой помощи?': 'medical',
+  'Больницы с английским языком?': 'medical',
+  
+  // ロシア語 - ネット
+  'Где найти Wi-Fi?': 'connectivity',
+  'Где купить SIM-карты?': 'connectivity',
+  'Расположение интернет-кафе?': 'connectivity',
+  'Рекомендуемые тарифные планы?': 'connectivity',
+  'Что делать при медленном интернете?': 'connectivity',
+  
+  // ロシア語 - 宿泊
+  'Как забронировать отели?': 'accommodation',
+  'Как использовать аренду жилья?': 'accommodation',
+  'Долгосрочное размещение?': 'accommodation',
+  'Время заселения?': 'accommodation',
+  'Есть ли налоги на размещение?': 'accommodation',
+  
+  // ロシア語 - 文化
+  'Какие японские манеры мне следует знать?': 'culture',
+  'Как правильно кланяться?': 'culture',
+  'Где снимать обувь?': 'culture',
+  'Этикет во время еды?': 'culture',
+  'Как использовать горячие источники?': 'culture',
+  
+  // ロシア語 - 一般
+  'Контактная информация для экстренных случаев?': 'general',
+  'Рекомендуемые туристические места?': 'general',
+  'Специалитеты Эхимэ?': 'general',
+  'Часы работы банков?': 'general',
+  'Как проверить прогноз погоды?': 'general'
 };
 
 // 質問からカテゴリを推測する関数（多言語対応強化）
@@ -1251,7 +1419,12 @@ function guessCategory(userMessage) {
       message.includes('train') || message.includes('bus') || message.includes('transport') ||
       message.includes('버스') || message.includes('전철') || message.includes('교통') ||
       message.includes('公交') || message.includes('地铁') || message.includes('交通') ||
-      message.includes('移动') || message.includes('출租车') || message.includes('택시')) {
+      message.includes('移动') || message.includes('출租车') || message.includes('택시') ||
+      message.includes('autobus') || message.includes('zug') || message.includes('taxi') ||
+      message.includes('treno') || message.includes('ônibus') || message.includes('автобус') ||
+      message.includes('поезд') || message.includes('такси') ||
+      message.includes('autobús') || message.includes('tren') || message.includes('transporte') ||
+      message.includes('métro') || message.includes('tramway')) {
     return 'transportation';
   }
   
@@ -1260,7 +1433,13 @@ function guessCategory(userMessage) {
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
       message.includes('hospital') || message.includes('doctor') || message.includes('medicine') ||
       message.includes('병원') || message.includes('의료') || message.includes('약') ||
-      message.includes('医院') || message.includes('医生') || message.includes('药')) {
+      message.includes('医院') || message.includes('医生') || message.includes('药') ||
+      message.includes('krankenhaus') || message.includes('arzt') || message.includes('medikament') ||
+      message.includes('ospedale') || message.includes('medico') || message.includes('medicina') ||
+      message.includes('hospital') || message.includes('médico') || message.includes('больница') ||
+      message.includes('врач') || message.includes('лекарство') ||
+      message.includes('hospital') || message.includes('médico') || message.includes('medicina') ||
+      message.includes('hôpital') || message.includes('médecin') || message.includes('médicament')) {
     return 'medical';
   }
   
@@ -1269,7 +1448,13 @@ function guessCategory(userMessage) {
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
       message.includes('internet') || message.includes('network') ||
       message.includes('인터넷') || message.includes('통신') ||
-      message.includes('网络') || message.includes('互联网')) {
+      message.includes('网络') || message.includes('互联网') ||
+      message.includes('wlan') || message.includes('internetcafé') ||
+      message.includes('rete') || message.includes('connessione') ||
+      message.includes('rede') || message.includes('conexão') ||
+      message.includes('интернет') || message.includes('сеть') ||
+      message.includes('internet') || message.includes('conexión') ||
+      message.includes('internet') || message.includes('connexion')) {
     return 'connectivity';
   }
   
@@ -1278,7 +1463,13 @@ function guessCategory(userMessage) {
       message.includes('住居') || message.includes('部屋') ||
       message.includes('hotel') || message.includes('accommodation') || message.includes('room') ||
       message.includes('숙박') || message.includes('호텔') ||
-      message.includes('住宿') || message.includes('酒店') || message.includes('房间')) {
+      message.includes('住宿') || message.includes('酒店') || message.includes('房间') ||
+      message.includes('unterkunft') || message.includes('zimmer') ||
+      message.includes('alloggio') || message.includes('camera') ||
+      message.includes('acomodação') || message.includes('quarto') ||
+      message.includes('размещение') || message.includes('отель') || message.includes('номер') ||
+      message.includes('alojamiento') || message.includes('habitación') ||
+      message.includes('logement') || message.includes('chambre')) {
     return 'accommodation';
   }
   
@@ -1287,7 +1478,13 @@ function guessCategory(userMessage) {
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
       message.includes('culture') || message.includes('manner') || message.includes('etiquette') ||
       message.includes('문화') || message.includes('매너') || message.includes('예의') ||
-      message.includes('文化') || message.includes('礼仪') || message.includes('习俗')) {
+      message.includes('文化') || message.includes('礼仪') || message.includes('习俗') ||
+      message.includes('kultur') || message.includes('benehmen') || message.includes('etikette') ||
+      message.includes('cultura') || message.includes('maniere') || message.includes('educazione') ||
+      message.includes('cultura') || message.includes('maneiras') || message.includes('etiqueta') ||
+      message.includes('культура') || message.includes('манеры') || message.includes('этикет') ||
+      message.includes('cultura') || message.includes('modales') ||
+      message.includes('culture') || message.includes('manières') || message.includes('étiquette')) {
     return 'culture';
   }
   
