@@ -267,8 +267,13 @@ const faqQuestionsJa = {
   ]
 };
 
-// 翻訳関数（AI相談APIを利用）
+// 翻訳関数（Gemini API使用）
 async function translateText(text, targetLanguage) {
+  // 日本語の場合はそのまま返す
+  if (targetLanguage === 'ja') {
+    return text;
+  }
+  
   // キャッシュをチェック
   const cacheKey = `${text}_${targetLanguage}`;
   if (translationCache[cacheKey]) {
@@ -293,12 +298,15 @@ async function translateText(text, targetLanguage) {
       // キャッシュに保存
       translationCache[cacheKey] = translatedText;
       return translatedText;
+    } else {
+      console.warn(`Translation API error: ${response.status}`);
     }
   } catch (error) {
-    console.warn('Translation failed:', error);
+    console.warn('Translation API failed:', error);
   }
   
   // 翻訳に失敗した場合は元のテキストを返す
+  translationCache[cacheKey] = text;
   return text;
 }
 
@@ -1336,12 +1344,12 @@ async function cleanOldConversations() {
 }
 
 // 最近の会話履歴を取得（AI文脈用）
-async function getRecentConversations(limit = 3) {
+async function getRecentConversations(limitCount = 3) {
   if (!currentUser) return [];
 
   try {
     const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
-    const q = query(conversationsRef, orderBy('timestamp', 'desc'), limit(limit));
+    const q = query(conversationsRef, orderBy('timestamp', 'desc'), limit(limitCount));
     const snapshot = await getDocs(q);
     
     const conversations = [];
