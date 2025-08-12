@@ -27,6 +27,21 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
+// --- Firebase Configuration ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAW9NZHS6Gj9MYQiMnczwnGyq1eGfYq63U",
+  authDomain: "kotoha-personalize-app.firebaseapp.com",
+  projectId: "kotoha-personalize-app",
+  storageBucket: "kotoha-personalize-app.appspot.com",
+  messagingSenderId: "400606506364",
+  appId: "1:400606506364:web:bfb9d0554b111fbd1a08f9",
+  databaseURL: "https://kotoha-personalize-app-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 let currentUser = null;
 let currentSection = 1;
 let selectedCategory = '';
@@ -133,96 +148,96 @@ const translations = {
   ko: {
     // ヘッダー
     headerTitle: 'Kotoha AI',
-    headerSubtitle: '???? ??? ???? AI ?????',
+    headerSubtitle: '에히메현 체류를 지원하는 AI 어시스턴트',
     
     // 認証画面
-    welcomeTitle: 'Kotoha AI? ?? ?? ?????',
-    welcomeDesc: '??????? ??? ?? ???? ?? ?? ?? ??? ??? ???',
-    loginTitle: '???',
-    signupTitle: '?? ??',
-    email: '??? ??',
-    password: '????',
-    passwordConfirm: '???? ??',
-    loginBtn: '???',
-    signupBtn: '?? ??',
-    googleLoginBtn: 'Google? ???',
-    guestLoginBtn: '???? ??',
-    showSignupBtn: '?? ??',
-    showLoginBtn: '????? ????',
+    welcomeTitle: 'Kotoha AI에 오신 것을 환영합니다',
+    welcomeDesc: '에히메현에서의 체류를 더욱 편안하게 하기 위해 먼저 계정을 만들어 주세요',
+    loginTitle: '로그인',
+    signupTitle: '계정 생성',
+    email: '이메일 주소',
+    password: '비밀번호',
+    passwordConfirm: '비밀번호 확인',
+    loginBtn: '로그인',
+    signupBtn: '계정 생성',
+    googleLoginBtn: 'Google로 로그인',
+    guestLoginBtn: '게스트로 이용',
+    showSignupBtn: '계정 생성',
+    showLoginBtn: '로그인으로 돌아가기',
     
-    // プロフィール画?
-    profileTitle: '??? ??',
-    profileDesc: '? ??? ??? ???? ?? ?? ??? ?????',
-    displayName: '?? ??',
-    nationality: '??',
-    primaryLanguage: '?? ??',
-    stayLocation: '?? ??',
-    stayPurpose: '?? ??',
-    stayPeriod: '?? ??',
-    saveProfileBtn: '??? ??',
+    // プロフィール画면
+    profileTitle: '프로필 설정',
+    profileDesc: '더 적절한 지원을 제공하기 위해 기본 정보를 알려주세요',
+    displayName: '표시 이름',
+    nationality: '국적',
+    primaryLanguage: '사용 언어',
+    stayLocation: '체류 지역',
+    stayPurpose: '체류 목적',
+    stayPeriod: '체류 기간',
+    saveProfileBtn: '프로필 저장',
     
-    // 相談画?
-    consultationTitle: 'AI ??',
-    consultationDesc: '????? ???? ??? ??? ???',
-    categoryTitle: '?? ????',
+    // 相談画면
+    consultationTitle: 'AI 상담',
+    consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
+    categoryTitle: '상담 카테고리',
     
-    // 履歴画?
-    historyTitle: '?? ??',
-    historyDesc: '?? ?? ??? ??? ? ????',
-    backToConsultation: '???? ????',
-    exportHistory: '?? ????',
-    noHistory: '?? ?? ??? ????.',
+    // 履歴画면
+    historyTitle: '상담 이력',
+    historyDesc: '과거 상담 내용을 확인할 수 있습니다',
+    backToConsultation: '상담으로 돌아가기',
+    exportHistory: '이력 내보내기',
+    noHistory: '아직 상담 이력이 없습니다.',
     
     // 共通
-    logout: '????',
-    select: '??? ???'
+    logout: '로그아웃',
+    select: '선택해 주세요'
   },
   zh: {
     // ヘッダー
     headerTitle: 'Kotoha AI',
-    headerSubtitle: '支持?媛?居留的AI助理',
+    headerSubtitle: '支持爱媛县居留的AI助理',
     
     // 認証画面
-    welcomeTitle: '?迎使用 Kotoha AI',
-    welcomeDesc: '?了??在?媛?的居留更加舒?，?先?建??',
-    loginTitle: '登?',
-    signupTitle: '?建??',
-    email: '?子?箱',
-    password: '密?',
-    passwordConfirm: '??密?',
-    loginBtn: '登?',
-    signupBtn: '?建??',
-    googleLoginBtn: 'Google登?',
-    guestLoginBtn: '作??客使用',
-    showSignupBtn: '?建??',
-    showLoginBtn: '返回登?',
+    welcomeTitle: '欢迎使用 Kotoha AI',
+    welcomeDesc: '为了让您在爱媛县的居留更加舒适，请先创建账户',
+    loginTitle: '登录',
+    signupTitle: '创建账户',
+    email: '电子邮箱',
+    password: '密码',
+    passwordConfirm: '确认密码',
+    loginBtn: '登录',
+    signupBtn: '创建账户',
+    googleLoginBtn: 'Google登录',
+    guestLoginBtn: '作为访客使用',
+    showSignupBtn: '创建账户',
+    showLoginBtn: '返回登录',
     
     // プロフィール画面
-    profileTitle: '个人?料?置',
-    profileDesc: '?了提供更合?的支持，?告?我??的基本信息',
-    displayName: '?示姓名',
+    profileTitle: '个人资料设置',
+    profileDesc: '为了提供更合适的支持，请告诉我们您的基本信息',
+    displayName: '显示姓名',
     nationality: '国籍',
-    primaryLanguage: '使用?言',
+    primaryLanguage: '使用语言',
     stayLocation: '居留地区',
     stayPurpose: '居留目的',
-    stayPeriod: '居留期?',
-    saveProfileBtn: '保存个人?料',
+    stayPeriod: '居留期间',
+    saveProfileBtn: '保存个人资料',
     
     // 相談画面
-    consultationTitle: 'AI咨?',
-    consultationDesc: '?????，随?提?',
-    categoryTitle: '咨???',
+    consultationTitle: 'AI咨询',
+    consultationDesc: '请选择类别，随时提问',
+    categoryTitle: '咨询类别',
     
     // 履歴画面
-    historyTitle: '咨??史',
-    historyDesc: '?可以?看?往的咨?内容',
-    backToConsultation: '返回咨?',
-    exportHistory: '?出?史',
-    noHistory: '?没有咨??史。',
+    historyTitle: '咨询历史',
+    historyDesc: '您可以查看过往的咨询内容',
+    backToConsultation: '返回咨询',
+    exportHistory: '导出历史',
+    noHistory: '还没有咨询历史。',
     
     // 共通
-    logout: '退出登?',
-    select: '???'
+    logout: '退出登录',
+    select: '请选择'
   },
   es: {
     // ヘッダー
@@ -231,118 +246,118 @@ const translations = {
     
     // 認証画面
     welcomeTitle: 'Bienvenido a Kotoha AI',
-    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime mas comoda',
-    loginTitle: 'Iniciar Sesion',
+    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime más cómoda',
+    loginTitle: 'Iniciar Sesión',
     signupTitle: 'Crear Cuenta',
-    email: 'Correo Electronico',
-    password: 'Contrasena',
-    passwordConfirm: 'Confirmar Contrasena',
-    loginBtn: 'Iniciar Sesion',
+    email: 'Correo Electrónico',
+    password: 'Contraseña',
+    passwordConfirm: 'Confirmar Contraseña',
+    loginBtn: 'Iniciar Sesión',
     signupBtn: 'Crear Cuenta',
     googleLoginBtn: 'Iniciar con Google',
     guestLoginBtn: 'Usar como Invitado',
     showSignupBtn: 'Crear Cuenta',
-    showLoginBtn: 'Volver a Iniciar Sesion',
+    showLoginBtn: 'Volver a Iniciar Sesión',
     
     // プロフィール画面
-    profileTitle: 'Configuracion del Perfil',
-    profileDesc: 'Proporcione su informacion basica para un mejor soporte',
+    profileTitle: 'Configuración del Perfil',
+    profileDesc: 'Proporcione su información básica para un mejor soporte',
     displayName: 'Nombre para Mostrar',
     nationality: 'Nacionalidad',
     primaryLanguage: 'Idioma Principal',
-    stayLocation: 'Ubicacion de Estancia',
-    stayPurpose: 'Proposito',
-    stayPeriod: 'Periodo de Estancia',
+    stayLocation: 'Ubicación de Estancia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estancia',
     saveProfileBtn: 'Guardar Perfil',
     
     // 相談画面
     consultationTitle: 'Consulta AI',
-    consultationDesc: 'Selecciona una categoria y haz preguntas libremente',
-    categoryTitle: 'Categoria',
+    consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
+    categoryTitle: 'Categoría',
     
     // 履歴画面
     historyTitle: 'Historial de Consultas',
     historyDesc: 'Ver tus registros de consultas anteriores',
     backToConsultation: 'Volver a Consulta',
     exportHistory: 'Exportar Historial',
-    noHistory: 'Aun no hay historial de consultas.',
+    noHistory: 'Aún no hay historial de consultas.',
     
     // 共通
-    logout: 'Cerrar Sesion',
+    logout: 'Cerrar Sesión',
     select: 'Seleccionar'
   },
   fr: {
     // ヘッダー
     headerTitle: 'Kotoha AI',
-    headerSubtitle: 'Assistant IA pour votre sejour dans la Prefecture d\'Ehime',
+    headerSubtitle: 'Assistant IA pour votre séjour dans la Préfecture d\'Ehime',
     
     // 認証画面
     welcomeTitle: 'Bienvenue sur Kotoha AI',
-    welcomeDesc: 'Creez un compte pour rendre votre sejour dans la Prefecture d\'Ehime plus confortable',
+    welcomeDesc: 'Créez un compte pour rendre votre séjour dans la Préfecture d\'Ehime plus confortable',
     loginTitle: 'Se Connecter',
-    signupTitle: 'Creer un Compte',
+    signupTitle: 'Créer un Compte',
     email: 'Adresse Email',
     password: 'Mot de Passe',
     passwordConfirm: 'Confirmer le Mot de Passe',
     loginBtn: 'Se Connecter',
-    signupBtn: 'Creer un Compte',
+    signupBtn: 'Créer un Compte',
     googleLoginBtn: 'Se connecter avec Google',
-    guestLoginBtn: 'Utiliser comme Invite',
-    showSignupBtn: 'Creer un Compte',
-    showLoginBtn: 'Retour a la Connexion',
+    guestLoginBtn: 'Utiliser comme Invité',
+    showSignupBtn: 'Créer un Compte',
+    showLoginBtn: 'Retour à la Connexion',
     
     // プロフィール画面
     profileTitle: 'Configuration du Profil',
     profileDesc: 'Veuillez fournir vos informations de base pour un meilleur support',
     displayName: 'Nom d\'Affichage',
-    nationality: 'Nationalite',
+    nationality: 'Nationalité',
     primaryLanguage: 'Langue Principale',
-    stayLocation: 'Lieu de Sejour',
+    stayLocation: 'Lieu de Séjour',
     stayPurpose: 'Objectif',
-    stayPeriod: 'Periode de Sejour',
+    stayPeriod: 'Période de Séjour',
     saveProfileBtn: 'Sauvegarder le Profil',
     
     // 相談画面
     consultationTitle: 'Consultation IA',
-    consultationDesc: 'Selectionnez une categorie et posez vos questions librement',
-    categoryTitle: 'Categorie',
+    consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
+    categoryTitle: 'Catégorie',
     
     // 履歴画面
     historyTitle: 'Historique des Consultations',
-    historyDesc: 'Voir vos enregistrements de consultations precedentes',
-    backToConsultation: 'Retour a la Consultation',
+    historyDesc: 'Voir vos enregistrements de consultations précédentes',
+    backToConsultation: 'Retour à la Consultation',
     exportHistory: 'Exporter l\'Historique',
     noHistory: 'Aucun historique de consultation pour le moment.',
     
     // 共通
-    logout: 'Se Deconnecter',
-    select: 'Selectionner'
+    logout: 'Se Déconnecter',
+    select: 'Sélectionner'
   },
   de: {
     // ヘッダー
     headerTitle: 'Kotoha AI',
-    headerSubtitle: 'KI-Assistent fur Ihren Aufenthalt in der Prafektur Ehime',
+    headerSubtitle: 'KI-Assistent für Ihren Aufenthalt in der Präfektur Ehime',
     
     // 認証画面
     welcomeTitle: 'Willkommen bei Kotoha AI',
-    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Prafektur Ehime komfortabler zu gestalten',
+    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Präfektur Ehime komfortabler zu gestalten',
     loginTitle: 'Anmelden',
     signupTitle: 'Konto Erstellen',
     email: 'E-Mail-Adresse',
     password: 'Passwort',
-    passwordConfirm: 'Passwort Bestatigen',
+    passwordConfirm: 'Passwort Bestätigen',
     loginBtn: 'Anmelden',
     signupBtn: 'Konto Erstellen',
     googleLoginBtn: 'Mit Google anmelden',
     guestLoginBtn: 'Als Gast verwenden',
     showSignupBtn: 'Konto Erstellen',
-    showLoginBtn: 'Zuruck zur Anmeldung',
+    showLoginBtn: 'Zurück zur Anmeldung',
     
     // プロフィール画面
     profileTitle: 'Profil-Einrichtung',
-    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen fur bessere Unterstutzung an',
+    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen für bessere Unterstützung an',
     displayName: 'Anzeigename',
-    nationality: 'Nationalitat',
+    nationality: 'Nationalität',
     primaryLanguage: 'Hauptsprache',
     stayLocation: 'Aufenthaltsort',
     stayPurpose: 'Zweck',
@@ -351,19 +366,19 @@ const translations = {
     
     // 相談画面
     consultationTitle: 'KI-Beratung',
-    consultationDesc: 'Wahlen Sie eine Kategorie und stellen Sie frei Fragen',
+    consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
     categoryTitle: 'Kategorie',
     
     // 履歴画面
     historyTitle: 'Beratungshistorie',
     historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
-    backToConsultation: 'Zuruck zur Beratung',
+    backToConsultation: 'Zurück zur Beratung',
     exportHistory: 'Historie Exportieren',
     noHistory: 'Noch keine Beratungshistorie vorhanden.',
     
     // 共通
     logout: 'Abmelden',
-    select: 'Auswahlen'
+    select: 'Auswählen'
   },
   it: {
     // ヘッダー
@@ -372,7 +387,7 @@ const translations = {
     
     // 認証画面
     welcomeTitle: 'Benvenuto in Kotoha AI',
-    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime piu confortevole',
+    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime più confortevole',
     loginTitle: 'Accedi',
     signupTitle: 'Crea Account',
     email: 'Indirizzo Email',
@@ -389,7 +404,7 @@ const translations = {
     profileTitle: 'Configurazione Profilo',
     profileDesc: 'Fornisci le tue informazioni di base per un migliore supporto',
     displayName: 'Nome Visualizzato',
-    nationality: 'Nazionalita',
+    nationality: 'Nazionalità',
     primaryLanguage: 'Lingua Principale',
     stayLocation: 'Luogo di Soggiorno',
     stayPurpose: 'Scopo',
@@ -419,10 +434,10 @@ const translations = {
     
     // 認証画面
     welcomeTitle: 'Bem-vindo ao Kotoha AI',
-    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortavel',
+    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortável',
     loginTitle: 'Entrar',
     signupTitle: 'Criar Conta',
-    email: 'Endereco de Email',
+    email: 'Endereço de Email',
     password: 'Senha',
     passwordConfirm: 'Confirmar Senha',
     loginBtn: 'Entrar',
@@ -433,27 +448,27 @@ const translations = {
     showLoginBtn: 'Voltar ao Login',
     
     // プロフィール画面
-    profileTitle: 'Configuracao do Perfil',
-    profileDesc: 'Forneca suas informacoes basicas para melhor suporte',
-    displayName: 'Nome de Exibicao',
+    profileTitle: 'Configuração do Perfil',
+    profileDesc: 'Forneça suas informações básicas para melhor suporte',
+    displayName: 'Nome de Exibição',
     nationality: 'Nacionalidade',
     primaryLanguage: 'Idioma Principal',
     stayLocation: 'Local de Estadia',
-    stayPurpose: 'Proposito',
-    stayPeriod: 'Periodo de Estadia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estadia',
     saveProfileBtn: 'Salvar Perfil',
     
     // 相談画面
     consultationTitle: 'Consulta de IA',
-    consultationDesc: 'Selecione uma categoria e faca perguntas livremente',
+    consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
     categoryTitle: 'Categoria',
     
     // 履歴画面
-    historyTitle: 'Historico de Consultas',
+    historyTitle: 'Histórico de Consultas',
     historyDesc: 'Veja seus registros de consultas anteriores',
-    backToConsultation: 'Voltar a Consulta',
-    exportHistory: 'Exportar Historico',
-    noHistory: 'Ainda nao ha historico de consultas.',
+    backToConsultation: 'Voltar à Consulta',
+    exportHistory: 'Exportar Histórico',
+    noHistory: 'Ainda não há histórico de consultas.',
     
     // 共通
     logout: 'Sair',
@@ -490,7 +505,7 @@ const translations = {
     stayPeriod: 'Период Пребывания',
     saveProfileBtn: 'Сохранить Профиль',
     
-    // 相談画?
+    // 相談画면
     consultationTitle: 'ИИ-Консультация',
     consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
     categoryTitle: 'Категория',
@@ -698,30 +713,10 @@ function guessCategory(userMessage) {
 }
 
 // --- DOMContentLoaded Listener ---
-document.addEventListener('DOMContentLoaded', async () => { // <-- この行に async を追加します
-
-  // ▼▼▼ ここからが挿入するコードです ▼▼▼
-  try {
-    const response = await fetch('/api/firebase-config');
-    if (!response.ok) throw new Error('サーバーから設定を取得できませんでした');
-    const firebaseConfig = await response.json();
-    if (!firebaseConfig.apiKey) throw new Error('APIキーが設定に含まれていません');
-
-    const app = initializeApp(firebaseConfig);
-    // グローバル変数にFirebaseのインスタンスを代入します
-    auth = getAuth(app);
-    db = getFirestore(app);
-  } catch (error) {
-      console.error("Firebaseの初期化に失敗しました:", error);
-      alert("致命的なエラー: アプリケーションを初期化できませんでした。");
-      return; // Firebaseの初期化に失敗した場合は、ここで処理を停止します
-  }
-  // ▲▲▲ ここまでが挿入するコードです ▲▲▲
-
+document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing enhanced app...');
   
   // --- UI Element References ---
-  // ... (以降のコードは変更ありません)
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const authContainer = document.getElementById('auth-container');
@@ -804,13 +799,13 @@ document.addEventListener('DOMContentLoaded', async () => { // <-- この行に 
       const languageCodeMap = {
         '日本語': 'ja',
         'English': 'en', 
-        '???': 'ko',
+        '한국어': 'ko',
         '中文': 'zh',
-        'Espanol': 'es',
-        'Francais': 'fr',
+        'Español': 'es',
+        'Français': 'fr',
         'Deutsch': 'de',
         'Italiano': 'it',
-        'Portugues': 'pt',
+        'Português': 'pt',
         'Русский': 'ru'
       };
       
@@ -1385,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', async () => { // <-- この行に 
       if (confirm('チャットをクリアしますか？')) {
         chatMessages.innerHTML = `
           <div class="message ai-message">
-              <div class="message-avatar">??</div>
+              <div class="message-avatar">🤖</div>
               <div class="message-content">
                   <div class="message-bubble">
                       こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
@@ -1543,7 +1538,7 @@ function manualMarkdownToHTML(text) {
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="ai-bold">$1</strong>');
   
   // リスト変換
-  html = html.replace(/^[-?]\s(.+)$/gm, '<li class="ai-list-item">$1</li>');
+  html = html.replace(/^[-•]\s(.+)$/gm, '<li class="ai-list-item">$1</li>');
   html = html.replace(/(<li class="ai-list-item">.*<\/li>)/s, '<ul class="ai-list">$1</ul>');
   
   // 改行変換
@@ -1565,7 +1560,7 @@ function appendTypingIndicator() {
   
   const indicatorHTML = `
     <div class="message ai-message" id="typing-indicator">
-      <div class="message-avatar">??</div>
+      <div class="message-avatar">🤖</div>
       <div class="message-content">
         <div class="message-bubble">
           <div class="typing-dots">
@@ -1590,34 +1585,34 @@ function removeTypingIndicator() {
 function generateBetterResponse(userMessage, category) {
   const responses = {
     transportation: [
-      "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n?? バス：ICカード「い～カード」が便利\n?? 市内電車：道後温泉や松山城へのアクセスに最適\n?? タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
+      "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n🚌 バス：ICカード「い～カード」が便利\n🚃 市内電車：道後温泉や松山城へのアクセスに最適\n🚗 タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
       
-      "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n? 松山市内：市内電車・バスで十分\n? 今治・新居浜：JR予讃線が便利\n? しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
+      "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n• 松山市内：市内電車・バスで十分\n• 今治・新居浜：JR予讃線が便利\n• しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
     ],
     medical: [
-      "愛媛県での医療についてサポートします！\n\n【主要病院】\n?? 愛媛大学医学部附属病院（東温市）\n?? 松山赤十字病院（松山市）\n?? 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番\n医療相談：#7119（24時間）",
+      "愛媛県での医療についてサポートします！\n\n【主要病院】\n🏥 愛媛大学医学部附属病院（東温市）\n🏥 松山赤十字病院（松山市）\n🏥 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番\n医療相談：#7119（24時間）",
       
       "医療機関について詳しくお答えします。\n\n【薬局・ドラッグストア】\nマツモトキヨシ、ウエルシア、ツルハドラッグが各地にあります。\n\n【英語対応】\n松山市内の一部病院では英語対応可能です。\n事前に電話で確認することをお勧めします。\n\n【保険】\n海外旅行保険や国民健康保険について、不明点があればお聞きください。"
     ],
     connectivity: [
-      "愛媛でのインターネット環境についてご案内します！\n\n【無料Wi-Fi】\n?? 松山空港・JR松山駅\n?? コンビニ（セブン、ローソン等）\n?? カフェ（スタバ、ドトール等）\n?? 松山市役所・図書館\n\n【SIMカード】\n家電量販店でプリペイドSIM購入可能\n\n【推奨プラン】\n短期：コンビニプリペイド\n長期：格安SIM（楽天モバイル等）",
+      "愛媛でのインターネット環境についてご案内します！\n\n【無料Wi-Fi】\n📶 松山空港・JR松山駅\n📶 コンビニ（セブン、ローソン等）\n📶 カフェ（スタバ、ドトール等）\n📶 松山市役所・図書館\n\n【SIMカード】\n家電量販店でプリペイドSIM購入可能\n\n【推奨プラン】\n短期：コンビニプリペイド\n長期：格安SIM（楽天モバイル等）",
       
-      "ネット環境について詳しくサポートします。\n\n【市内Wi-Fi】\n松山市内では「Matsuyama City Wi-Fi」が利用可能です。\n\n【データプラン比較】\n? 1週間以下：プリペイドSIM（2,000-3,000円）\n? 1ヶ月程度：格安SIM（月3,000-5,000円）\n? 長期滞在：大手キャリア契約\n\n滞在期間とデータ使用量を教えていただければ、最適なプランをご提案します！"
+      "ネット環境について詳しくサポートします。\n\n【市内Wi-Fi】\n松山市内では「Matsuyama City Wi-Fi」が利用可能です。\n\n【データプラン比較】\n• 1週間以下：プリペイドSIM（2,000-3,000円）\n• 1ヶ月程度：格安SIM（月3,000-5,000円）\n• 長期滞在：大手キャリア契約\n\n滞在期間とデータ使用量を教えていただければ、最適なプランをご提案します！"
     ],
     accommodation: [
-      "愛媛での宿泊についてご案内します！\n\n【おすすめエリア】\n?? 道後温泉周辺：温泉旅館・観光便利\n?? 松山市駅周辺：交通アクセス良好\n?? 大街道周辺：繁華街・買い物便利\n\n【価格目安】\nビジネスホテル：6,000-10,000円/泊\n民泊：4,000-8,000円/泊\nシェアハウス：40,000-60,000円/月\n\n予約は早めがお得です！",
+      "愛媛での宿泊についてご案内します！\n\n【おすすめエリア】\n🏨 道後温泉周辺：温泉旅館・観光便利\n🏨 松山市駅周辺：交通アクセス良好\n🏨 大街道周辺：繁華街・買い物便利\n\n【価格目安】\nビジネスホテル：6,000-10,000円/泊\n民泊：4,000-8,000円/泊\nシェアハウス：40,000-60,000円/月\n\n予約は早めがお得です！",
       
-      "住居・宿泊オプションについて詳しくお答えします。\n\n【長期滞在向け】\n? マンスリーマンション\n? シェアハウス（国際交流も可能）\n? 民泊（Airbnb等）\n\n【予約のコツ】\n平日は料金が安く、連泊割引もあります。\n\n【必要書類】\n長期滞在の場合、住民票登録が必要な場合があります。\n\nご希望の条件を詳しく教えてください！"
+      "住居・宿泊オプションについて詳しくお答えします。\n\n【長期滞在向け】\n• マンスリーマンション\n• シェアハウス（国際交流も可能）\n• 民泊（Airbnb等）\n\n【予約のコツ】\n平日は料金が安く、連泊割引もあります。\n\n【必要書類】\n長期滞在の場合、住民票登録が必要な場合があります。\n\nご希望の条件を詳しく教えてください！"
     ],
     culture: [
-      "愛媛・日本の文化とマナーについてご説明します！\n\n【基本マナー】\n?? 挨拶：軽いお辞儀と「おはようございます」\n?? 靴：玄関で脱ぐ（スリッパに履き替え）\n??? 食事：「いただきます」「ごちそうさま」\n\n【公共交通】\n電車内での通話は控えめに\n優先席では携帯の電源OFF\n\n【愛媛特有】\n?? みかんは愛媛の誇り！\n?? 道後温泉では入浴マナーを守って",
+      "愛媛・日本の文化とマナーについてご説明します！\n\n【基本マナー】\n🙏 挨拶：軽いお辞儀と「おはようございます」\n👟 靴：玄関で脱ぐ（スリッパに履き替え）\n🍽️ 食事：「いただきます」「ごちそうさま」\n\n【公共交通】\n電車内での通話は控えめに\n優先席では携帯の電源OFF\n\n【愛媛特有】\n🍊 みかんは愛媛の誇り！\n♨️ 道後温泉では入浴マナーを守って",
       
-      "日本・愛媛の文化について詳しくお答えします。\n\n【コミュニケーション】\n愛媛の人は温和で親切です。困った時は「すみません」と声をかけてください。\n\n【食事文化】\n? 愛媛グルメ：じゃこ天、鯛めし、みかん\n? 居酒屋では「乾杯」でスタート\n? チップの習慣はありません\n\n【季節行事】\n春：お花見、夏：祭り、秋：みかん狩り\n\n具体的なシチュエーションでのマナーもお答えできます！"
+      "日本・愛媛の文化について詳しくお答えします。\n\n【コミュニケーション】\n愛媛の人は温和で親切です。困った時は「すみません」と声をかけてください。\n\n【食事文化】\n• 愛媛グルメ：じゃこ天、鯛めし、みかん\n• 居酒屋では「乾杯」でスタート\n• チップの習慣はありません\n\n【季節行事】\n春：お花見、夏：祭り、秋：みかん狩り\n\n具体的なシチュエーションでのマナーもお答えできます！"
     ],
     general: [
-      "愛媛での生活・観光についてお答えします！\n\n【観光スポット】\n?? 松山城：市内中心の歴史ある城\n?? 道後温泉：日本最古の温泉地\n?? しまなみ海道：サイクリングで有名\n\n【愛媛グルメ】\n?? 鯛めし（郷土料理）\n?? じゃこ天（練り物）\n?? 愛媛みかん（11-3月が旬）\n\n【ショッピング】\n大街道・銀天街が松山の繁華街です！",
+      "愛媛での生活・観光についてお答えします！\n\n【観光スポット】\n🏯 松山城：市内中心の歴史ある城\n♨️ 道後温泉：日本最古の温泉地\n🌉 しまなみ海道：サイクリングで有名\n\n【愛媛グルメ】\n🐟 鯛めし（郷土料理）\n🐠 じゃこ天（練り物）\n🍊 愛媛みかん（11-3月が旬）\n\n【ショッピング】\n大街道・銀天街が松山の繁華街です！",
       
-      "愛媛での生活について幅広くサポートします！\n\n【日用品】\nコンビニ：24時間、基本的な物は揃います\nスーパー：フジ、マルナカ、イオンが主要\n100円ショップ：ダイソー、セリア\n\n【便利アプリ】\n? Google翻訳（カメラ機能で看板翻訳）\n? Yahoo!天気（詳細な天気予報）\n\n【緊急連絡先】\n警察：110、消防・救急：119\n\n他にも知りたいことがあれば何でもお聞きください！"
+      "愛媛での生活について幅広くサポートします！\n\n【日用品】\nコンビニ：24時間、基本的な物は揃います\nスーパー：フジ、マルナカ、イオンが主要\n100円ショップ：ダイソー、セリア\n\n【便利アプリ】\n• Google翻訳（カメラ機能で看板翻訳）\n• Yahoo!天気（詳細な天気予報）\n\n【緊急連絡先】\n警察：110、消防・救急：119\n\n他にも知りたいことがあれば何でもお聞きください！"
     ]
   };
 
@@ -1678,13 +1673,13 @@ async function loadProfileFormFromFirestore() {
         const languageCodeMap = {
           '日本語': 'ja',
           'English': 'en', 
-          '???': 'ko',
+          '한국어': 'ko',
           '中文': 'zh',
-          'Espanol': 'es',
-          'Francais': 'fr',
+          'Español': 'es',
+          'Français': 'fr',
           'Deutsch': 'de',
           'Italiano': 'it',
-          'Portugues': 'pt',
+          'Português': 'pt',
           'Русский': 'ru'
         };
         
@@ -1747,7 +1742,7 @@ function appendChatMessage(type, htmlContent) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isAI ? 'ai-message' : 'user-message'}`;
   
-  const avatar = isAI ? '??' : '??';
+  const avatar = isAI ? '🤖' : '🧑';
   const senderName = isAI ? 'Kotoha AI' : 'You';
   
   // HTMLコンテンツをそのまま使用（Markdownが既に適用済み）
@@ -1757,7 +1752,7 @@ function appendChatMessage(type, htmlContent) {
     <div class="message-avatar">${avatar}</div>
     <div class="message-content">
       <div class="message-bubble">${contentToShow}</div>
-      <div class="message-time">${senderName} ? ${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</div>
+      <div class="message-time">${senderName} • ${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</div>
     </div>
   `;
   
