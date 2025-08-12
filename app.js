@@ -1064,11 +1064,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           stayTo,
         };
         
-        console.log('=== Profile Save Debug ===');
-        console.log('Saving profile:', profileData);
-        console.log('Primary Language to save:', primaryLanguage);
-        console.log('==========================');
-        
         await setDoc(userRef, {
           profile: profileData
         }, { merge: true });
@@ -1336,15 +1331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists() && userSnap.data().profile) {
           userProfile = userSnap.data().profile;
-          console.log('=== Client Profile Debug ===');
-          console.log('Sending user profile:', userProfile);
-          console.log('Primary Language:', userProfile.primaryLanguage);
-          console.log('============================');
-        } else {
-          console.log('No profile found for user:', currentUser.uid);
         }
-      } else {
-        console.log('No current user');
       }
       
       // 最近の会話履歴を取得
@@ -1682,10 +1669,6 @@ async function loadProfileFormFromFirestore() {
     
     if (snap.exists() && snap.data().profile) {
       const data = snap.data().profile;
-      console.log('=== Profile Load Debug ===');
-      console.log('Loading profile:', data);
-      console.log('Primary Language loaded:', data.primaryLanguage);
-      console.log('==========================');
       
       const displayNameField = document.getElementById('display-name');
       const nationalityField = document.getElementById('nationality');
