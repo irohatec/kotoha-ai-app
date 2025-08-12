@@ -933,17 +933,22 @@ function updateFAQQuestions(category = null) {
   if (!questionContainer) return;
   
   const t = translations[currentLanguage];
-  if (!t || !t.faqQuestions) return;
+  if (!t || !t.faqQuestions) {
+    console.log('No translations found for language:', currentLanguage);
+    return;
+  }
   
   let questionsToShow = [];
   
   if (category && t.faqQuestions[category]) {
     // 選択されたカテゴリの質問を表示
     questionsToShow = t.faqQuestions[category];
+    console.log(`Showing questions for category: ${category}`, questionsToShow);
   } else {
     // デフォルト：全カテゴリから1つずつ表示
     const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
     questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
+    console.log('Showing default questions:', questionsToShow);
   }
   
   questionContainer.innerHTML = '';
@@ -1249,6 +1254,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (primaryLanguageSelect) {
     primaryLanguageSelect.addEventListener('change', (e) => {
       const selectedLang = e.target.value;
+      console.log('Language selected:', selectedLang);
+      
       // 言語コードマッピング
       const languageCodeMap = {
         '日本語': 'ja',
@@ -1264,8 +1271,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       const langCode = languageCodeMap[selectedLang];
+      console.log('Mapped language code:', langCode);
+      
       if (langCode && translations[langCode]) {
-        switchLanguage(langCode);
+        currentLanguage = langCode;
+        console.log('Current language set to:', currentLanguage);
+        
+        // 即座に更新
+        setTimeout(() => {
+          updatePageTexts();
+          updateFAQQuestions(selectedCategory);
+          updateChatWelcomeMessage();
+        }, 50);
       }
     });
   }
@@ -1827,10 +1844,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- 初期表示時のテキスト更新 ---
   updatePageTexts();
   
-  // よくある質問の初期化
+  // よくある質問の初期化（少し遅延させて確実に）
   setTimeout(() => {
+    console.log('Initializing FAQ with language:', currentLanguage);
     updateFAQQuestions();
-  }, 200);
+  }, 300);
   
   // チャット画面の初期化
   setTimeout(() => {
@@ -2119,7 +2137,23 @@ async function loadProfileFormFromFirestore() {
         
         const langCode = languageCodeMap[data.primaryLanguage];
         if (langCode && translations[langCode]) {
-          switchLanguage(langCode);
+          currentLanguage = langCode;
+          
+          // ヘッダーボタンの状態更新
+          document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          const langBtn = document.getElementById(`lang-${langCode}`);
+          if (langBtn) {
+            langBtn.classList.add('active');
+          }
+          
+          // テキスト更新
+          setTimeout(() => {
+            updatePageTexts();
+            updateFAQQuestions(selectedCategory);
+            updateChatWelcomeMessage();
+          }, 100);
         }
       }
     } else {
