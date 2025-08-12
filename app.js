@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - セキュア版
+// Firebase v10.12.2 本番版 app.js - セキュア版 (最適化)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -59,6 +59,7 @@ let selectedCategory = '';
 let shouldStoreConsultation = true;
 let isAIChatting = false;
 let currentLanguage = 'ja'; // デフォルトは日本語
+let translationCache = {}; // 翻訳キャッシュ
 
 // グローバル関数として定義
 function selectCategory(categoryValue) {
@@ -79,16 +80,8 @@ function selectCategory(categoryValue) {
       card.classList.add('selected', 'active');
       
       if (selectedCategoryName) {
-        const t = translations[currentLanguage];
-        const categoryNames = t && t.categories ? t.categories : {
-          transportation: '交通・移動',
-          medical: '医療・健康',
-          connectivity: 'ネット・通信',
-          accommodation: '住居・宿泊',
-          culture: '文化・マナー',
-          general: '一般相談'
-        };
-        selectedCategoryName.textContent = categoryNames[categoryValue] || categoryValue;
+        // 動的翻訳でカテゴリー名を設定
+        updateCategoryName(categoryValue, selectedCategoryName);
       }
     }
   });
@@ -97,6 +90,27 @@ function selectCategory(categoryValue) {
   updateFAQQuestions(categoryValue);
   
   updateSendButton();
+}
+
+// カテゴリー名を動的翻訳で更新
+async function updateCategoryName(categoryValue, element) {
+  const categoryNamesJa = {
+    transportation: '交通・移動',
+    medical: '医療・健康',
+    connectivity: 'ネット・通信',
+    accommodation: '住居・宿泊',
+    culture: '文化・マナー',
+    general: '一般相談'
+  };
+  
+  const jaName = categoryNamesJa[categoryValue] || categoryValue;
+  
+  if (currentLanguage === 'ja') {
+    element.textContent = jaName;
+  } else {
+    const translatedName = await translateText(jaName, currentLanguage);
+    element.textContent = translatedName;
+  }
 }
 
 function updateSendButton() {
@@ -129,14 +143,11 @@ function updateSendButton() {
   }
 }
 
-// 多言語辞書
+// コンパクトな静的翻訳（UI要素のみ）
 const translations = {
   ja: {
-    // ヘッダー
     headerTitle: 'Kotoha AI',
     headerSubtitle: '愛媛県での滞在をサポートするAIアシスタント',
-    
-    // 認証画面
     welcomeTitle: 'ようこそ Kotoha AI へ',
     welcomeDesc: '愛媛県での滞在をより快適にするため、まずはアカウントを作成しましょう',
     loginTitle: 'ログイン',
@@ -150,8 +161,6 @@ const translations = {
     guestLoginBtn: 'ゲストとして利用',
     showSignupBtn: 'アカウント作成',
     showLoginBtn: 'ログインに戻る',
-    
-    // プロフィール画面
     profileTitle: 'プロフィール設定',
     profileDesc: 'より適切なサポートを提供するため、基本情報を教えてください',
     displayName: '表示名',
@@ -161,89 +170,21 @@ const translations = {
     stayPurpose: '滞在目的',
     stayPeriod: '滞在期間',
     saveProfileBtn: 'プロフィール保存',
-    
-    // 相談画面
     consultationTitle: 'AI相談',
     consultationDesc: 'カテゴリを選択して、気軽にご質問ください',
     categoryTitle: '相談カテゴリ',
     frequentlyAskedQuestions: 'よくある質問',
-    
-    // よくある質問（カテゴリー別）
-    faqQuestions: {
-      transportation: [
-        'バスの乗り方は？',
-        '電車の乗り換え方法は？',
-        'ICカードはどこで買える？',
-        'タクシーの呼び方は？',
-        '松山空港からのアクセスは？'
-      ],
-      medical: [
-        '病院の予約は必要？',
-        '保険証は使える？',
-        '薬局はどこにある？',
-        '救急病院はどこ？',
-        '英語対応の病院は？'
-      ],
-      connectivity: [
-        'Wi-Fi利用場所は？',
-        'SIMカードはどこで買える？',
-        'インターネットカフェは？',
-        'データプランのおすすめは？',
-        '通信速度が遅い時は？'
-      ],
-      accommodation: [
-        'ホテルの予約方法は？',
-        '民泊の利用方法は？',
-        '長期滞在向けの住居は？',
-        'チェックイン時間は？',
-        '宿泊税はかかる？'
-      ],
-      culture: [
-        '日本のマナーは？',
-        'お辞儀の仕方は？',
-        '靴を脱ぐ場所は？',
-        '食事のマナーは？',
-        '温泉の入り方は？'
-      ],
-      general: [
-        '緊急時の連絡先は？',
-        '観光スポットのおすすめは？',
-        '愛媛の名物は？',
-        '銀行の営業時間は？',
-        '天気予報の確認方法は？'
-      ]
-    },
-    
-    // カテゴリー名
-    categories: {
-      transportation: '交通・移動',
-      medical: '医療・健康', 
-      connectivity: 'ネット・通信',
-      accommodation: '住居・宿泊',
-      culture: '文化・マナー',
-      general: '一般相談'
-    },
-    
-    // チャット初期メッセージ
-    chatWelcomeMessage: 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。',
-    
-    // 履歴画面
     historyTitle: '相談履歴',
     historyDesc: '過去の相談内容を確認できます',
     backToConsultation: '相談に戻る',
     exportHistory: '履歴をエクスポート',
     noHistory: 'まだ相談履歴はありません。',
-    
-    // 共通
     logout: 'ログアウト',
     select: '選択してください'
   },
   en: {
-    // ヘッダー
     headerTitle: 'Kotoha AI',
     headerSubtitle: 'AI Assistant for Your Stay in Ehime Prefecture',
-    
-    // 認証画面
     welcomeTitle: 'Welcome to Kotoha AI',
     welcomeDesc: 'Create an account to make your stay in Ehime Prefecture more comfortable',
     loginTitle: 'Sign In',
@@ -257,8 +198,6 @@ const translations = {
     guestLoginBtn: 'Use as Guest',
     showSignupBtn: 'Create Account',
     showLoginBtn: 'Back to Login',
-    
-    // プロフィール画面
     profileTitle: 'Profile Setup',
     profileDesc: 'Please provide your basic information for better support',
     displayName: 'Display Name',
@@ -268,577 +207,100 @@ const translations = {
     stayPurpose: 'Purpose',
     stayPeriod: 'Stay Period',
     saveProfileBtn: 'Save Profile',
-    
-    // 相談画面
     consultationTitle: 'AI Consultation',
     consultationDesc: 'Select a category and feel free to ask questions',
     categoryTitle: 'Category',
     frequentlyAskedQuestions: 'Frequently Asked Questions',
-    
-    // よくある質問（カテゴリー別）
-    faqQuestions: {
-      transportation: [
-        'How to use the bus?',
-        'How to transfer trains?',
-        'Where to buy IC cards?',
-        'How to call a taxi?',
-        'Access from Matsuyama Airport?'
-      ],
-      medical: [
-        'Do I need a reservation for the hospital?',
-        'Can I use insurance?',
-        'Where are pharmacies?',
-        'Where are emergency hospitals?',
-        'English-speaking hospitals?'
-      ],
-      connectivity: [
-        'Where can I find Wi-Fi?',
-        'Where to buy SIM cards?',
-        'Internet cafes location?',
-        'Recommended data plans?',
-        'What to do when internet is slow?'
-      ],
-      accommodation: [
-        'How to book hotels?',
-        'How to use vacation rentals?',
-        'Long-term accommodation?',
-        'Check-in times?',
-        'Are there accommodation taxes?'
-      ],
-      culture: [
-        'What Japanese manners should I know?',
-        'How to bow properly?',
-        'Where to remove shoes?',
-        'Dining etiquette?',
-        'How to use hot springs?'
-      ],
-      general: [
-        'Emergency contact information?',
-        'Recommended tourist spots?',
-        'Ehime specialties?',
-        'Bank operating hours?',
-        'How to check weather forecast?'
-      ]
-    },
-    
-    // カテゴリー名
-    categories: {
-      transportation: 'Transportation',
-      medical: 'Medical & Health', 
-      connectivity: 'Internet & Communication',
-      accommodation: 'Housing & Accommodation',
-      culture: 'Culture & Etiquette',
-      general: 'General'
-    },
-    
-    // チャット初期メッセージ
-    chatWelcomeMessage: 'Hello! I\'m Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.<br>Click on the sample questions above or enter your question directly.',
-    
-    // 履歴画面
     historyTitle: 'Consultation History',
     historyDesc: 'View your past consultation records',
     backToConsultation: 'Back to Consultation',
     exportHistory: 'Export History',
     noHistory: 'No consultation history yet.',
-    
-    // 共通
     logout: 'Logout',
     select: 'Select'
-  },
-  ko: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: '에히메현 체류를 지원하는 AI 어시스턴트',
-    
-    // 認証画面
-    welcomeTitle: 'Kotoha AI에 오신 것을 환영합니다',
-    welcomeDesc: '에히메현에서의 체류를 더욱 편안하게 하기 위해 먼저 계정을 만들어 주세요',
-    loginTitle: '로그인',
-    signupTitle: '계정 생성',
-    email: '이메일 주소',
-    password: '비밀번호',
-    passwordConfirm: '비밀번호 확인',
-    loginBtn: '로그인',
-    signupBtn: '계정 생성',
-    googleLoginBtn: 'Google로 로그인',
-    guestLoginBtn: '게스트로 이용',
-    showSignupBtn: '계정 생성',
-    showLoginBtn: '로그인으로 돌아가기',
-    
-    // プロフィール画面
-    profileTitle: '프로필 설정',
-    profileDesc: '더 적절한 지원을 제공하기 위해 기본 정보를 알려주세요',
-    displayName: '표시 이름',
-    nationality: '국적',
-    primaryLanguage: '사용 언어',
-    stayLocation: '체류 지역',
-    stayPurpose: '체류 목적',
-    stayPeriod: '체류 기간',
-    saveProfileBtn: '프로필 저장',
-    
-    // 相談画면
-    consultationTitle: 'AI 상담',
-    consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
-    categoryTitle: '상담 카테고리',
-    frequentlyAskedQuestions: '자주 묻는 질문',
-    
-    // よくある質問（カテゴリー別）
-    faqQuestions: {
-      transportation: [
-        '버스 이용 방법은?',
-        '전철 환승 방법은?',
-        'IC카드는 어디서 살 수 있나요?',
-        '택시는 어떻게 부르나요?',
-        '마츠야마 공항에서의 접근 방법은?'
-      ],
-      medical: [
-        '병원 예약이 필요한가요?',
-        '보험증을 사용할 수 있나요?',
-        '약국은 어디에 있나요?',
-        '응급병원은 어디인가요?',
-        '영어 대응 병원은?'
-      ],
-      connectivity: [
-        'Wi-Fi 이용 장소는?',
-        'SIM카드는 어디서 살 수 있나요?',
-        '인터넷 카페는 어디에?',
-        '추천 데이터 요금제는?',
-        '통신 속도가 느릴 때는?'
-      ],
-      accommodation: [
-        '호텔 예약 방법은?',
-        '민박 이용 방법은?',
-        '장기 체류용 주거는?',
-        '체크인 시간은?',
-        '숙박세가 있나요?'
-      ],
-      culture: [
-        '일본 매너는?',
-        '인사하는 방법은?',
-        '신발을 벗는 곳은?',
-        '식사 예절은?',
-        '온천 이용법은?'
-      ],
-      general: [
-        '응급 상황 연락처는?',
-        '추천 관광지는?',
-        '에히메 명물은?',
-        '은행 영업 시간은?',
-        '날씨 예보 확인 방법은?'
-      ]
-    },
-    
-    // カテゴリー名
-    categories: {
-      transportation: '교통・이동',
-      medical: '의료・건강', 
-      connectivity: '인터넷・통신',
-      accommodation: '주거・숙박',
-      culture: '문화・매너',
-      general: '일반 상담'
-    },
-    
-    // 履歴画면
-    historyTitle: '상담 이력',
-    historyDesc: '과거 상담 내용을 확인할 수 있습니다',
-    backToConsultation: '상담으로 돌아가기',
-    exportHistory: '이력 내보내기',
-    noHistory: '아직 상담 이력이 없습니다.',
-    
-    // 共通
-    logout: '로그아웃',
-    select: '선택해 주세요'
-  },
-  zh: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: '支持爱媛县居留的AI助理',
-    
-    // 認証画面
-    welcomeTitle: '欢迎使用 Kotoha AI',
-    welcomeDesc: '为了让您在爱媛县的居留更加舒适，请先创建账户',
-    loginTitle: '登录',
-    signupTitle: '创建账户',
-    email: '电子邮箱',
-    password: '密码',
-    passwordConfirm: '确认密码',
-    loginBtn: '登录',
-    signupBtn: '创建账户',
-    googleLoginBtn: 'Google登录',
-    guestLoginBtn: '作为访客使用',
-    showSignupBtn: '创建账户',
-    showLoginBtn: '返回登录',
-    
-    // プロフィール画面
-    profileTitle: '个人资料设置',
-    profileDesc: '为了提供更合适的支持，请告诉我们您的基本信息',
-    displayName: '显示姓名',
-    nationality: '国籍',
-    primaryLanguage: '使用语言',
-    stayLocation: '居留地区',
-    stayPurpose: '居留目的',
-    stayPeriod: '居留期间',
-    saveProfileBtn: '保存个人资料',
-    
-    // 相談画面
-    consultationTitle: 'AI咨询',
-    consultationDesc: '请选择类别，随时提问',
-    categoryTitle: '咨询类别',
-    frequentlyAskedQuestions: '常见问题',
-    
-    // よくある質問（カテゴリー別）
-    faqQuestions: {
-      transportation: [
-        '如何乘坐公交车？',
-        '如何换乘电车？',
-        'IC卡在哪里购买？',
-        '如何叫出租车？',
-        '从松山机场如何前往？'
-      ],
-      medical: [
-        '看病需要预约吗？',
-        '可以使用保险吗？',
-        '药店在哪里？',
-        '急救医院在哪里？',
-        '有英语对应的医院吗？'
-      ],
-      connectivity: [
-        'Wi-Fi使用地点？',
-        'SIM卡在哪里购买？',
-        '网吧在哪里？',
-        '推荐的流量套餐？',
-        '网速慢时怎么办？'
-      ],
-      accommodation: [
-        '如何预订酒店？',
-        '如何使用民宿？',
-        '长期居住的住所？',
-        '入住时间是？',
-        '有住宿税吗？'
-      ],
-      culture: [
-        '日本礼仪注意事项？',
-        '如何鞠躬？',
-        '在哪里脱鞋？',
-        '用餐礼仪？',
-        '如何泡温泉？'
-      ],
-      general: [
-        '紧急联系方式？',
-        '推荐的观光景点？',
-        '爱媛特产？',
-        '银行营业时间？',
-        '如何查看天气预报？'
-      ]
-    },
-    
-    // カテゴリー名
-    categories: {
-      transportation: '交通・出行',
-      medical: '医疗・健康', 
-      connectivity: '网络・通信',
-      accommodation: '住宿・居住',
-      culture: '文化・礼仪',
-      general: '一般咨询'
-    },
-    
-    // チャット初期メッセージ
-    chatWelcomeMessage: '您好！我是Kotoha AI。关于您在爱媛县的居留，我可以回答任何问题。<br>请点击上面的示例问题或直接输入您的问题。',
-    
-    // 履歴画面
-    historyTitle: '咨询历史',
-    historyDesc: '您可以查看过往的咨询内容',
-    backToConsultation: '返回咨询',
-    exportHistory: '导出历史',
-    noHistory: '还没有咨询历史。',
-    
-    // 共通
-    logout: '退出登录',
-    select: '请选择'
-  },
-  es: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'Asistente de IA para tu estancia en la Prefectura de Ehime',
-    
-    // 認証画面
-    welcomeTitle: 'Bienvenido a Kotoha AI',
-    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime más cómoda',
-    loginTitle: 'Iniciar Sesión',
-    signupTitle: 'Crear Cuenta',
-    email: 'Correo Electrónico',
-    password: 'Contraseña',
-    passwordConfirm: 'Confirmar Contraseña',
-    loginBtn: 'Iniciar Sesión',
-    signupBtn: 'Crear Cuenta',
-    googleLoginBtn: 'Iniciar con Google',
-    guestLoginBtn: 'Usar como Invitado',
-    showSignupBtn: 'Crear Cuenta',
-    showLoginBtn: 'Volver a Iniciar Sesión',
-    
-    // プロフィール画面
-    profileTitle: 'Configuración del Perfil',
-    profileDesc: 'Proporcione su información básica para un mejor soporte',
-    displayName: 'Nombre para Mostrar',
-    nationality: 'Nacionalidad',
-    primaryLanguage: 'Idioma Principal',
-    stayLocation: 'Ubicación de Estancia',
-    stayPurpose: 'Propósito',
-    stayPeriod: 'Período de Estancia',
-    saveProfileBtn: 'Guardar Perfil',
-    
-    // 相談画面
-    consultationTitle: 'Consulta AI',
-    consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
-    categoryTitle: 'Categoría',
-    
-    // 履歴画面
-    historyTitle: 'Historial de Consultas',
-    historyDesc: 'Ver tus registros de consultas anteriores',
-    backToConsultation: 'Volver a Consulta',
-    exportHistory: 'Exportar Historial',
-    noHistory: 'Aún no hay historial de consultas.',
-    
-    // 共通
-    logout: 'Cerrar Sesión',
-    select: 'Seleccionar'
-  },
-  fr: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'Assistant IA pour votre séjour dans la Préfecture d\'Ehime',
-    
-    // 認証画面
-    welcomeTitle: 'Bienvenue sur Kotoha AI',
-    welcomeDesc: 'Créez un compte pour rendre votre séjour dans la Préfecture d\'Ehime plus confortable',
-    loginTitle: 'Se Connecter',
-    signupTitle: 'Créer un Compte',
-    email: 'Adresse Email',
-    password: 'Mot de Passe',
-    passwordConfirm: 'Confirmer le Mot de Passe',
-    loginBtn: 'Se Connecter',
-    signupBtn: 'Créer un Compte',
-    googleLoginBtn: 'Se connecter avec Google',
-    guestLoginBtn: 'Utiliser comme Invité',
-    showSignupBtn: 'Créer un Compte',
-    showLoginBtn: 'Retour à la Connexion',
-    
-    // プロフィール画面
-    profileTitle: 'Configuration du Profil',
-    profileDesc: 'Veuillez fournir vos informations de base pour un meilleur support',
-    displayName: 'Nom d\'Affichage',
-    nationality: 'Nationalité',
-    primaryLanguage: 'Langue Principale',
-    stayLocation: 'Lieu de Séjour',
-    stayPurpose: 'Objectif',
-    stayPeriod: 'Période de Séjour',
-    saveProfileBtn: 'Sauvegarder le Profil',
-    
-    // 相談画面
-    consultationTitle: 'Consultation IA',
-    consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
-    categoryTitle: 'Catégorie',
-    
-    // 履歴画面
-    historyTitle: 'Historique des Consultations',
-    historyDesc: 'Voir vos enregistrements de consultations précédentes',
-    backToConsultation: 'Retour à la Consultation',
-    exportHistory: 'Exporter l\'Historique',
-    noHistory: 'Aucun historique de consultation pour le moment.',
-    
-    // 共通
-    logout: 'Se Déconnecter',
-    select: 'Sélectionner'
-  },
-  de: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'KI-Assistent für Ihren Aufenthalt in der Präfektur Ehime',
-    
-    // 認証画面
-    welcomeTitle: 'Willkommen bei Kotoha AI',
-    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Präfektur Ehime komfortabler zu gestalten',
-    loginTitle: 'Anmelden',
-    signupTitle: 'Konto Erstellen',
-    email: 'E-Mail-Adresse',
-    password: 'Passwort',
-    passwordConfirm: 'Passwort Bestätigen',
-    loginBtn: 'Anmelden',
-    signupBtn: 'Konto Erstellen',
-    googleLoginBtn: 'Mit Google anmelden',
-    guestLoginBtn: 'Als Gast verwenden',
-    showSignupBtn: 'Konto Erstellen',
-    showLoginBtn: 'Zurück zur Anmeldung',
-    
-    // プロフィール画面
-    profileTitle: 'Profil-Einrichtung',
-    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen für bessere Unterstützung an',
-    displayName: 'Anzeigename',
-    nationality: 'Nationalität',
-    primaryLanguage: 'Hauptsprache',
-    stayLocation: 'Aufenthaltsort',
-    stayPurpose: 'Zweck',
-    stayPeriod: 'Aufenthaltsdauer',
-    saveProfileBtn: 'Profil Speichern',
-    
-    // 相談画面
-    consultationTitle: 'KI-Beratung',
-    consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
-    categoryTitle: 'Kategorie',
-    
-    // 履歴画面
-    historyTitle: 'Beratungshistorie',
-    historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
-    backToConsultation: 'Zurück zur Beratung',
-    exportHistory: 'Historie Exportieren',
-    noHistory: 'Noch keine Beratungshistorie vorhanden.',
-    
-    // 共通
-    logout: 'Abmelden',
-    select: 'Auswählen'
-  },
-  it: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'Assistente AI per il tuo soggiorno nella Prefettura di Ehime',
-    
-    // 認証画面
-    welcomeTitle: 'Benvenuto in Kotoha AI',
-    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime più confortevole',
-    loginTitle: 'Accedi',
-    signupTitle: 'Crea Account',
-    email: 'Indirizzo Email',
-    password: 'Password',
-    passwordConfirm: 'Conferma Password',
-    loginBtn: 'Accedi',
-    signupBtn: 'Crea Account',
-    googleLoginBtn: 'Accedi con Google',
-    guestLoginBtn: 'Usa come Ospite',
-    showSignupBtn: 'Crea Account',
-    showLoginBtn: 'Torna al Login',
-    
-    // プロフィール画面
-    profileTitle: 'Configurazione Profilo',
-    profileDesc: 'Fornisci le tue informazioni di base per un migliore supporto',
-    displayName: 'Nome Visualizzato',
-    nationality: 'Nazionalità',
-    primaryLanguage: 'Lingua Principale',
-    stayLocation: 'Luogo di Soggiorno',
-    stayPurpose: 'Scopo',
-    stayPeriod: 'Periodo di Soggiorno',
-    saveProfileBtn: 'Salva Profilo',
-    
-    // 相談画面
-    consultationTitle: 'Consulenza AI',
-    consultationDesc: 'Seleziona una categoria e fai domande liberamente',
-    categoryTitle: 'Categoria',
-    
-    // 履歴画面
-    historyTitle: 'Cronologia Consultazioni',
-    historyDesc: 'Visualizza i tuoi record di consultazioni precedenti',
-    backToConsultation: 'Torna alla Consultazione',
-    exportHistory: 'Esporta Cronologia',
-    noHistory: 'Nessuna cronologia di consultazioni ancora.',
-    
-    // 共通
-    logout: 'Disconnetti',
-    select: 'Seleziona'
-  },
-  pt: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'Assistente de IA para sua estadia na Prefeitura de Ehime',
-    
-    // 認証画面
-    welcomeTitle: 'Bem-vindo ao Kotoha AI',
-    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortável',
-    loginTitle: 'Entrar',
-    signupTitle: 'Criar Conta',
-    email: 'Endereço de Email',
-    password: 'Senha',
-    passwordConfirm: 'Confirmar Senha',
-    loginBtn: 'Entrar',
-    signupBtn: 'Criar Conta',
-    googleLoginBtn: 'Entrar com Google',
-    guestLoginBtn: 'Usar como Convidado',
-    showSignupBtn: 'Criar Conta',
-    showLoginBtn: 'Voltar ao Login',
-    
-    // プロフィール画面
-    profileTitle: 'Configuração do Perfil',
-    profileDesc: 'Forneça suas informações básicas para melhor suporte',
-    displayName: 'Nome de Exibição',
-    nationality: 'Nacionalidade',
-    primaryLanguage: 'Idioma Principal',
-    stayLocation: 'Local de Estadia',
-    stayPurpose: 'Propósito',
-    stayPeriod: 'Período de Estadia',
-    saveProfileBtn: 'Salvar Perfil',
-    
-    // 相談画面
-    consultationTitle: 'Consulta de IA',
-    consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
-    categoryTitle: 'Categoria',
-    
-    // 履歴画面
-    historyTitle: 'Histórico de Consultas',
-    historyDesc: 'Veja seus registros de consultas anteriores',
-    backToConsultation: 'Voltar à Consulta',
-    exportHistory: 'Exportar Histórico',
-    noHistory: 'Ainda não há histórico de consultas.',
-    
-    // 共通
-    logout: 'Sair',
-    select: 'Selecionar'
-  },
-  ru: {
-    // ヘッダー
-    headerTitle: 'Kotoha AI',
-    headerSubtitle: 'ИИ-помощник для вашего пребывания в префектуре Эхимэ',
-    
-    // 認証画面
-    welcomeTitle: 'Добро пожаловать в Kotoha AI',
-    welcomeDesc: 'Создайте аккаунт, чтобы сделать ваше пребывание в префектуре Эхимэ более комфортным',
-    loginTitle: 'Войти',
-    signupTitle: 'Создать Аккаунт',
-    email: 'Электронная Почта',
-    password: 'Пароль',
-    passwordConfirm: 'Подтвердить Пароль',
-    loginBtn: 'Войти',
-    signupBtn: 'Создать Аккаунт',
-    googleLoginBtn: 'Войти через Google',
-    guestLoginBtn: 'Использовать как Гость',
-    showSignupBtn: 'Создать Аккаунт',
-    showLoginBtn: 'Вернуться к Входу',
-    
-    // プロフィール画面
-    profileTitle: 'Настройка Профиля',
-    profileDesc: 'Предоставьте вашу основную информацию для лучшей поддержки',
-    displayName: 'Отображаемое Имя',
-    nationality: 'Национальность',
-    primaryLanguage: 'Основной Язык',
-    stayLocation: 'Место Пребывания',
-    stayPurpose: 'Цель',
-    stayPeriod: 'Период Пребывания',
-    saveProfileBtn: 'Сохранить Профиль',
-    
-    // 相談画面
-    consultationTitle: 'ИИ-Консультация',
-    consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
-    categoryTitle: 'Категория',
-    
-    // 履歴画面
-    historyTitle: 'История Консультаций',
-    historyDesc: 'Просмотрите ваши предыдущие записи консультаций',
-    backToConsultation: 'Вернуться к Консультации',
-    exportHistory: 'Экспорт Истории',
-    noHistory: 'Пока нет истории консультаций.',
-    
-    // 共通
-    logout: 'Выйти',
-    select: 'Выбрать'
   }
 };
+
+// よくある質問（日本語版のみ - 他言語は動的翻訳）
+const faqQuestionsJa = {
+  transportation: [
+    'バスの乗り方は？',
+    '電車の乗り換え方法は？',
+    'ICカードはどこで買える？',
+    'タクシーの呼び方は？',
+    '松山空港からのアクセスは？'
+  ],
+  medical: [
+    '病院の予約は必要？',
+    '保険証は使える？',
+    '薬局はどこにある？',
+    '救急病院はどこ？',
+    '英語対応の病院は？'
+  ],
+  connectivity: [
+    'Wi-Fi利用場所は？',
+    'SIMカードはどこで買える？',
+    'インターネットカフェは？',
+    'データプランのおすすめは？',
+    '通信速度が遅い時は？'
+  ],
+  accommodation: [
+    'ホテルの予約方法は？',
+    '民泊の利用方法は？',
+    '長期滞在向けの住居は？',
+    'チェックイン時間は？',
+    '宿泊税はかかる？'
+  ],
+  culture: [
+    '日本のマナーは？',
+    'お辞儀の仕方は？',
+    '靴を脱ぐ場所は？',
+    '食事のマナーは？',
+    '温泉の入り方は？'
+  ],
+  general: [
+    '緊急時の連絡先は？',
+    '観光スポットのおすすめは？',
+    '愛媛の名物は？',
+    '銀行の営業時間は？',
+    '天気予報の確認方法は？'
+  ]
+};
+
+// 翻訳関数（AI相談APIを利用）
+async function translateText(text, targetLanguage) {
+  // キャッシュをチェック
+  const cacheKey = `${text}_${targetLanguage}`;
+  if (translationCache[cacheKey]) {
+    return translationCache[cacheKey];
+  }
+  
+  try {
+    const response = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: text,
+        targetLanguage: targetLanguage,
+        sourceLanguage: 'ja'
+      })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const translatedText = data.translatedText || text;
+      
+      // キャッシュに保存
+      translationCache[cacheKey] = translatedText;
+      return translatedText;
+    }
+  } catch (error) {
+    console.warn('Translation failed:', error);
+  }
+  
+  // 翻訳に失敗した場合は元のテキストを返す
+  return text;
+}
 
 // 言語切り替え関数
 function switchLanguage(langCode) {
@@ -863,9 +325,9 @@ function switchLanguage(langCode) {
   updateChatWelcomeMessage();
 }
 
-// ページテキスト更新関数
+// ページテキスト更新関数（静的翻訳部分のみ）
 function updatePageTexts() {
-  const t = translations[currentLanguage];
+  const t = translations[currentLanguage] || translations['ja'];
   
   // ヘッダー
   const subtitle = document.querySelector('.subtitle');
@@ -979,9 +441,6 @@ function updatePageTexts() {
   const faqTitle = document.querySelector('.frequently-asked-questions h3');
   if (faqTitle) faqTitle.textContent = `💡 ${t.frequentlyAskedQuestions}`;
   
-  // よくある質問の更新
-  updateFAQQuestions();
-  
   // セレクトボックスのデフォルトオプション
   document.querySelectorAll('select option[value=""]').forEach(option => {
     option.textContent = t.select;
@@ -991,59 +450,51 @@ function updatePageTexts() {
   if (currentSection === 4) {
     setTimeout(loadConsultationHistory, 100);
   }
-  
-  // チャット初期メッセージの更新
-  updateChatWelcomeMessage();
 }
 
-// よくある質問更新関数
-function updateFAQQuestions(category = null) {
+// よくある質問更新関数（動的翻訳対応）
+async function updateFAQQuestions(category = null) {
   console.log('=== updateFAQQuestions called ===');
   console.log('Category:', category);
   console.log('Current language:', currentLanguage);
   
-  const questionContainer = document.querySelector('.frequently-asked-questions .question-chips');
+  const questionContainer = document.querySelector('.frequently-asked-questions .question-chips') || 
+                          document.querySelector('.question-chips');
   
   if (!questionContainer) {
-    // 別のセレクターも試してみる
-    const altContainer = document.querySelector('.question-chips');
-    
-    if (!altContainer) {
-      console.error('No question container found!');
-      return;
-    }
-    return updateFAQQuestions_alt(category);
-  }
-  
-  const t = translations[currentLanguage];
-  if (!t || !t.faqQuestions) {
-    console.log('No translations found for language:', currentLanguage);
+    console.error('No question container found!');
     return;
   }
   
   let questionsToShow = [];
   
-  if (category && t.faqQuestions[category]) {
-    questionsToShow = t.faqQuestions[category];
+  if (category && faqQuestionsJa[category]) {
+    questionsToShow = faqQuestionsJa[category];
   } else {
     const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
-    questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
+    questionsToShow = categories.map(cat => 
+      faqQuestionsJa[cat] ? faqQuestionsJa[cat][0] : ''
+    ).filter(q => q);
   }
   
-  console.log('Questions to show:', questionsToShow);
+  console.log('Questions to show (Japanese):', questionsToShow);
   questionContainer.innerHTML = '';
   
-  questionsToShow.forEach((question, index) => {
+  // 各質問を翻訳して表示
+  for (const questionJa of questionsToShow) {
+    const questionTranslated = currentLanguage === 'ja' ? 
+      questionJa : await translateText(questionJa, currentLanguage);
+    
     const chip = document.createElement('button');
     chip.className = 'question-chip';
-    chip.textContent = question;
-    chip.setAttribute('data-question', question);
+    chip.textContent = questionTranslated;
+    chip.setAttribute('data-question', questionJa); // 元の日本語版を保存
     
     chip.addEventListener('click', () => {
       const chatInput = document.getElementById('chat-input');
       if (chatInput) {
-        chatInput.value = question;
-        const relatedCategory = questionToCategory[question] || guessCategory(question);
+        chatInput.value = questionTranslated;
+        const relatedCategory = guessCategory(questionJa);
         if (relatedCategory) {
           selectCategory(relatedCategory);
         }
@@ -1053,80 +504,29 @@ function updateFAQQuestions(category = null) {
     });
     
     questionContainer.appendChild(chip);
-  });
+  }
   
   console.log('FAQ update completed');
 }
 
-// 代替セレクター用の関数
-function updateFAQQuestions_alt(category = null) {
-  console.log('=== Using alternative selector ===');
-  const questionContainer = document.querySelector('.question-chips');
-  
-  if (!questionContainer) {
-    console.error('Alternative selector also failed!');
-    return;
-  }
-  
-  const t = translations[currentLanguage];
-  if (!t || !t.faqQuestions) {
-    console.log('No translations found for language:', currentLanguage);
-    return;
-  }
-  
-  let questionsToShow = [];
-  
-  if (category && t.faqQuestions[category]) {
-    questionsToShow = t.faqQuestions[category];
-  } else {
-    const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
-    questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
-  }
-  
-  console.log('Alt: Showing questions:', questionsToShow);
-  questionContainer.innerHTML = '';
-  
-  questionsToShow.forEach(question => {
-    const chip = document.createElement('button');
-    chip.className = 'question-chip';
-    chip.textContent = question;
-    chip.setAttribute('data-question', question);
-    
-    chip.addEventListener('click', () => {
-      const chatInput = document.getElementById('chat-input');
-      if (chatInput) {
-        chatInput.value = question;
-        const relatedCategory = questionToCategory[question] || guessCategory(question);
-        if (relatedCategory) {
-          selectCategory(relatedCategory);
-        }
-        updateSendButton();
-        chatInput.focus();
-      }
-    });
-    
-    questionContainer.appendChild(chip);
-  });
-  
-  console.log('Alt FAQ update completed');
-}
-
 // チャット初期メッセージ表示関数
-function initializeChatWithWelcomeMessage() {
+async function initializeChatWithWelcomeMessage() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
   
-  const t = translations[currentLanguage];
-  const welcomeMessage = t && t.chatWelcomeMessage 
-    ? t.chatWelcomeMessage 
-    : 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
+  const welcomeMessageJa = 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
+  
+  const welcomeMessage = currentLanguage === 'ja' ? 
+    welcomeMessageJa : await translateText(welcomeMessageJa.replace(/<br>/g, '\n'), currentLanguage);
+  
+  const formattedMessage = welcomeMessage.replace(/\n/g, '<br>');
   
   chatMessages.innerHTML = `
     <div class="message ai-message">
         <div class="message-avatar">🤖</div>
         <div class="message-content">
             <div class="message-bubble">
-                ${welcomeMessage}
+                ${formattedMessage}
             </div>
             <div class="message-time">Kotoha AI</div>
         </div>
@@ -1140,274 +540,22 @@ function initializeChatWithWelcomeMessage() {
 }
 
 // チャット初期メッセージ更新関数
-function updateChatWelcomeMessage() {
+async function updateChatWelcomeMessage() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
-  
-  const t = translations[currentLanguage];
-  if (!t || !t.chatWelcomeMessage) return;
   
   // 既存の初期メッセージを探して更新
   const existingWelcome = chatMessages.querySelector('.ai-message .message-bubble');
   if (existingWelcome && existingWelcome.innerHTML.includes('Kotoha AI')) {
-    existingWelcome.innerHTML = t.chatWelcomeMessage;
+    const welcomeMessageJa = 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
+    
+    const welcomeMessage = currentLanguage === 'ja' ? 
+      welcomeMessageJa : await translateText(welcomeMessageJa, currentLanguage);
+    
+    const formattedMessage = welcomeMessage.replace(/\n/g, '<br>');
+    existingWelcome.innerHTML = formattedMessage;
   }
 }
-
-// 質問とカテゴリのマッピング（多言語対応）
-const questionToCategory = {
-  // 日本語 - 交通
-  'バスの乗り方は？': 'transportation',
-  '電車の乗り換え方法は？': 'transportation',
-  'ICカードはどこで買える？': 'transportation',
-  'タクシーの呼び方は？': 'transportation',
-  '松山空港からのアクセスは？': 'transportation',
-  
-  // 日本語 - 医療
-  '病院の予約は必要？': 'medical',
-  '保険証は使える？': 'medical',
-  '薬局はどこにある？': 'medical',
-  '救急病院はどこ？': 'medical',
-  '英語対応の病院は？': 'medical',
-  
-  // 日本語 - ネット
-  'Wi-Fi利用場所は？': 'connectivity',
-  'SIMカードはどこで買える？': 'connectivity',
-  'インターネットカフェは？': 'connectivity',
-  'データプランのおすすめは？': 'connectivity',
-  '通信速度が遅い時は？': 'connectivity',
-  
-  // 日本語 - 宿泊
-  'ホテルの予約方法は？': 'accommodation',
-  '民泊の利用方法は？': 'accommodation',
-  '長期滞在向けの住居は？': 'accommodation',
-  'チェックイン時間は？': 'accommodation',
-  '宿泊税はかかる？': 'accommodation',
-  
-  // 日本語 - 文化
-  '日本のマナーは？': 'culture',
-  'お辞儀の仕方は？': 'culture',
-  '靴を脱ぐ場所は？': 'culture',
-  '食事のマナーは？': 'culture',
-  '温泉の入り方は？': 'culture',
-  
-  // 日本語 - 一般
-  '緊急時の連絡先は？': 'general',
-  '観光スポットのおすすめは？': 'general',
-  '愛媛の名物は？': 'general',
-  '銀行の営業時間は？': 'general',
-  '天気予報の確認方法は？': 'general',
-  
-  // 英語 - 交通
-  'How to use the bus?': 'transportation',
-  'How to transfer trains?': 'transportation',
-  'Where to buy IC cards?': 'transportation',
-  'How to call a taxi?': 'transportation',
-  'Access from Matsuyama Airport?': 'transportation',
-  
-  // 英語 - 医療
-  'Do I need a reservation for the hospital?': 'medical',
-  'Can I use insurance?': 'medical',
-  'Where are pharmacies?': 'medical',
-  'Where are emergency hospitals?': 'medical',
-  'English-speaking hospitals?': 'medical',
-  
-  // 英語 - ネット
-  'Where can I find Wi-Fi?': 'connectivity',
-  'Where to buy SIM cards?': 'connectivity',
-  'Internet cafes location?': 'connectivity',
-  'Recommended data plans?': 'connectivity',
-  'What to do when internet is slow?': 'connectivity',
-  
-  // 英語 - 宿泊
-  'How to book hotels?': 'accommodation',
-  'How to use vacation rentals?': 'accommodation',
-  'Long-term accommodation?': 'accommodation',
-  'Check-in times?': 'accommodation',
-  'Are there accommodation taxes?': 'accommodation',
-  
-  // 英語 - 文化
-  'What Japanese manners should I know?': 'culture',
-  'How to bow properly?': 'culture',
-  'Where to remove shoes?': 'culture',
-  'Dining etiquette?': 'culture',
-  'How to use hot springs?': 'culture',
-  
-  // 英語 - 一般
-  'Emergency contact information?': 'general',
-  'Recommended tourist spots?': 'general',
-  'Ehime specialties?': 'general',
-  'Bank operating hours?': 'general',
-  'How to check weather forecast?': 'general',
-  
-  // ドイツ語 - 交通
-  'Wie benutzt man den Bus?': 'transportation',
-  'Wie steigt man in Züge um?': 'transportation',
-  'Wo kann man IC-Karten kaufen?': 'transportation',
-  'Wie ruft man ein Taxi?': 'transportation',
-  'Zugang vom Flughafen Matsuyama?': 'transportation',
-  
-  // ドイツ語 - 医療
-  'Brauche ich eine Reservierung für das Krankenhaus?': 'medical',
-  'Kann ich Versicherung nutzen?': 'medical',
-  'Wo sind Apotheken?': 'medical',
-  'Wo sind Notfallkrankenhäuser?': 'medical',
-  'Englischsprachige Krankenhäuser?': 'medical',
-  
-  // ドイツ語 - ネット
-  'Wo finde ich Wi-Fi?': 'connectivity',
-  'Wo kann man SIM-Karten kaufen?': 'connectivity',
-  'Standort von Internetcafés?': 'connectivity',
-  'Empfohlene Datentarife?': 'connectivity',
-  'Was tun bei langsamem Internet?': 'connectivity',
-  
-  // ドイツ語 - 宿泊
-  'Wie bucht man Hotels?': 'accommodation',
-  'Wie nutzt man Ferienwohnungen?': 'accommodation',
-  'Langzeitunterkunft?': 'accommodation',
-  'Check-in-Zeiten?': 'accommodation',
-  'Gibt es Übernachtungssteuern?': 'accommodation',
-  
-  // ドイツ語 - 文化
-  'Welche japanischen Manieren sollte ich kennen?': 'culture',
-  'Wie verbeugt man sich richtig?': 'culture',
-  'Wo zieht man Schuhe aus?': 'culture',
-  'Essensknigge?': 'culture',
-  'Wie nutzt man heiße Quellen?': 'culture',
-  
-  // ドイツ語 - 一般
-  'Notfallkontaktinformationen?': 'general',
-  'Empfohlene Touristenorte?': 'general',
-  'Ehime-Spezialitäten?': 'general',
-  'Bankgeschäftszeiten?': 'general',
-  'Wie prüft man die Wettervorhersage?': 'general',
-  
-  // イタリア語 - 交通
-  'Come usare l\'autobus?': 'transportation',
-  'Come cambiare treno?': 'transportation',
-  'Dove comprare carte IC?': 'transportation',
-  'Come chiamare un taxi?': 'transportation',
-  'Accesso dall\'aeroporto di Matsuyama?': 'transportation',
-  
-  // イタリア語 - 医療
-  'Ho bisogno di una prenotazione per l\'ospedale?': 'medical',
-  'Posso usare l\'assicurazione?': 'medical',
-  'Dove sono le farmacie?': 'medical',
-  'Dove sono gli ospedali di emergenza?': 'medical',
-  'Ospedali che parlano inglese?': 'medical',
-  
-  // イタリア語 - ネット
-  'Dove trovare Wi-Fi?': 'connectivity',
-  'Dove comprare schede SIM?': 'connectivity',
-  'Posizione degli internet café?': 'connectivity',
-  'Piani dati raccomandati?': 'connectivity',
-  'Cosa fare quando internet è lento?': 'connectivity',
-  
-  // イタリア語 - 宿泊
-  'Come prenotare hotel?': 'accommodation',
-  'Come usare case vacanza?': 'accommodation',
-  'Alloggio a lungo termine?': 'accommodation',
-  'Orari di check-in?': 'accommodation',
-  'Ci sono tasse di soggiorno?': 'accommodation',
-  
-  // イタリア語 - 文化
-  'Quali buone maniere giapponesi dovrei conoscere?': 'culture',
-  'Come inchinarsi correttamente?': 'culture',
-  'Dove togliere le scarpe?': 'culture',
-  'Etichetta durante i pasti?': 'culture',
-  'Come usare le sorgenti termali?': 'culture',
-  
-  // イタリア語 - 一般
-  'Informazioni di contatto di emergenza?': 'general',
-  'Luoghi turistici raccomandati?': 'general',
-  'Specialità di Ehime?': 'general',
-  'Orari di apertura delle banche?': 'general',
-  'Come controllare le previsioni del tempo?': 'general',
-  
-  // ポルトガル語 - 交通
-  'Como usar o ônibus?': 'transportation',
-  'Como fazer transferência de trem?': 'transportation',
-  'Onde comprar cartões IC?': 'transportation',
-  'Como chamar um táxi?': 'transportation',
-  'Acesso do aeroporto de Matsuyama?': 'transportation',
-  
-  // ポルトガル語 - 医療
-  'Preciso de reserva para o hospital?': 'medical',
-  'Posso usar seguro?': 'medical',
-  'Onde estão as farmácias?': 'medical',
-  'Onde estão os hospitais de emergência?': 'medical',
-  'Hospitais que falam inglês?': 'medical',
-  
-  // ポルトガル語 - ネット
-  'Onde encontrar Wi-Fi?': 'connectivity',
-  'Onde comprar cartões SIM?': 'connectivity',
-  'Localização de internet cafés?': 'connectivity',
-  'Planos de dados recomendados?': 'connectivity',
-  'O que fazer quando a internet está lenta?': 'connectivity',
-  
-  // ポルトガル語 - 宿泊
-  'Como reservar hotéis?': 'accommodation',
-  'Como usar aluguéis de temporada?': 'accommodation',
-  'Acomodação de longo prazo?': 'accommodation',
-  'Horários de check-in?': 'accommodation',
-  'Há taxas de acomodação?': 'accommodation',
-  
-  // ポルトガル語 - 文化
-  'Que maneiras japonesas devo conhecer?': 'culture',
-  'Como se curvar corretamente?': 'culture',
-  'Onde tirar os sapatos?': 'culture',
-  'Etiqueta durante as refeições?': 'culture',
-  'Como usar fontes termais?': 'culture',
-  
-  // ポルトガル語 - 一般
-  'Informações de contato de emergência?': 'general',
-  'Locais turísticos recomendados?': 'general',
-  'Especialidades de Ehime?': 'general',
-  'Horários de funcionamento dos bancos?': 'general',
-  'Como verificar a previsão do tempo?': 'general',
-  
-  // ロシア語 - 交通
-  'Как пользоваться автобусом?': 'transportation',
-  'Как пересаживаться на поездах?': 'transportation',
-  'Где купить IC-карты?': 'transportation',
-  'Как вызвать такси?': 'transportation',
-  'Проезд из аэропорта Мацуяма?': 'transportation',
-  
-  // ロシア語 - 医療
-  'Нужна ли запись в больницу?': 'medical',
-  'Можно ли использовать страховку?': 'medical',
-  'Где находятся аптеки?': 'medical',
-  'Где находятся больницы скорой помощи?': 'medical',
-  'Больницы с английским языком?': 'medical',
-  
-  // ロシア語 - ネット
-  'Где найти Wi-Fi?': 'connectivity',
-  'Где купить SIM-карты?': 'connectivity',
-  'Расположение интернет-кафе?': 'connectivity',
-  'Рекомендуемые тарифные планы?': 'connectivity',
-  'Что делать при медленном интернете?': 'connectivity',
-  
-  // ロシア語 - 宿泊
-  'Как забронировать отели?': 'accommodation',
-  'Как использовать аренду жилья?': 'accommodation',
-  'Долгосрочное размещение?': 'accommodation',
-  'Время заселения?': 'accommodation',
-  'Есть ли налоги на размещение?': 'accommodation',
-  
-  // ロシア語 - 文化
-  'Какие японские манеры мне следует знать?': 'culture',
-  'Как правильно кланяться?': 'culture',
-  'Где снимать обувь?': 'culture',
-  'Этикет во время еды?': 'culture',
-  'Как использовать горячие источники?': 'culture',
-  
-  // ロシア語 - 一般
-  'Контактная информация для экстренных случаев?': 'general',
-  'Рекомендуемые туристические места?': 'general',
-  'Специалитеты Эхимэ?': 'general',
-  'Часы работы банков?': 'general',
-  'Как проверить прогноз погоды?': 'general'
-};
 
 // 質問からカテゴリを推測する関数（多言語対応強化）
 function guessCategory(userMessage) {
@@ -1417,14 +565,7 @@ function guessCategory(userMessage) {
   if (message.includes('バス') || message.includes('電車') || message.includes('交通') || 
       message.includes('移動') || message.includes('タクシー') || message.includes('アクセス') ||
       message.includes('train') || message.includes('bus') || message.includes('transport') ||
-      message.includes('버스') || message.includes('전철') || message.includes('교통') ||
-      message.includes('公交') || message.includes('地铁') || message.includes('交通') ||
-      message.includes('移动') || message.includes('출租车') || message.includes('택시') ||
-      message.includes('autobus') || message.includes('zug') || message.includes('taxi') ||
-      message.includes('treno') || message.includes('ônibus') || message.includes('автобус') ||
-      message.includes('поезд') || message.includes('такси') ||
-      message.includes('autobús') || message.includes('tren') || message.includes('transporte') ||
-      message.includes('métro') || message.includes('tramway')) {
+      message.includes('airport') || message.includes('station')) {
     return 'transportation';
   }
   
@@ -1432,29 +573,14 @@ function guessCategory(userMessage) {
   if (message.includes('病院') || message.includes('医療') || message.includes('薬') || 
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
       message.includes('hospital') || message.includes('doctor') || message.includes('medicine') ||
-      message.includes('병원') || message.includes('의료') || message.includes('약') ||
-      message.includes('医院') || message.includes('医生') || message.includes('药') ||
-      message.includes('krankenhaus') || message.includes('arzt') || message.includes('medikament') ||
-      message.includes('ospedale') || message.includes('medico') || message.includes('medicina') ||
-      message.includes('hospital') || message.includes('médico') || message.includes('больница') ||
-      message.includes('врач') || message.includes('лекарство') ||
-      message.includes('hospital') || message.includes('médico') || message.includes('medicina') ||
-      message.includes('hôpital') || message.includes('médecin') || message.includes('médicament')) {
+      message.includes('pharmacy') || message.includes('health')) {
     return 'medical';
   }
   
   // ネット関連キーワード（多言語）
   if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') || 
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
-      message.includes('internet') || message.includes('network') ||
-      message.includes('인터넷') || message.includes('통신') ||
-      message.includes('网络') || message.includes('互联网') ||
-      message.includes('wlan') || message.includes('internetcafé') ||
-      message.includes('rete') || message.includes('connessione') ||
-      message.includes('rede') || message.includes('conexão') ||
-      message.includes('интернет') || message.includes('сеть') ||
-      message.includes('internet') || message.includes('conexión') ||
-      message.includes('internet') || message.includes('connexion')) {
+      message.includes('internet') || message.includes('network') || message.includes('data')) {
     return 'connectivity';
   }
   
@@ -1462,14 +588,7 @@ function guessCategory(userMessage) {
   if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') || 
       message.includes('住居') || message.includes('部屋') ||
       message.includes('hotel') || message.includes('accommodation') || message.includes('room') ||
-      message.includes('숙박') || message.includes('호텔') ||
-      message.includes('住宿') || message.includes('酒店') || message.includes('房间') ||
-      message.includes('unterkunft') || message.includes('zimmer') ||
-      message.includes('alloggio') || message.includes('camera') ||
-      message.includes('acomodação') || message.includes('quarto') ||
-      message.includes('размещение') || message.includes('отель') || message.includes('номер') ||
-      message.includes('alojamiento') || message.includes('habitación') ||
-      message.includes('logement') || message.includes('chambre')) {
+      message.includes('stay') || message.includes('lodging')) {
     return 'accommodation';
   }
   
@@ -1477,14 +596,7 @@ function guessCategory(userMessage) {
   if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') || 
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
       message.includes('culture') || message.includes('manner') || message.includes('etiquette') ||
-      message.includes('문화') || message.includes('매너') || message.includes('예의') ||
-      message.includes('文化') || message.includes('礼仪') || message.includes('习俗') ||
-      message.includes('kultur') || message.includes('benehmen') || message.includes('etikette') ||
-      message.includes('cultura') || message.includes('maniere') || message.includes('educazione') ||
-      message.includes('cultura') || message.includes('maneiras') || message.includes('etiqueta') ||
-      message.includes('культура') || message.includes('манеры') || message.includes('этикет') ||
-      message.includes('cultura') || message.includes('modales') ||
-      message.includes('culture') || message.includes('manières') || message.includes('étiquette')) {
+      message.includes('custom') || message.includes('tradition')) {
     return 'culture';
   }
   
@@ -1580,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- プロフィールの言語選択時の自動切り替え ---
   const primaryLanguageSelect = document.getElementById('primary-language');
   if (primaryLanguageSelect) {
-    primaryLanguageSelect.addEventListener('change', (e) => {
+    primaryLanguageSelect.addEventListener('change', async (e) => {
       const selectedLang = e.target.value;
       console.log('Language selected:', selectedLang);
       
@@ -1601,23 +713,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       const langCode = languageCodeMap[selectedLang];
       console.log('Mapped language code:', langCode);
       
-      if (langCode && translations[langCode]) {
+      if (langCode) {
         currentLanguage = langCode;
         console.log('Current language set to:', currentLanguage);
         
-        // 即座に更新 - より強力に
-        setTimeout(() => {
+        // 即座に更新
+        setTimeout(async () => {
           console.log('Starting immediate update after language change');
           updatePageTexts();
-          updateFAQQuestions(selectedCategory);
-          updateChatWelcomeMessage();
+          await updateFAQQuestions(selectedCategory);
+          await updateChatWelcomeMessage();
         }, 50);
-        
-        // 追加の更新（念のため）
-        setTimeout(() => {
-          console.log('Starting delayed update after language change');
-          updateFAQQuestions(selectedCategory);
-        }, 500);
       }
     });
   }
@@ -1890,10 +996,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const conversations = await getAllConversations();
       
       if (conversations.length === 0) {
+        const t = translations[currentLanguage] || translations['ja'];
         historyContainer.innerHTML = `
           <div class="no-history">
-            <p>まだ相談履歴はありません。</p>
-            <p>No consultation history yet.</p>
+            <p>${t.noHistory}</p>
           </div>
         `;
         return;
@@ -1901,7 +1007,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // 履歴の表示
       let historyHTML = '';
-      conversations.forEach(conv => {
+      for (const conv of conversations) {
         const date = new Date(conv.timestamp.seconds * 1000);
         const formattedDate = date.toLocaleDateString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US');
         const formattedTime = date.toLocaleTimeString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US', { 
@@ -1909,17 +1015,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           minute: '2-digit' 
         });
         
-        // カテゴリ名の翻訳
-        const categoryNames = {
-          'transportation': currentLanguage === 'ja' ? '交通・移動' : 'Transportation',
-          'medical': currentLanguage === 'ja' ? '医療・健康' : 'Medical',
-          'connectivity': currentLanguage === 'ja' ? 'ネット・通信' : 'Internet',
-          'accommodation': currentLanguage === 'ja' ? '住居・宿泊' : 'Housing',
-          'culture': currentLanguage === 'ja' ? '文化・マナー' : 'Culture',
-          'general': currentLanguage === 'ja' ? '一般相談' : 'General'
+        // カテゴリ名を動的翻訳
+        const categoryNamesJa = {
+          'transportation': '交通・移動',
+          'medical': '医療・健康',
+          'connectivity': 'ネット・通信',
+          'accommodation': '住居・宿泊',
+          'culture': '文化・マナー',
+          'general': '一般相談'
         };
         
-        const categoryName = categoryNames[conv.category] || conv.category;
+        const categoryJa = categoryNamesJa[conv.category] || conv.category;
+        const categoryName = currentLanguage === 'ja' ? 
+          categoryJa : await translateText(categoryJa, currentLanguage);
         
         historyHTML += `
           <div class="history-item">
@@ -1937,7 +1045,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
         `;
-      });
+      }
       
       historyContainer.innerHTML = historyHTML;
       
@@ -1964,21 +1072,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 相談画面表示時によくある質問を更新
     if (sectionNum === 3) {
-      setTimeout(() => {
+      setTimeout(async () => {
         console.log('Section 3 shown, updating FAQ');
-        updateFAQQuestions(selectedCategory);
+        await updateFAQQuestions(selectedCategory);
       }, 200);
     }
   };
 
   // --- 相談カテゴリ選択 ---
   categoryCards.forEach((card, index) => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', async () => {
       const categoryValue = card.getAttribute('data-category');
       selectCategory(categoryValue);
       
-      const t = translations[currentLanguage];
-      const categoryNames = t && t.categories ? t.categories : {
+      // カテゴリ名を動的翻訳
+      const categoryNamesJa = {
         transportation: '交通・移動',
         medical: '医療・健康',
         connectivity: 'ネット・通信',
@@ -1986,8 +1094,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         culture: '文化・マナー',
         general: '一般相談'
       };
-      const categoryName = categoryNames[categoryValue] || categoryValue;
-      showMessage(`${categoryName} を選択しました。`, 'info');
+      
+      const categoryJa = categoryNamesJa[categoryValue] || categoryValue;
+      const categoryName = currentLanguage === 'ja' ? 
+        categoryJa : await translateText(categoryJa, currentLanguage);
+      
+      const selectedMessage = currentLanguage === 'ja' ? 
+        `${categoryName} を選択しました。` : 
+        await translateText(`${categoryJa} を選択しました。`, currentLanguage);
+      
+      showMessage(selectedMessage, 'info');
     });
   });
 
@@ -2086,6 +1202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify({
           message: userMessage,
           userId: currentUser ? currentUser.uid : null,
+          language: currentLanguage, // 言語情報を追加
           context: {
             category: selectedCategory,
             userProfile: userProfile,
@@ -2147,14 +1264,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   updatePageTexts();
   
   // よくある質問の初期化（少し遅延させて確実に）
-  setTimeout(() => {
+  setTimeout(async () => {
     console.log('Initializing FAQ with language:', currentLanguage);
-    updateFAQQuestions();
+    await updateFAQQuestions();
   }, 300);
   
   // チャット画面の初期化
-  setTimeout(() => {
-    initializeChatWithWelcomeMessage();
+  setTimeout(async () => {
+    await initializeChatWithWelcomeMessage();
   }, 500);
 });
 
@@ -2309,6 +1426,7 @@ function manualMarkdownToHTML(text) {
   
   return html;
 }
+
 function appendTypingIndicator() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -2438,7 +1556,7 @@ async function loadProfileFormFromFirestore() {
         };
         
         const langCode = languageCodeMap[data.primaryLanguage];
-        if (langCode && translations[langCode]) {
+        if (langCode) {
           currentLanguage = langCode;
           console.log('Profile load: Setting language to:', currentLanguage);
           
@@ -2452,22 +1570,12 @@ async function loadProfileFormFromFirestore() {
           }
           
           // テキスト更新（複数回実行で確実に）
-          setTimeout(() => {
+          setTimeout(async () => {
             console.log('Profile load: First update');
             updatePageTexts();
-            updateFAQQuestions(selectedCategory);
-            updateChatWelcomeMessage();
+            await updateFAQQuestions(selectedCategory);
+            await updateChatWelcomeMessage();
           }, 100);
-          
-          setTimeout(() => {
-            console.log('Profile load: Second update');
-            updateFAQQuestions(selectedCategory);
-          }, 500);
-          
-          setTimeout(() => {
-            console.log('Profile load: Third update');
-            updateFAQQuestions(selectedCategory);
-          }, 1000);
         }
       }
     } else {
