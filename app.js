@@ -60,6 +60,75 @@ let shouldStoreConsultation = true;
 let isAIChatting = false;
 let currentLanguage = 'ja'; // デフォルトは日本語
 
+// グローバル関数として定義
+function selectCategory(categoryValue) {
+  console.log('Selecting category:', categoryValue);
+  selectedCategory = categoryValue;
+  
+  const selectedCategoryBox = document.getElementById('selected-category');
+  const selectedCategoryName = document.getElementById('selected-category-name');
+  
+  if (selectedCategoryBox) {
+    selectedCategoryBox.style.display = 'block';
+  }
+  
+  // カテゴリカードを視覚的に選択状態にする
+  document.querySelectorAll('.category-card').forEach(card => {
+    card.classList.remove('selected', 'active');
+    if (card.getAttribute('data-category') === categoryValue) {
+      card.classList.add('selected', 'active');
+      
+      if (selectedCategoryName) {
+        const t = translations[currentLanguage];
+        const categoryNames = t && t.categories ? t.categories : {
+          transportation: '交通・移動',
+          medical: '医療・健康',
+          connectivity: 'ネット・通信',
+          accommodation: '住居・宿泊',
+          culture: '文化・マナー',
+          general: '一般相談'
+        };
+        selectedCategoryName.textContent = categoryNames[categoryValue] || categoryValue;
+      }
+    }
+  });
+  
+  // 選択されたカテゴリーに応じてよくある質問を更新
+  updateFAQQuestions(categoryValue);
+  
+  updateSendButton();
+}
+
+function updateSendButton() {
+  const chatInput = document.getElementById('chat-input');
+  const sendButton = document.getElementById('send-button');
+  
+  const inputValue = chatInput ? chatInput.value.trim() : '';
+  const hasInput = inputValue.length > 0;
+  
+  // カテゴリが選択されていない場合は、入力内容から推測
+  if (hasInput && !selectedCategory) {
+    const guessedCategory = guessCategory(inputValue);
+    selectCategory(guessedCategory);
+  }
+  
+  const hasCategory = selectedCategory.length > 0;
+
+  if (sendButton) {
+    const shouldEnable = hasInput && hasCategory && !isAIChatting;
+    sendButton.disabled = !shouldEnable;
+    
+    // 送信ボタンの見た目を改善
+    if (shouldEnable) {
+      sendButton.style.opacity = '1';
+      sendButton.style.cursor = 'pointer';
+    } else {
+      sendButton.style.opacity = '0.5';
+      sendButton.style.cursor = 'not-allowed';
+    }
+  }
+}
+
 // 多言語辞書
 const translations = {
   ja: {
@@ -934,12 +1003,10 @@ function updateFAQQuestions(category = null) {
   console.log('Current language:', currentLanguage);
   
   const questionContainer = document.querySelector('.frequently-asked-questions .question-chips');
-  console.log('Question container found:', !!questionContainer);
   
   if (!questionContainer) {
     // 別のセレクターも試してみる
     const altContainer = document.querySelector('.question-chips');
-    console.log('Alt container found:', !!altContainer);
     
     if (!altContainer) {
       console.error('No question container found!');
@@ -951,45 +1018,35 @@ function updateFAQQuestions(category = null) {
   const t = translations[currentLanguage];
   if (!t || !t.faqQuestions) {
     console.log('No translations found for language:', currentLanguage);
-    console.log('Available translations:', Object.keys(translations));
     return;
   }
   
   let questionsToShow = [];
   
   if (category && t.faqQuestions[category]) {
-    // 選択されたカテゴリの質問を表示
     questionsToShow = t.faqQuestions[category];
-    console.log(`Showing questions for category: ${category}`, questionsToShow);
   } else {
-    // デフォルト：全カテゴリから1つずつ表示
     const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
     questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
-    console.log('Showing default questions:', questionsToShow);
   }
   
-  console.log('Clearing container and adding', questionsToShow.length, 'questions');
+  console.log('Questions to show:', questionsToShow);
   questionContainer.innerHTML = '';
   
   questionsToShow.forEach((question, index) => {
-    console.log(`Adding question ${index + 1}:`, question);
     const chip = document.createElement('button');
     chip.className = 'question-chip';
     chip.textContent = question;
     chip.setAttribute('data-question', question);
     
-    // クリックイベント
     chip.addEventListener('click', () => {
       const chatInput = document.getElementById('chat-input');
       if (chatInput) {
         chatInput.value = question;
-        
-        // 質問に対応するカテゴリを自動選択
         const relatedCategory = questionToCategory[question] || guessCategory(question);
         if (relatedCategory) {
           selectCategory(relatedCategory);
         }
-        
         updateSendButton();
         chatInput.focus();
       }
@@ -1050,6 +1107,8 @@ function updateFAQQuestions_alt(category = null) {
     
     questionContainer.appendChild(chip);
   });
+  
+  console.log('Alt FAQ update completed');
 }
 
 // チャット初期メッセージ表示関数
@@ -1715,42 +1774,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // --- カテゴリ選択関数 ---
-  function selectCategory(categoryValue) {
-    console.log('Selecting category:', categoryValue);
-    selectedCategory = categoryValue;
-    
-    if (selectedCategoryBox) {
-      selectedCategoryBox.style.display = 'block';
-    }
-    
-    // カテゴリカードを視覚的に選択状態にする
-    document.querySelectorAll('.category-card').forEach(card => {
-      card.classList.remove('selected', 'active');
-      if (card.getAttribute('data-category') === categoryValue) {
-        card.classList.add('selected', 'active');
-        
-        if (selectedCategoryName) {
-          const t = translations[currentLanguage];
-          const categoryNames = t && t.categories ? t.categories : {
-            transportation: '交通・移動',
-            medical: '医療・健康',
-            connectivity: 'ネット・通信',
-            accommodation: '住居・宿泊',
-            culture: '文化・マナー',
-            general: '一般相談'
-          };
-          selectedCategoryName.textContent = categoryNames[categoryValue] || categoryValue;
-        }
-      }
-    });
-    
-    // 選択されたカテゴリーに応じてよくある質問を更新
-    updateFAQQuestions(categoryValue);
-    
-    updateSendButton();
-  }
-
   // --- 相談カテゴリ選択 ---
   categoryCards.forEach((card, index) => {
     card.addEventListener('click', () => {
@@ -1771,38 +1794,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // --- チャット入力・送信ボタン制御 ---
-  function updateSendButton() {
-    const inputValue = chatInput ? chatInput.value.trim() : '';
-    const hasInput = inputValue.length > 0;
-    
-    // カテゴリが選択されていない場合は、入力内容から推測
-    if (hasInput && !selectedCategory) {
-      const guessedCategory = guessCategory(inputValue);
-      selectCategory(guessedCategory);
-    }
-    
-    const hasCategory = selectedCategory.length > 0;
-
-    if (sendButton) {
-      const shouldEnable = hasInput && hasCategory && !isAIChatting;
-      sendButton.disabled = !shouldEnable;
-      
-      // 送信ボタンの見た目を改善
-      if (shouldEnable) {
-        sendButton.style.opacity = '1';
-        sendButton.style.cursor = 'pointer';
-      } else {
-        sendButton.style.opacity = '0.5';
-        sendButton.style.cursor = 'not-allowed';
+  // --- カテゴリ解除 ---
+  if (clearCategoryBtn) {
+    clearCategoryBtn.addEventListener('click', () => {
+      selectedCategory = '';
+      if (selectedCategoryBox) {
+        selectedCategoryBox.style.display = 'none';
       }
-    }
+      document.querySelectorAll('.category-card').forEach(c => {
+        c.classList.remove('selected', 'active');
+      });
+      
+      // デフォルトのよくある質問に戻す
+      updateFAQQuestions();
+      
+      updateSendButton();
+    });
+  }
+
+  // --- チャット入力・送信ボタン制御 ---
+  function updateSendButtonLocal() {
+    updateSendButton();
   }
 
   // チャット入力のイベントリスナー
   if (chatInput) {
     chatInput.addEventListener('input', () => {
-      updateSendButton();
+      updateSendButtonLocal();
     });
 
     // Enterキーで送信
