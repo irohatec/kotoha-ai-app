@@ -929,12 +929,29 @@ function updatePageTexts() {
 
 // よくある質問更新関数
 function updateFAQQuestions(category = null) {
+  console.log('=== updateFAQQuestions called ===');
+  console.log('Category:', category);
+  console.log('Current language:', currentLanguage);
+  
   const questionContainer = document.querySelector('.frequently-asked-questions .question-chips');
-  if (!questionContainer) return;
+  console.log('Question container found:', !!questionContainer);
+  
+  if (!questionContainer) {
+    // 別のセレクターも試してみる
+    const altContainer = document.querySelector('.question-chips');
+    console.log('Alt container found:', !!altContainer);
+    
+    if (!altContainer) {
+      console.error('No question container found!');
+      return;
+    }
+    return updateFAQQuestions_alt(category);
+  }
   
   const t = translations[currentLanguage];
   if (!t || !t.faqQuestions) {
     console.log('No translations found for language:', currentLanguage);
+    console.log('Available translations:', Object.keys(translations));
     return;
   }
   
@@ -951,9 +968,11 @@ function updateFAQQuestions(category = null) {
     console.log('Showing default questions:', questionsToShow);
   }
   
+  console.log('Clearing container and adding', questionsToShow.length, 'questions');
   questionContainer.innerHTML = '';
   
-  questionsToShow.forEach(question => {
+  questionsToShow.forEach((question, index) => {
+    console.log(`Adding question ${index + 1}:`, question);
     const chip = document.createElement('button');
     chip.className = 'question-chip';
     chip.textContent = question;
@@ -971,6 +990,59 @@ function updateFAQQuestions(category = null) {
           selectCategory(relatedCategory);
         }
         
+        updateSendButton();
+        chatInput.focus();
+      }
+    });
+    
+    questionContainer.appendChild(chip);
+  });
+  
+  console.log('FAQ update completed');
+}
+
+// 代替セレクター用の関数
+function updateFAQQuestions_alt(category = null) {
+  console.log('=== Using alternative selector ===');
+  const questionContainer = document.querySelector('.question-chips');
+  
+  if (!questionContainer) {
+    console.error('Alternative selector also failed!');
+    return;
+  }
+  
+  const t = translations[currentLanguage];
+  if (!t || !t.faqQuestions) {
+    console.log('No translations found for language:', currentLanguage);
+    return;
+  }
+  
+  let questionsToShow = [];
+  
+  if (category && t.faqQuestions[category]) {
+    questionsToShow = t.faqQuestions[category];
+  } else {
+    const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
+    questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
+  }
+  
+  console.log('Alt: Showing questions:', questionsToShow);
+  questionContainer.innerHTML = '';
+  
+  questionsToShow.forEach(question => {
+    const chip = document.createElement('button');
+    chip.className = 'question-chip';
+    chip.textContent = question;
+    chip.setAttribute('data-question', question);
+    
+    chip.addEventListener('click', () => {
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.value = question;
+        const relatedCategory = questionToCategory[question] || guessCategory(question);
+        if (relatedCategory) {
+          selectCategory(relatedCategory);
+        }
         updateSendButton();
         chatInput.focus();
       }
@@ -1277,12 +1349,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentLanguage = langCode;
         console.log('Current language set to:', currentLanguage);
         
-        // 即座に更新
+        // 即座に更新 - より強力に
         setTimeout(() => {
+          console.log('Starting immediate update after language change');
           updatePageTexts();
           updateFAQQuestions(selectedCategory);
           updateChatWelcomeMessage();
         }, 50);
+        
+        // 追加の更新（念のため）
+        setTimeout(() => {
+          console.log('Starting delayed update after language change');
+          updateFAQQuestions(selectedCategory);
+        }, 500);
       }
     });
   }
@@ -1625,6 +1704,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 履歴画面表示時に履歴を読み込み
     if (sectionNum === 4) {
       setTimeout(loadConsultationHistory, 100);
+    }
+    
+    // 相談画面表示時によくある質問を更新
+    if (sectionNum === 3) {
+      setTimeout(() => {
+        console.log('Section 3 shown, updating FAQ');
+        updateFAQQuestions(selectedCategory);
+      }, 200);
     }
   };
 
@@ -2138,6 +2225,7 @@ async function loadProfileFormFromFirestore() {
         const langCode = languageCodeMap[data.primaryLanguage];
         if (langCode && translations[langCode]) {
           currentLanguage = langCode;
+          console.log('Profile load: Setting language to:', currentLanguage);
           
           // ヘッダーボタンの状態更新
           document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2148,12 +2236,23 @@ async function loadProfileFormFromFirestore() {
             langBtn.classList.add('active');
           }
           
-          // テキスト更新
+          // テキスト更新（複数回実行で確実に）
           setTimeout(() => {
+            console.log('Profile load: First update');
             updatePageTexts();
             updateFAQQuestions(selectedCategory);
             updateChatWelcomeMessage();
           }, 100);
+          
+          setTimeout(() => {
+            console.log('Profile load: Second update');
+            updateFAQQuestions(selectedCategory);
+          }, 500);
+          
+          setTimeout(() => {
+            console.log('Profile load: Third update');
+            updateFAQQuestions(selectedCategory);
+          }, 1000);
         }
       }
     } else {
