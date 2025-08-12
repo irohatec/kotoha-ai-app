@@ -84,6 +84,50 @@ app.get('/api/config', (req, res) => {
     }
 });
 
+// 翻訳エンドポイント
+app.post('/api/translate', async (req, res) => {
+    try {
+        const { text, targetLanguage, sourceLanguage = 'ja' } = req.body;
+        
+        console.log(`Translation request: "${text}" from ${sourceLanguage} to ${targetLanguage}`);
+        
+        // 入力検証
+        if (!text || !targetLanguage) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: text and targetLanguage' 
+            });
+        }
+        
+        // 同じ言語の場合はそのまま返す
+        if (sourceLanguage === targetLanguage) {
+            return res.json({ translatedText: text });
+        }
+        
+        // Gemini API キー確認
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ error: 'Server configuration error: API key is missing.' });
+        }
+        
+        // 言語コード変換
+        const sourceName = getLanguageFullName(sourceLanguage);
+        const targetName = getLanguageFullName(targetLanguage);
+        
+        // Gemini APIで翻訳
+        const translatedText = await translateWithGemini(text, sourceName, targetName);
+        
+        console.log(`Translation result: "${translatedText}"`);
+        
+        res.json({ translatedText });
+        
+    } catch (error) {
+        console.error('Translation error:', error);
+        res.status(500).json({ 
+            error: 'Translation failed',
+            message: error.message 
+        });
+    }
+});
+
 // AI Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
@@ -107,7 +151,7 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// 言語コード変換
+// 言語コード変換（既存の関数を拡張）
 function getLanguageCode(language) {
     const languageMap = {
         '日本語': 'Japanese',
@@ -122,6 +166,85 @@ function getLanguageCode(language) {
         'Русский': 'Russian'
     };
     return languageMap[language] || 'Japanese';
+}
+
+// 言語コードから正式名称への変換（翻訳用）
+function getLanguageFullName(langCode) {
+    const languageNames = {
+        'ja': 'Japanese',
+        'en': 'English',
+        'ko': 'Korean',
+        'zh': 'Chinese',
+        'es': 'Spanish',
+        'fr': 'French',
+        'de': 'German',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+        'ru': 'Russian'
+    };
+    return languageNames[langCode] || 'Japanese';
+}
+
+// 翻訳専用のGemini API呼び出し関数
+async function translateWithGemini(text, sourceLang, targetLang) {
+    try {
+        const prompt = `Translate the following ${sourceLang} text to ${targetLang}. 
+Rules:
+- Return ONLY the translated text
+- Do not include quotes, explanations, or additional formatting
+- Maintain the same tone and style as the original
+- Keep the original meaning precisely
+- For technical terms or proper nouns, use the most appropriate translation
+
+Text to translate: ${text}`;
+
+        const requestBody = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+                temperature: 0.1, // 翻訳なので低めに設定
+                topK: 1,
+                topP: 0.8,
+                maxOutputTokens: 1024,
+            }
+        };
+
+        const fetch = (await import('node-fetch')).default;
+        
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, 
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Translation API request failed with status ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+            let translatedText = data.candidates[0].content.parts[0].text.trim();
+            
+            // 余分な引用符や説明文を除去
+            translatedText = translatedText
+                .replace(/^["'`]|["'`]$/g, '') // 先頭と末尾の引用符を除去
+                .replace(/^Translation:\s*/i, '') // "Translation: " プレフィックスを除去
+                .replace(/^Translated text:\s*/i, '') // "Translated text: " プレフィックスを除去
+                .trim();
+            
+            return translatedText;
+        } else {
+            throw new Error('No valid translation response from Gemini API');
+        }
+        
+    } catch (error) {
+        console.error('Gemini translation error:', error);
+        throw error;
+    }
 }
 
 // Gemini API call function
