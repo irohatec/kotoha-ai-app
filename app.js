@@ -99,13 +99,60 @@ const translations = {
     categoryTitle: '相談カテゴリ',
     frequentlyAskedQuestions: 'よくある質問',
     
-    // よくある質問
+    // よくある質問（カテゴリー別）
     faqQuestions: {
-      busUsage: 'バスの乗り方は？',
-      hospitalReservation: '病院の予約は必要？',
-      wifiLocation: 'Wi-Fi利用場所は？',
-      japaneseManners: '日本のマナーは？',
-      emergencyContact: '緊急時の連絡先は？'
+      transportation: [
+        'バスの乗り方は？',
+        '電車の乗り換え方法は？',
+        'ICカードはどこで買える？',
+        'タクシーの呼び方は？',
+        '松山空港からのアクセスは？'
+      ],
+      medical: [
+        '病院の予約は必要？',
+        '保険証は使える？',
+        '薬局はどこにある？',
+        '救急病院はどこ？',
+        '英語対応の病院は？'
+      ],
+      connectivity: [
+        'Wi-Fi利用場所は？',
+        'SIMカードはどこで買える？',
+        'インターネットカフェは？',
+        'データプランのおすすめは？',
+        '通信速度が遅い時は？'
+      ],
+      accommodation: [
+        'ホテルの予約方法は？',
+        '民泊の利用方法は？',
+        '長期滞在向けの住居は？',
+        'チェックイン時間は？',
+        '宿泊税はかかる？'
+      ],
+      culture: [
+        '日本のマナーは？',
+        'お辞儀の仕方は？',
+        '靴を脱ぐ場所は？',
+        '食事のマナーは？',
+        '温泉の入り方は？'
+      ],
+      general: [
+        '緊急時の連絡先は？',
+        '観光スポットのおすすめは？',
+        '愛媛の名物は？',
+        '銀行の営業時間は？',
+        '天気予報の確認方法は？'
+      ]
+    },
+    
+    // カテゴリー名
+    categories: {
+      transportation: '交通・移動',
+      medical: '医療・健康', 
+      connectivity: 'ネット・通信',
+      accommodation: '住居・宿泊',
+      culture: '文化・マナー',
+      general: '一般相談'
     },
     
     // チャット初期メッセージ
@@ -159,13 +206,60 @@ const translations = {
     categoryTitle: 'Category',
     frequentlyAskedQuestions: 'Frequently Asked Questions',
     
-    // よくある質問
+    // よくある質問（カテゴリー別）
     faqQuestions: {
-      busUsage: 'How to use the bus?',
-      hospitalReservation: 'Do I need a reservation for the hospital?',
-      wifiLocation: 'Where can I find Wi-Fi?',
-      japaneseManners: 'What Japanese manners should I know?',
-      emergencyContact: 'Emergency contact information?'
+      transportation: [
+        'How to use the bus?',
+        'How to transfer trains?',
+        'Where to buy IC cards?',
+        'How to call a taxi?',
+        'Access from Matsuyama Airport?'
+      ],
+      medical: [
+        'Do I need a reservation for the hospital?',
+        'Can I use insurance?',
+        'Where are pharmacies?',
+        'Where are emergency hospitals?',
+        'English-speaking hospitals?'
+      ],
+      connectivity: [
+        'Where can I find Wi-Fi?',
+        'Where to buy SIM cards?',
+        'Internet cafes location?',
+        'Recommended data plans?',
+        'What to do when internet is slow?'
+      ],
+      accommodation: [
+        'How to book hotels?',
+        'How to use vacation rentals?',
+        'Long-term accommodation?',
+        'Check-in times?',
+        'Are there accommodation taxes?'
+      ],
+      culture: [
+        'What Japanese manners should I know?',
+        'How to bow properly?',
+        'Where to remove shoes?',
+        'Dining etiquette?',
+        'How to use hot springs?'
+      ],
+      general: [
+        'Emergency contact information?',
+        'Recommended tourist spots?',
+        'Ehime specialties?',
+        'Bank operating hours?',
+        'How to check weather forecast?'
+      ]
+    },
+    
+    // カテゴリー名
+    categories: {
+      transportation: 'Transportation',
+      medical: 'Medical & Health', 
+      connectivity: 'Internet & Communication',
+      accommodation: 'Housing & Accommodation',
+      culture: 'Culture & Etiquette',
+      general: 'General'
     },
     
     // チャット初期メッセージ
@@ -219,13 +313,60 @@ const translations = {
     categoryTitle: '상담 카테고리',
     frequentlyAskedQuestions: '자주 묻는 질문',
     
-    // よくある質問
+    // よくある質問（カテゴリー別）
     faqQuestions: {
-      busUsage: '버스 이용 방법은?',
-      hospitalReservation: '병원 예약이 필요한가요?',
-      wifiLocation: 'Wi-Fi 이용 장소는?',
-      japaneseManners: '일본 매너는?',
-      emergencyContact: '응급 상황 연락처는?'
+      transportation: [
+        '버스 이용 방법은?',
+        '전철 환승 방법은?',
+        'IC카드는 어디서 살 수 있나요?',
+        '택시는 어떻게 부르나요?',
+        '마츠야마 공항에서의 접근 방법은?'
+      ],
+      medical: [
+        '병원 예약이 필요한가요?',
+        '보험증을 사용할 수 있나요?',
+        '약국은 어디에 있나요?',
+        '응급병원은 어디인가요?',
+        '영어 대응 병원은?'
+      ],
+      connectivity: [
+        'Wi-Fi 이용 장소는?',
+        'SIM카드는 어디서 살 수 있나요?',
+        '인터넷 카페는 어디에?',
+        '추천 데이터 요금제는?',
+        '통신 속도가 느릴 때는?'
+      ],
+      accommodation: [
+        '호텔 예약 방법은?',
+        '민박 이용 방법은?',
+        '장기 체류용 주거는?',
+        '체크인 시간은?',
+        '숙박세가 있나요?'
+      ],
+      culture: [
+        '일본 매너는?',
+        '인사하는 방법은?',
+        '신발을 벗는 곳은?',
+        '식사 예절은?',
+        '온천 이용법은?'
+      ],
+      general: [
+        '응급 상황 연락처는?',
+        '추천 관광지는?',
+        '에히메 명물은?',
+        '은행 영업 시간은?',
+        '날씨 예보 확인 방법은?'
+      ]
+    },
+    
+    // カテゴリー名
+    categories: {
+      transportation: '교통・이동',
+      medical: '의료・건강', 
+      connectivity: '인터넷・통신',
+      accommodation: '주거・숙박',
+      culture: '문화・매너',
+      general: '일반 상담'
     },
     
     // 履歴画면
@@ -276,13 +417,60 @@ const translations = {
     categoryTitle: '咨询类别',
     frequentlyAskedQuestions: '常见问题',
     
-    // よくある質問
+    // よくある質問（カテゴリー別）
     faqQuestions: {
-      busUsage: '如何乘坐公交车？',
-      hospitalReservation: '看病需要预约吗？',
-      wifiLocation: 'Wi-Fi使用地点？',
-      japaneseManners: '日本礼仪注意事项？',
-      emergencyContact: '紧急联系方式？'
+      transportation: [
+        '如何乘坐公交车？',
+        '如何换乘电车？',
+        'IC卡在哪里购买？',
+        '如何叫出租车？',
+        '从松山机场如何前往？'
+      ],
+      medical: [
+        '看病需要预约吗？',
+        '可以使用保险吗？',
+        '药店在哪里？',
+        '急救医院在哪里？',
+        '有英语对应的医院吗？'
+      ],
+      connectivity: [
+        'Wi-Fi使用地点？',
+        'SIM卡在哪里购买？',
+        '网吧在哪里？',
+        '推荐的流量套餐？',
+        '网速慢时怎么办？'
+      ],
+      accommodation: [
+        '如何预订酒店？',
+        '如何使用民宿？',
+        '长期居住的住所？',
+        '入住时间是？',
+        '有住宿税吗？'
+      ],
+      culture: [
+        '日本礼仪注意事项？',
+        '如何鞠躬？',
+        '在哪里脱鞋？',
+        '用餐礼仪？',
+        '如何泡温泉？'
+      ],
+      general: [
+        '紧急联系方式？',
+        '推荐的观光景点？',
+        '爱媛特产？',
+        '银行营业时间？',
+        '如何查看天气预报？'
+      ]
+    },
+    
+    // カテゴリー名
+    categories: {
+      transportation: '交通・出行',
+      medical: '医疗・健康', 
+      connectivity: '网络・通信',
+      accommodation: '住宿・居住',
+      culture: '文化・礼仪',
+      general: '一般咨询'
     },
     
     // チャット初期メッセージ
@@ -599,6 +787,9 @@ function switchLanguage(langCode) {
   // テキスト更新
   updatePageTexts();
   
+  // よくある質問を現在のカテゴリーで更新
+  updateFAQQuestions(selectedCategory);
+  
   // チャット初期メッセージの更新
   updateChatWelcomeMessage();
 }
@@ -719,24 +910,8 @@ function updatePageTexts() {
   const faqTitle = document.querySelector('.frequently-asked-questions h3');
   if (faqTitle) faqTitle.textContent = `💡 ${t.frequentlyAskedQuestions}`;
   
-  // よくある質問の質問ボタンを更新
-  const questionChips = document.querySelectorAll('.question-chip');
-  if (questionChips.length > 0 && t.faqQuestions) {
-    const questions = [
-      { key: 'busUsage', selector: '[data-question*="バス"], [data-question*="bus"], [data-question*="버스"], [data-question*="公交"]' },
-      { key: 'hospitalReservation', selector: '[data-question*="病院"], [data-question*="hospital"], [data-question*="병원"], [data-question*="医院"]' },
-      { key: 'wifiLocation', selector: '[data-question*="Wi-Fi"], [data-question*="wifi"], [data-question*="网络"]' },
-      { key: 'japaneseManners', selector: '[data-question*="マナー"], [data-question*="manner"], [data-question*="매너"], [data-question*="礼仪"]' },
-      { key: 'emergencyContact', selector: '[data-question*="緊急"], [data-question*="emergency"], [data-question*="응급"], [data-question*="紧急"]' }
-    ];
-    
-    questions.forEach((q, index) => {
-      if (questionChips[index] && t.faqQuestions[q.key]) {
-        questionChips[index].textContent = t.faqQuestions[q.key];
-        questionChips[index].setAttribute('data-question', t.faqQuestions[q.key]);
-      }
-    });
-  }
+  // よくある質問の更新
+  updateFAQQuestions();
   
   // セレクトボックスのデフォルトオプション
   document.querySelectorAll('select option[value=""]').forEach(option => {
@@ -750,6 +925,54 @@ function updatePageTexts() {
   
   // チャット初期メッセージの更新
   updateChatWelcomeMessage();
+}
+
+// よくある質問更新関数
+function updateFAQQuestions(category = null) {
+  const questionContainer = document.querySelector('.frequently-asked-questions .question-chips');
+  if (!questionContainer) return;
+  
+  const t = translations[currentLanguage];
+  if (!t || !t.faqQuestions) return;
+  
+  let questionsToShow = [];
+  
+  if (category && t.faqQuestions[category]) {
+    // 選択されたカテゴリの質問を表示
+    questionsToShow = t.faqQuestions[category];
+  } else {
+    // デフォルト：全カテゴリから1つずつ表示
+    const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
+    questionsToShow = categories.map(cat => t.faqQuestions[cat] ? t.faqQuestions[cat][0] : '').filter(q => q);
+  }
+  
+  questionContainer.innerHTML = '';
+  
+  questionsToShow.forEach(question => {
+    const chip = document.createElement('button');
+    chip.className = 'question-chip';
+    chip.textContent = question;
+    chip.setAttribute('data-question', question);
+    
+    // クリックイベント
+    chip.addEventListener('click', () => {
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.value = question;
+        
+        // 質問に対応するカテゴリを自動選択
+        const relatedCategory = questionToCategory[question] || guessCategory(question);
+        if (relatedCategory) {
+          selectCategory(relatedCategory);
+        }
+        
+        updateSendButton();
+        chatInput.focus();
+      }
+    });
+    
+    questionContainer.appendChild(chip);
+  });
 }
 
 // チャット初期メッセージ表示関数
@@ -797,38 +1020,89 @@ function updateChatWelcomeMessage() {
 
 // 質問とカテゴリのマッピング（多言語対応）
 const questionToCategory = {
-  // 日本語
-  'バスの乗り方がわかりません。どうすればいいですか？': 'transportation',
+  // 日本語 - 交通
   'バスの乗り方は？': 'transportation',
-  '病院に行きたいのですが、予約は必要ですか？': 'medical',
+  '電車の乗り換え方法は？': 'transportation',
+  'ICカードはどこで買える？': 'transportation',
+  'タクシーの呼び方は？': 'transportation',
+  '松山空港からのアクセスは？': 'transportation',
+  
+  // 日本語 - 医療
   '病院の予約は必要？': 'medical',
-  'Wi-Fiが使える場所を教えてください。': 'connectivity',
+  '保険証は使える？': 'medical',
+  '薬局はどこにある？': 'medical',
+  '救急病院はどこ？': 'medical',
+  '英語対応の病院は？': 'medical',
+  
+  // 日本語 - ネット
   'Wi-Fi利用場所は？': 'connectivity',
-  '日本のマナーで注意すべきことはありますか？': 'culture',
+  'SIMカードはどこで買える？': 'connectivity',
+  'インターネットカフェは？': 'connectivity',
+  'データプランのおすすめは？': 'connectivity',
+  '通信速度が遅い時は？': 'connectivity',
+  
+  // 日本語 - 宿泊
+  'ホテルの予約方法は？': 'accommodation',
+  '民泊の利用方法は？': 'accommodation',
+  '長期滞在向けの住居は？': 'accommodation',
+  'チェックイン時間は？': 'accommodation',
+  '宿泊税はかかる？': 'accommodation',
+  
+  // 日本語 - 文化
   '日本のマナーは？': 'culture',
-  '緊急時はどこに連絡すればいいですか？': 'general',
+  'お辞儀の仕方は？': 'culture',
+  '靴を脱ぐ場所は？': 'culture',
+  '食事のマナーは？': 'culture',
+  '温泉の入り方は？': 'culture',
+  
+  // 日本語 - 一般
   '緊急時の連絡先は？': 'general',
+  '観光スポットのおすすめは？': 'general',
+  '愛媛の名物は？': 'general',
+  '銀行の営業時間は？': 'general',
+  '天気予報の確認方法は？': 'general',
   
-  // 英語
+  // 英語 - 交通
   'How to use the bus?': 'transportation',
+  'How to transfer trains?': 'transportation',
+  'Where to buy IC cards?': 'transportation',
+  'How to call a taxi?': 'transportation',
+  'Access from Matsuyama Airport?': 'transportation',
+  
+  // 英語 - 医療
   'Do I need a reservation for the hospital?': 'medical',
+  'Can I use insurance?': 'medical',
+  'Where are pharmacies?': 'medical',
+  'Where are emergency hospitals?': 'medical',
+  'English-speaking hospitals?': 'medical',
+  
+  // 英語 - ネット
   'Where can I find Wi-Fi?': 'connectivity',
+  'Where to buy SIM cards?': 'connectivity',
+  'Internet cafes location?': 'connectivity',
+  'Recommended data plans?': 'connectivity',
+  'What to do when internet is slow?': 'connectivity',
+  
+  // 英語 - 宿泊
+  'How to book hotels?': 'accommodation',
+  'How to use vacation rentals?': 'accommodation',
+  'Long-term accommodation?': 'accommodation',
+  'Check-in times?': 'accommodation',
+  'Are there accommodation taxes?': 'accommodation',
+  
+  // 英語 - 文化
   'What Japanese manners should I know?': 'culture',
+  'How to bow properly?': 'culture',
+  'Where to remove shoes?': 'culture',
+  'Dining etiquette?': 'culture',
+  'How to use hot springs?': 'culture',
+  
+  // 英語 - 一般
   'Emergency contact information?': 'general',
-  
-  // 韓国語
-  '버스 이용 방법은?': 'transportation',
-  '병원 예약이 필요한가요?': 'medical',
-  'Wi-Fi 이용 장소는?': 'connectivity',
-  '일본 매너는?': 'culture',
-  '응급 상황 연락처는?': 'general',
-  
-  // 中国語
-  '如何乘坐公交车？': 'transportation',
-  '看病需要预约吗？': 'medical',
-  'Wi-Fi使用地点？': 'connectivity',
-  '日本礼仪注意事项？': 'culture',
-  '紧急联系方式？': 'general'
+  'Recommended tourist spots?': 'general',
+  'Ehime specialties?': 'general',
+  'Bank operating hours?': 'general',
+  'How to check weather forecast?': 'general'
 };
 
 // 質問からカテゴリを推測する関数（多言語対応強化）
@@ -1353,13 +1627,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.classList.add('selected', 'active');
         
         if (selectedCategoryName) {
-          const categoryNameElement = card.querySelector('.category-name');
-          if (categoryNameElement) {
-            selectedCategoryName.textContent = categoryNameElement.textContent;
-          }
+          const t = translations[currentLanguage];
+          const categoryNames = t && t.categories ? t.categories : {
+            transportation: '交通・移動',
+            medical: '医療・健康',
+            connectivity: 'ネット・通信',
+            accommodation: '住居・宿泊',
+            culture: '文化・マナー',
+            general: '一般相談'
+          };
+          selectedCategoryName.textContent = categoryNames[categoryValue] || categoryValue;
         }
       }
     });
+    
+    // 選択されたカテゴリーに応じてよくある質問を更新
+    updateFAQQuestions(categoryValue);
     
     updateSendButton();
   }
@@ -1369,41 +1652,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.addEventListener('click', () => {
       const categoryValue = card.getAttribute('data-category');
       selectCategory(categoryValue);
-      showMessage(`${card.querySelector('.category-name').textContent} を選択しました。`, 'info');
-    });
-  });
-
-  // --- カテゴリ解除 ---
-  if (clearCategoryBtn) {
-    clearCategoryBtn.addEventListener('click', () => {
-      selectedCategory = '';
-      if (selectedCategoryBox) {
-        selectedCategoryBox.style.display = 'none';
-      }
-      document.querySelectorAll('.category-card').forEach(c => {
-        c.classList.remove('selected', 'active');
-      });
-      updateSendButton();
-    });
-  }
-
-  // --- よくある質問クリックで入力欄に転記 + カテゴリ自動選択 ---
-  document.querySelectorAll('.question-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const question = btn.getAttribute('data-question') || btn.textContent.trim();
       
-      if (chatInput) {
-        chatInput.value = question;
-        
-        // 質問に対応するカテゴリを自動選択
-        const relatedCategory = questionToCategory[question] || guessCategory(question);
-        if (relatedCategory) {
-          selectCategory(relatedCategory);
-        }
-        
-        updateSendButton();
-        chatInput.focus();
-      }
+      const t = translations[currentLanguage];
+      const categoryNames = t && t.categories ? t.categories : {
+        transportation: '交通・移動',
+        medical: '医療・健康',
+        connectivity: 'ネット・通信',
+        accommodation: '住居・宿泊',
+        culture: '文化・マナー',
+        general: '一般相談'
+      };
+      const categoryName = categoryNames[categoryValue] || categoryValue;
+      showMessage(`${categoryName} を選択しました。`, 'info');
     });
   });
 
@@ -1566,6 +1826,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // --- 初期表示時のテキスト更新 ---
   updatePageTexts();
+  
+  // よくある質問の初期化
+  setTimeout(() => {
+    updateFAQQuestions();
+  }, 200);
   
   // チャット画面の初期化
   setTimeout(() => {
