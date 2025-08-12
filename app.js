@@ -108,6 +108,9 @@ const translations = {
       emergencyContact: '緊急時の連絡先は？'
     },
     
+    // チャット初期メッセージ
+    chatWelcomeMessage: 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。',
+    
     // 履歴画面
     historyTitle: '相談履歴',
     historyDesc: '過去の相談内容を確認できます',
@@ -164,6 +167,9 @@ const translations = {
       japaneseManners: 'What Japanese manners should I know?',
       emergencyContact: 'Emergency contact information?'
     },
+    
+    // チャット初期メッセージ
+    chatWelcomeMessage: 'Hello! I\'m Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.<br>Click on the sample questions above or enter your question directly.',
     
     // 履歴画面
     historyTitle: 'Consultation History',
@@ -278,6 +284,9 @@ const translations = {
       japaneseManners: '日本礼仪注意事项？',
       emergencyContact: '紧急联系方式？'
     },
+    
+    // チャット初期メッセージ
+    chatWelcomeMessage: '您好！我是Kotoha AI。关于您在爱媛县的居留，我可以回答任何问题。<br>请点击上面的示例问题或直接输入您的问题。',
     
     // 履歴画面
     historyTitle: '咨询历史',
@@ -582,10 +591,16 @@ function switchLanguage(langCode) {
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.remove('active');
   });
-  document.getElementById(`lang-${langCode}`).classList.add('active');
+  const langBtn = document.getElementById(`lang-${langCode}`);
+  if (langBtn) {
+    langBtn.classList.add('active');
+  }
   
   // テキスト更新
   updatePageTexts();
+  
+  // チャット初期メッセージの更新
+  updateChatWelcomeMessage();
 }
 
 // ページテキスト更新関数
@@ -731,6 +746,52 @@ function updatePageTexts() {
   // 履歴画面が表示されている場合は再読み込み
   if (currentSection === 4) {
     setTimeout(loadConsultationHistory, 100);
+  }
+  
+  // チャット初期メッセージの更新
+  updateChatWelcomeMessage();
+}
+
+// チャット初期メッセージ表示関数
+function initializeChatWithWelcomeMessage() {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+  
+  const t = translations[currentLanguage];
+  const welcomeMessage = t && t.chatWelcomeMessage 
+    ? t.chatWelcomeMessage 
+    : 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
+  
+  chatMessages.innerHTML = `
+    <div class="message ai-message">
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            <div class="message-bubble">
+                ${welcomeMessage}
+            </div>
+            <div class="message-time">Kotoha AI</div>
+        </div>
+    </div>
+  `;
+  
+  // スクロールを調整
+  setTimeout(() => {
+    scrollToBottom();
+  }, 100);
+}
+
+// チャット初期メッセージ更新関数
+function updateChatWelcomeMessage() {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+  
+  const t = translations[currentLanguage];
+  if (!t || !t.chatWelcomeMessage) return;
+  
+  // 既存の初期メッセージを探して更新
+  const existingWelcome = chatMessages.querySelector('.ai-message .message-bubble');
+  if (existingWelcome && existingWelcome.innerHTML.includes('Kotoha AI')) {
+    existingWelcome.innerHTML = t.chatWelcomeMessage;
   }
 }
 
@@ -1498,29 +1559,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (clearChatBtn) {
     clearChatBtn.addEventListener('click', () => {
       if (confirm('チャットをクリアしますか？')) {
-        chatMessages.innerHTML = `
-          <div class="message ai-message">
-              <div class="message-avatar">🤖</div>
-              <div class="message-content">
-                  <div class="message-bubble">
-                      こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>
-                      上記のサンプル質問をクリックするか、直接ご質問を入力してください。<br><br>
-                      Hello! I'm Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.
-                  </div>
-                  <div class="message-time">Kotoha AI</div>
-              </div>
-          </div>
-        `;
-        // クリア後にスクロールを調整
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
+        initializeChatWithWelcomeMessage();
       }
     });
   }
   
   // --- 初期表示時のテキスト更新 ---
   updatePageTexts();
+  
+  // チャット画面の初期化
+  setTimeout(() => {
+    initializeChatWithWelcomeMessage();
+  }, 500);
 });
 
 // --- 会話履歴管理機能 ---
