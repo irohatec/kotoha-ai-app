@@ -27,29 +27,6 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-// --- Firebase Secure Initialization ---
-let app, auth, db;
-
-try {
-    const response = await fetch('/api/firebase-config');
-    if (!response.ok) {
-        throw new Error(`サーバーから設定を取得できませんでした: ${response.status}`);
-    }
-    const firebaseConfig = await response.json();
-    
-    if (!firebaseConfig.apiKey) {
-        throw new Error('取得した設定にAPIキーが含まれていません。');
-    }
-
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-} catch (error) {
-    console.error("Firebaseの初期化に失敗しました:", error);
-    // この時点ではまだshowMessageが定義されていないため、alertを使用します。
-    alert("アプリケーションの起動に失敗しました。ページを再読み込みしてください。");
-}
-
 let currentUser = null;
 let currentSection = 1;
 let selectedCategory = '';
@@ -721,10 +698,30 @@ function guessCategory(userMessage) {
 }
 
 // --- DOMContentLoaded Listener ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // <-- この行に async を追加します
+
+  // ▼▼▼ ここからが挿入するコードです ▼▼▼
+  try {
+    const response = await fetch('/api/firebase-config');
+    if (!response.ok) throw new Error('サーバーから設定を取得できませんでした');
+    const firebaseConfig = await response.json();
+    if (!firebaseConfig.apiKey) throw new Error('APIキーが設定に含まれていません');
+
+    const app = initializeApp(firebaseConfig);
+    // グローバル変数にFirebaseのインスタンスを代入します
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+      console.error("Firebaseの初期化に失敗しました:", error);
+      alert("致命的なエラー: アプリケーションを初期化できませんでした。");
+      return; // Firebaseの初期化に失敗した場合は、ここで処理を停止します
+  }
+  // ▲▲▲ ここまでが挿入するコードです ▲▲▲
+
   console.log('DOM loaded, initializing enhanced app...');
   
   // --- UI Element References ---
+  // ... (以降のコードは変更ありません)
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const authContainer = document.getElementById('auth-container');
