@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - セキュア版 (最適化)
+// Firebase v10.12.2 本番版 app.js - セキュア版
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -59,95 +59,15 @@ let selectedCategory = '';
 let shouldStoreConsultation = true;
 let isAIChatting = false;
 let currentLanguage = 'ja'; // デフォルトは日本語
-let translationCache = {}; // 翻訳キャッシュ
 
-// グローバル関数として定義
-function selectCategory(categoryValue) {
-  console.log('Selecting category:', categoryValue);
-  selectedCategory = categoryValue;
-  
-  const selectedCategoryBox = document.getElementById('selected-category');
-  const selectedCategoryName = document.getElementById('selected-category-name');
-  
-  if (selectedCategoryBox) {
-    selectedCategoryBox.style.display = 'block';
-  }
-  
-  // カテゴリカードを視覚的に選択状態にする
-  document.querySelectorAll('.category-card').forEach(card => {
-    card.classList.remove('selected', 'active');
-    if (card.getAttribute('data-category') === categoryValue) {
-      card.classList.add('selected', 'active');
-      
-      if (selectedCategoryName) {
-        // 動的翻訳でカテゴリー名を設定
-        updateCategoryName(categoryValue, selectedCategoryName);
-      }
-    }
-  });
-  
-  // 選択されたカテゴリーに応じてよくある質問を更新
-  updateFAQQuestions(categoryValue);
-  
-  updateSendButton();
-}
-
-// カテゴリー名を動的翻訳で更新
-async function updateCategoryName(categoryValue, element) {
-  const categoryNamesJa = {
-    transportation: '交通・移動',
-    medical: '医療・健康',
-    connectivity: 'ネット・通信',
-    accommodation: '住居・宿泊',
-    culture: '文化・マナー',
-    general: '一般相談'
-  };
-  
-  const jaName = categoryNamesJa[categoryValue] || categoryValue;
-  
-  if (currentLanguage === 'ja') {
-    element.textContent = jaName;
-  } else {
-    const translatedName = await translateText(jaName, currentLanguage);
-    element.textContent = translatedName;
-  }
-}
-
-function updateSendButton() {
-  const chatInput = document.getElementById('chat-input');
-  const sendButton = document.getElementById('send-button');
-  
-  const inputValue = chatInput ? chatInput.value.trim() : '';
-  const hasInput = inputValue.length > 0;
-  
-  // カテゴリが選択されていない場合は、入力内容から推測
-  if (hasInput && !selectedCategory) {
-    const guessedCategory = guessCategory(inputValue);
-    selectCategory(guessedCategory);
-  }
-  
-  const hasCategory = selectedCategory.length > 0;
-
-  if (sendButton) {
-    const shouldEnable = hasInput && hasCategory && !isAIChatting;
-    sendButton.disabled = !shouldEnable;
-    
-    // 送信ボタンの見た目を改善
-    if (shouldEnable) {
-      sendButton.style.opacity = '1';
-      sendButton.style.cursor = 'pointer';
-    } else {
-      sendButton.style.opacity = '0.5';
-      sendButton.style.cursor = 'not-allowed';
-    }
-  }
-}
-
-// コンパクトな静的翻訳（UI要素のみ）
+// 多言語辞書
 const translations = {
   ja: {
+    // ヘッダー
     headerTitle: 'Kotoha AI',
     headerSubtitle: '愛媛県での滞在をサポートするAIアシスタント',
+    
+    // 認証画面
     welcomeTitle: 'ようこそ Kotoha AI へ',
     welcomeDesc: '愛媛県での滞在をより快適にするため、まずはアカウントを作成しましょう',
     loginTitle: 'ログイン',
@@ -161,6 +81,8 @@ const translations = {
     guestLoginBtn: 'ゲストとして利用',
     showSignupBtn: 'アカウント作成',
     showLoginBtn: 'ログインに戻る',
+    
+    // プロフィール画面
     profileTitle: 'プロフィール設定',
     profileDesc: 'より適切なサポートを提供するため、基本情報を教えてください',
     displayName: '表示名',
@@ -170,21 +92,42 @@ const translations = {
     stayPurpose: '滞在目的',
     stayPeriod: '滞在期間',
     saveProfileBtn: 'プロフィール保存',
+    
+    // 相談画面
     consultationTitle: 'AI相談',
     consultationDesc: 'カテゴリを選択して、気軽にご質問ください',
     categoryTitle: '相談カテゴリ',
     frequentlyAskedQuestions: 'よくある質問',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: 'バスの乗り方は？',
+      hospitalReservation: '病院の予約は必要？',
+      wifiLocation: 'Wi-Fi利用場所は？',
+      japaneseManners: '日本のマナーは？',
+      emergencyContact: '緊急時の連絡先は？'
+    },
+    
+    // チャット初期メッセージ
+    chatWelcomeMessage: 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。',
+    
+    // 履歴画面
     historyTitle: '相談履歴',
     historyDesc: '過去の相談内容を確認できます',
     backToConsultation: '相談に戻る',
     exportHistory: '履歴をエクスポート',
     noHistory: 'まだ相談履歴はありません。',
+    
+    // 共通
     logout: 'ログアウト',
     select: '選択してください'
   },
   en: {
+    // ヘッダー
     headerTitle: 'Kotoha AI',
     headerSubtitle: 'AI Assistant for Your Stay in Ehime Prefecture',
+    
+    // 認証画面
     welcomeTitle: 'Welcome to Kotoha AI',
     welcomeDesc: 'Create an account to make your stay in Ehime Prefecture more comfortable',
     loginTitle: 'Sign In',
@@ -198,6 +141,8 @@ const translations = {
     guestLoginBtn: 'Use as Guest',
     showSignupBtn: 'Create Account',
     showLoginBtn: 'Back to Login',
+    
+    // プロフィール画面
     profileTitle: 'Profile Setup',
     profileDesc: 'Please provide your basic information for better support',
     displayName: 'Display Name',
@@ -207,108 +152,436 @@ const translations = {
     stayPurpose: 'Purpose',
     stayPeriod: 'Stay Period',
     saveProfileBtn: 'Save Profile',
+    
+    // 相談画面
     consultationTitle: 'AI Consultation',
     consultationDesc: 'Select a category and feel free to ask questions',
     categoryTitle: 'Category',
     frequentlyAskedQuestions: 'Frequently Asked Questions',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: 'How to use the bus?',
+      hospitalReservation: 'Do I need a reservation for the hospital?',
+      wifiLocation: 'Where can I find Wi-Fi?',
+      japaneseManners: 'What Japanese manners should I know?',
+      emergencyContact: 'Emergency contact information?'
+    },
+    
+    // チャット初期メッセージ
+    chatWelcomeMessage: 'Hello! I\'m Kotoha AI. Feel free to ask me anything about your stay in Ehime Prefecture.<br>Click on the sample questions above or enter your question directly.',
+    
+    // 履歴画面
     historyTitle: 'Consultation History',
     historyDesc: 'View your past consultation records',
     backToConsultation: 'Back to Consultation',
     exportHistory: 'Export History',
     noHistory: 'No consultation history yet.',
+    
+    // 共通
     logout: 'Logout',
     select: 'Select'
-  }
-};
-
-// よくある質問（日本語版のみ - 他言語は動的翻訳）
-const faqQuestionsJa = {
-  transportation: [
-    'バスの乗り方は？',
-    '電車の乗り換え方法は？',
-    'ICカードはどこで買える？',
-    'タクシーの呼び方は？',
-    '松山空港からのアクセスは？'
-  ],
-  medical: [
-    '病院の予約は必要？',
-    '保険証は使える？',
-    '薬局はどこにある？',
-    '救急病院はどこ？',
-    '英語対応の病院は？'
-  ],
-  connectivity: [
-    'Wi-Fi利用場所は？',
-    'SIMカードはどこで買える？',
-    'インターネットカフェは？',
-    'データプランのおすすめは？',
-    '通信速度が遅い時は？'
-  ],
-  accommodation: [
-    'ホテルの予約方法は？',
-    '民泊の利用方法は？',
-    '長期滞在向けの住居は？',
-    'チェックイン時間は？',
-    '宿泊税はかかる？'
-  ],
-  culture: [
-    '日本のマナーは？',
-    'お辞儀の仕方は？',
-    '靴を脱ぐ場所は？',
-    '食事のマナーは？',
-    '温泉の入り方は？'
-  ],
-  general: [
-    '緊急時の連絡先は？',
-    '観光スポットのおすすめは？',
-    '愛媛の名物は？',
-    '銀行の営業時間は？',
-    '天気予報の確認方法は？'
-  ]
-};
-
-// 翻訳関数（Gemini API使用）
-async function translateText(text, targetLanguage) {
-  // 日本語の場合はそのまま返す
-  if (targetLanguage === 'ja') {
-    return text;
-  }
-  
-  // キャッシュをチェック
-  const cacheKey = `${text}_${targetLanguage}`;
-  if (translationCache[cacheKey]) {
-    return translationCache[cacheKey];
-  }
-  
-  try {
-    const response = await fetch('/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: text,
-        targetLanguage: targetLanguage,
-        sourceLanguage: 'ja'
-      })
-    });
+  },
+  ko: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: '에히메현 체류를 지원하는 AI 어시스턴트',
     
-    if (response.ok) {
-      const data = await response.json();
-      const translatedText = data.translatedText || text;
-      
-      // キャッシュに保存
-      translationCache[cacheKey] = translatedText;
-      return translatedText;
-    } else {
-      console.warn(`Translation API error: ${response.status}`);
-    }
-  } catch (error) {
-    console.warn('Translation API failed:', error);
+    // 認証画面
+    welcomeTitle: 'Kotoha AI에 오신 것을 환영합니다',
+    welcomeDesc: '에히메현에서의 체류를 더욱 편안하게 하기 위해 먼저 계정을 만들어 주세요',
+    loginTitle: '로그인',
+    signupTitle: '계정 생성',
+    email: '이메일 주소',
+    password: '비밀번호',
+    passwordConfirm: '비밀번호 확인',
+    loginBtn: '로그인',
+    signupBtn: '계정 생성',
+    googleLoginBtn: 'Google로 로그인',
+    guestLoginBtn: '게스트로 이용',
+    showSignupBtn: '계정 생성',
+    showLoginBtn: '로그인으로 돌아가기',
+    
+    // プロフィール画面
+    profileTitle: '프로필 설정',
+    profileDesc: '더 적절한 지원을 제공하기 위해 기본 정보를 알려주세요',
+    displayName: '표시 이름',
+    nationality: '국적',
+    primaryLanguage: '사용 언어',
+    stayLocation: '체류 지역',
+    stayPurpose: '체류 목적',
+    stayPeriod: '체류 기간',
+    saveProfileBtn: '프로필 저장',
+    
+    // 相談画면
+    consultationTitle: 'AI 상담',
+    consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
+    categoryTitle: '상담 카테고리',
+    frequentlyAskedQuestions: '자주 묻는 질문',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: '버스 이용 방법은?',
+      hospitalReservation: '병원 예약이 필요한가요?',
+      wifiLocation: 'Wi-Fi 이용 장소는?',
+      japaneseManners: '일본 매너는?',
+      emergencyContact: '응급 상황 연락처는?'
+    },
+    
+    // 履歴画면
+    historyTitle: '상담 이력',
+    historyDesc: '과거 상담 내용을 확인할 수 있습니다',
+    backToConsultation: '상담으로 돌아가기',
+    exportHistory: '이력 내보내기',
+    noHistory: '아직 상담 이력이 없습니다.',
+    
+    // 共通
+    logout: '로그아웃',
+    select: '선택해 주세요'
+  },
+  zh: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: '支持爱媛县居留的AI助理',
+    
+    // 認証画面
+    welcomeTitle: '欢迎使用 Kotoha AI',
+    welcomeDesc: '为了让您在爱媛县的居留更加舒适，请先创建账户',
+    loginTitle: '登录',
+    signupTitle: '创建账户',
+    email: '电子邮箱',
+    password: '密码',
+    passwordConfirm: '确认密码',
+    loginBtn: '登录',
+    signupBtn: '创建账户',
+    googleLoginBtn: 'Google登录',
+    guestLoginBtn: '作为访客使用',
+    showSignupBtn: '创建账户',
+    showLoginBtn: '返回登录',
+    
+    // プロフィール画面
+    profileTitle: '个人资料设置',
+    profileDesc: '为了提供更合适的支持，请告诉我们您的基本信息',
+    displayName: '显示姓名',
+    nationality: '国籍',
+    primaryLanguage: '使用语言',
+    stayLocation: '居留地区',
+    stayPurpose: '居留目的',
+    stayPeriod: '居留期间',
+    saveProfileBtn: '保存个人资料',
+    
+    // 相談画面
+    consultationTitle: 'AI咨询',
+    consultationDesc: '请选择类别，随时提问',
+    categoryTitle: '咨询类别',
+    frequentlyAskedQuestions: '常见问题',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: '如何乘坐公交车？',
+      hospitalReservation: '看病需要预约吗？',
+      wifiLocation: 'Wi-Fi使用地点？',
+      japaneseManners: '日本礼仪注意事项？',
+      emergencyContact: '紧急联系方式？'
+    },
+    
+    // チャット初期メッセージ
+    chatWelcomeMessage: '您好！我是Kotoha AI。关于您在爱媛县的居留，我可以回答任何问题。<br>请点击上面的示例问题或直接输入您的问题。',
+    
+    // 履歴画面
+    historyTitle: '咨询历史',
+    historyDesc: '您可以查看过往的咨询内容',
+    backToConsultation: '返回咨询',
+    exportHistory: '导出历史',
+    noHistory: '还没有咨询历史。',
+    
+    // 共通
+    logout: '退出登录',
+    select: '请选择'
+  },
+  es: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Asistente de IA para tu estancia en la Prefectura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenido a Kotoha AI',
+    welcomeDesc: 'Crea una cuenta para hacer tu estancia en la Prefectura de Ehime más cómoda',
+    loginTitle: 'Iniciar Sesión',
+    signupTitle: 'Crear Cuenta',
+    email: 'Correo Electrónico',
+    password: 'Contraseña',
+    passwordConfirm: 'Confirmar Contraseña',
+    loginBtn: 'Iniciar Sesión',
+    signupBtn: 'Crear Cuenta',
+    googleLoginBtn: 'Iniciar con Google',
+    guestLoginBtn: 'Usar como Invitado',
+    showSignupBtn: 'Crear Cuenta',
+    showLoginBtn: 'Volver a Iniciar Sesión',
+    
+    // プロフィール画面
+    profileTitle: 'Configuración del Perfil',
+    profileDesc: 'Proporcione su información básica para un mejor soporte',
+    displayName: 'Nombre para Mostrar',
+    nationality: 'Nacionalidad',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Ubicación de Estancia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estancia',
+    saveProfileBtn: 'Guardar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta AI',
+    consultationDesc: 'Selecciona una categoría y haz preguntas libremente',
+    categoryTitle: 'Categoría',
+    
+    // 履歴画面
+    historyTitle: 'Historial de Consultas',
+    historyDesc: 'Ver tus registros de consultas anteriores',
+    backToConsultation: 'Volver a Consulta',
+    exportHistory: 'Exportar Historial',
+    noHistory: 'Aún no hay historial de consultas.',
+    
+    // 共通
+    logout: 'Cerrar Sesión',
+    select: 'Seleccionar'
+  },
+  fr: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistant IA pour votre séjour dans la Préfecture d\'Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bienvenue sur Kotoha AI',
+    welcomeDesc: 'Créez un compte pour rendre votre séjour dans la Préfecture d\'Ehime plus confortable',
+    loginTitle: 'Se Connecter',
+    signupTitle: 'Créer un Compte',
+    email: 'Adresse Email',
+    password: 'Mot de Passe',
+    passwordConfirm: 'Confirmer le Mot de Passe',
+    loginBtn: 'Se Connecter',
+    signupBtn: 'Créer un Compte',
+    googleLoginBtn: 'Se connecter avec Google',
+    guestLoginBtn: 'Utiliser comme Invité',
+    showSignupBtn: 'Créer un Compte',
+    showLoginBtn: 'Retour à la Connexion',
+    
+    // プロフィール画面
+    profileTitle: 'Configuration du Profil',
+    profileDesc: 'Veuillez fournir vos informations de base pour un meilleur support',
+    displayName: 'Nom d\'Affichage',
+    nationality: 'Nationalité',
+    primaryLanguage: 'Langue Principale',
+    stayLocation: 'Lieu de Séjour',
+    stayPurpose: 'Objectif',
+    stayPeriod: 'Période de Séjour',
+    saveProfileBtn: 'Sauvegarder le Profil',
+    
+    // 相談画面
+    consultationTitle: 'Consultation IA',
+    consultationDesc: 'Sélectionnez une catégorie et posez vos questions librement',
+    categoryTitle: 'Catégorie',
+    
+    // 履歴画面
+    historyTitle: 'Historique des Consultations',
+    historyDesc: 'Voir vos enregistrements de consultations précédentes',
+    backToConsultation: 'Retour à la Consultation',
+    exportHistory: 'Exporter l\'Historique',
+    noHistory: 'Aucun historique de consultation pour le moment.',
+    
+    // 共通
+    logout: 'Se Déconnecter',
+    select: 'Sélectionner'
+  },
+  de: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'KI-Assistent für Ihren Aufenthalt in der Präfektur Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Willkommen bei Kotoha AI',
+    welcomeDesc: 'Erstellen Sie ein Konto, um Ihren Aufenthalt in der Präfektur Ehime komfortabler zu gestalten',
+    loginTitle: 'Anmelden',
+    signupTitle: 'Konto Erstellen',
+    email: 'E-Mail-Adresse',
+    password: 'Passwort',
+    passwordConfirm: 'Passwort Bestätigen',
+    loginBtn: 'Anmelden',
+    signupBtn: 'Konto Erstellen',
+    googleLoginBtn: 'Mit Google anmelden',
+    guestLoginBtn: 'Als Gast verwenden',
+    showSignupBtn: 'Konto Erstellen',
+    showLoginBtn: 'Zurück zur Anmeldung',
+    
+    // プロフィール画面
+    profileTitle: 'Profil-Einrichtung',
+    profileDesc: 'Bitte geben Sie Ihre grundlegenden Informationen für bessere Unterstützung an',
+    displayName: 'Anzeigename',
+    nationality: 'Nationalität',
+    primaryLanguage: 'Hauptsprache',
+    stayLocation: 'Aufenthaltsort',
+    stayPurpose: 'Zweck',
+    stayPeriod: 'Aufenthaltsdauer',
+    saveProfileBtn: 'Profil Speichern',
+    
+    // 相談画面
+    consultationTitle: 'KI-Beratung',
+    consultationDesc: 'Wählen Sie eine Kategorie und stellen Sie frei Fragen',
+    categoryTitle: 'Kategorie',
+    
+    // 履歴画面
+    historyTitle: 'Beratungshistorie',
+    historyDesc: 'Sehen Sie Ihre vorherigen Beratungsaufzeichnungen',
+    backToConsultation: 'Zurück zur Beratung',
+    exportHistory: 'Historie Exportieren',
+    noHistory: 'Noch keine Beratungshistorie vorhanden.',
+    
+    // 共通
+    logout: 'Abmelden',
+    select: 'Auswählen'
+  },
+  it: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente AI per il tuo soggiorno nella Prefettura di Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Benvenuto in Kotoha AI',
+    welcomeDesc: 'Crea un account per rendere il tuo soggiorno nella Prefettura di Ehime più confortevole',
+    loginTitle: 'Accedi',
+    signupTitle: 'Crea Account',
+    email: 'Indirizzo Email',
+    password: 'Password',
+    passwordConfirm: 'Conferma Password',
+    loginBtn: 'Accedi',
+    signupBtn: 'Crea Account',
+    googleLoginBtn: 'Accedi con Google',
+    guestLoginBtn: 'Usa come Ospite',
+    showSignupBtn: 'Crea Account',
+    showLoginBtn: 'Torna al Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configurazione Profilo',
+    profileDesc: 'Fornisci le tue informazioni di base per un migliore supporto',
+    displayName: 'Nome Visualizzato',
+    nationality: 'Nazionalità',
+    primaryLanguage: 'Lingua Principale',
+    stayLocation: 'Luogo di Soggiorno',
+    stayPurpose: 'Scopo',
+    stayPeriod: 'Periodo di Soggiorno',
+    saveProfileBtn: 'Salva Profilo',
+    
+    // 相談画面
+    consultationTitle: 'Consulenza AI',
+    consultationDesc: 'Seleziona una categoria e fai domande liberamente',
+    categoryTitle: 'Categoria',
+    
+    // 履歴画面
+    historyTitle: 'Cronologia Consultazioni',
+    historyDesc: 'Visualizza i tuoi record di consultazioni precedenti',
+    backToConsultation: 'Torna alla Consultazione',
+    exportHistory: 'Esporta Cronologia',
+    noHistory: 'Nessuna cronologia di consultazioni ancora.',
+    
+    // 共通
+    logout: 'Disconnetti',
+    select: 'Seleziona'
+  },
+  pt: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'Assistente de IA para sua estadia na Prefeitura de Ehime',
+    
+    // 認証画面
+    welcomeTitle: 'Bem-vindo ao Kotoha AI',
+    welcomeDesc: 'Crie uma conta para tornar sua estadia na Prefeitura de Ehime mais confortável',
+    loginTitle: 'Entrar',
+    signupTitle: 'Criar Conta',
+    email: 'Endereço de Email',
+    password: 'Senha',
+    passwordConfirm: 'Confirmar Senha',
+    loginBtn: 'Entrar',
+    signupBtn: 'Criar Conta',
+    googleLoginBtn: 'Entrar com Google',
+    guestLoginBtn: 'Usar como Convidado',
+    showSignupBtn: 'Criar Conta',
+    showLoginBtn: 'Voltar ao Login',
+    
+    // プロフィール画面
+    profileTitle: 'Configuração do Perfil',
+    profileDesc: 'Forneça suas informações básicas para melhor suporte',
+    displayName: 'Nome de Exibição',
+    nationality: 'Nacionalidade',
+    primaryLanguage: 'Idioma Principal',
+    stayLocation: 'Local de Estadia',
+    stayPurpose: 'Propósito',
+    stayPeriod: 'Período de Estadia',
+    saveProfileBtn: 'Salvar Perfil',
+    
+    // 相談画面
+    consultationTitle: 'Consulta de IA',
+    consultationDesc: 'Selecione uma categoria e faça perguntas livremente',
+    categoryTitle: 'Categoria',
+    
+    // 履歴画面
+    historyTitle: 'Histórico de Consultas',
+    historyDesc: 'Veja seus registros de consultas anteriores',
+    backToConsultation: 'Voltar à Consulta',
+    exportHistory: 'Exportar Histórico',
+    noHistory: 'Ainda não há histórico de consultas.',
+    
+    // 共通
+    logout: 'Sair',
+    select: 'Selecionar'
+  },
+  ru: {
+    // ヘッダー
+    headerTitle: 'Kotoha AI',
+    headerSubtitle: 'ИИ-помощник для вашего пребывания в префектуре Эхимэ',
+    
+    // 認証画面
+    welcomeTitle: 'Добро пожаловать в Kotoha AI',
+    welcomeDesc: 'Создайте аккаунт, чтобы сделать ваше пребывание в префектуре Эхимэ более комфортным',
+    loginTitle: 'Войти',
+    signupTitle: 'Создать Аккаунт',
+    email: 'Электронная Почта',
+    password: 'Пароль',
+    passwordConfirm: 'Подтвердить Пароль',
+    loginBtn: 'Войти',
+    signupBtn: 'Создать Аккаунт',
+    googleLoginBtn: 'Войти через Google',
+    guestLoginBtn: 'Использовать как Гость',
+    showSignupBtn: 'Создать Аккаунт',
+    showLoginBtn: 'Вернуться к Входу',
+    
+    // プロフィール画面
+    profileTitle: 'Настройка Профиля',
+    profileDesc: 'Предоставьте вашу основную информацию для лучшей поддержки',
+    displayName: 'Отображаемое Имя',
+    nationality: 'Национальность',
+    primaryLanguage: 'Основной Язык',
+    stayLocation: 'Место Пребывания',
+    stayPurpose: 'Цель',
+    stayPeriod: 'Период Пребывания',
+    saveProfileBtn: 'Сохранить Профиль',
+    
+    // 相談画面
+    consultationTitle: 'ИИ-Консультация',
+    consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
+    categoryTitle: 'Категория',
+    
+    // 履歴画面
+    historyTitle: 'История Консультаций',
+    historyDesc: 'Просмотрите ваши предыдущие записи консультаций',
+    backToConsultation: 'Вернуться к Консультации',
+    exportHistory: 'Экспорт Истории',
+    noHistory: 'Пока нет истории консультаций.',
+    
+    // 共通
+    logout: 'Выйти',
+    select: 'Выбрать'
   }
-  
-  // 翻訳に失敗した場合は元のテキストを返す
-  translationCache[cacheKey] = text;
-  return text;
-}
+};
 
 // 言語切り替え関数
 function switchLanguage(langCode) {
@@ -326,16 +599,13 @@ function switchLanguage(langCode) {
   // テキスト更新
   updatePageTexts();
   
-  // よくある質問を現在のカテゴリーで更新
-  updateFAQQuestions(selectedCategory);
-  
   // チャット初期メッセージの更新
   updateChatWelcomeMessage();
 }
 
-// ページテキスト更新関数（静的翻訳部分のみ）
+// ページテキスト更新関数
 function updatePageTexts() {
-  const t = translations[currentLanguage] || translations['ja'];
+  const t = translations[currentLanguage];
   
   // ヘッダー
   const subtitle = document.querySelector('.subtitle');
@@ -449,6 +719,25 @@ function updatePageTexts() {
   const faqTitle = document.querySelector('.frequently-asked-questions h3');
   if (faqTitle) faqTitle.textContent = `💡 ${t.frequentlyAskedQuestions}`;
   
+  // よくある質問の質問ボタンを更新
+  const questionChips = document.querySelectorAll('.question-chip');
+  if (questionChips.length > 0 && t.faqQuestions) {
+    const questions = [
+      { key: 'busUsage', selector: '[data-question*="バス"], [data-question*="bus"], [data-question*="버스"], [data-question*="公交"]' },
+      { key: 'hospitalReservation', selector: '[data-question*="病院"], [data-question*="hospital"], [data-question*="병원"], [data-question*="医院"]' },
+      { key: 'wifiLocation', selector: '[data-question*="Wi-Fi"], [data-question*="wifi"], [data-question*="网络"]' },
+      { key: 'japaneseManners', selector: '[data-question*="マナー"], [data-question*="manner"], [data-question*="매너"], [data-question*="礼仪"]' },
+      { key: 'emergencyContact', selector: '[data-question*="緊急"], [data-question*="emergency"], [data-question*="응급"], [data-question*="紧急"]' }
+    ];
+    
+    questions.forEach((q, index) => {
+      if (questionChips[index] && t.faqQuestions[q.key]) {
+        questionChips[index].textContent = t.faqQuestions[q.key];
+        questionChips[index].setAttribute('data-question', t.faqQuestions[q.key]);
+      }
+    });
+  }
+  
   // セレクトボックスのデフォルトオプション
   document.querySelectorAll('select option[value=""]').forEach(option => {
     option.textContent = t.select;
@@ -458,83 +747,27 @@ function updatePageTexts() {
   if (currentSection === 4) {
     setTimeout(loadConsultationHistory, 100);
   }
-}
-
-// よくある質問更新関数（動的翻訳対応）
-async function updateFAQQuestions(category = null) {
-  console.log('=== updateFAQQuestions called ===');
-  console.log('Category:', category);
-  console.log('Current language:', currentLanguage);
   
-  const questionContainer = document.querySelector('.frequently-asked-questions .question-chips') || 
-                          document.querySelector('.question-chips');
-  
-  if (!questionContainer) {
-    console.error('No question container found!');
-    return;
-  }
-  
-  let questionsToShow = [];
-  
-  if (category && faqQuestionsJa[category]) {
-    questionsToShow = faqQuestionsJa[category];
-  } else {
-    const categories = ['transportation', 'medical', 'connectivity', 'culture', 'general'];
-    questionsToShow = categories.map(cat => 
-      faqQuestionsJa[cat] ? faqQuestionsJa[cat][0] : ''
-    ).filter(q => q);
-  }
-  
-  console.log('Questions to show (Japanese):', questionsToShow);
-  questionContainer.innerHTML = '';
-  
-  // 各質問を翻訳して表示
-  for (const questionJa of questionsToShow) {
-    const questionTranslated = currentLanguage === 'ja' ? 
-      questionJa : await translateText(questionJa, currentLanguage);
-    
-    const chip = document.createElement('button');
-    chip.className = 'question-chip';
-    chip.textContent = questionTranslated;
-    chip.setAttribute('data-question', questionJa); // 元の日本語版を保存
-    
-    chip.addEventListener('click', () => {
-      const chatInput = document.getElementById('chat-input');
-      if (chatInput) {
-        chatInput.value = questionTranslated;
-        const relatedCategory = guessCategory(questionJa);
-        if (relatedCategory) {
-          selectCategory(relatedCategory);
-        }
-        updateSendButton();
-        chatInput.focus();
-      }
-    });
-    
-    questionContainer.appendChild(chip);
-  }
-  
-  console.log('FAQ update completed');
+  // チャット初期メッセージの更新
+  updateChatWelcomeMessage();
 }
 
 // チャット初期メッセージ表示関数
-async function initializeChatWithWelcomeMessage() {
+function initializeChatWithWelcomeMessage() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
   
-  const welcomeMessageJa = 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
-  
-  const welcomeMessage = currentLanguage === 'ja' ? 
-    welcomeMessageJa : await translateText(welcomeMessageJa.replace(/<br>/g, '\n'), currentLanguage);
-  
-  const formattedMessage = welcomeMessage.replace(/\n/g, '<br>');
+  const t = translations[currentLanguage];
+  const welcomeMessage = t && t.chatWelcomeMessage 
+    ? t.chatWelcomeMessage 
+    : 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。<br>上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
   
   chatMessages.innerHTML = `
     <div class="message ai-message">
         <div class="message-avatar">🤖</div>
         <div class="message-content">
             <div class="message-bubble">
-                ${formattedMessage}
+                ${welcomeMessage}
             </div>
             <div class="message-time">Kotoha AI</div>
         </div>
@@ -548,22 +781,55 @@ async function initializeChatWithWelcomeMessage() {
 }
 
 // チャット初期メッセージ更新関数
-async function updateChatWelcomeMessage() {
+function updateChatWelcomeMessage() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
+  
+  const t = translations[currentLanguage];
+  if (!t || !t.chatWelcomeMessage) return;
   
   // 既存の初期メッセージを探して更新
   const existingWelcome = chatMessages.querySelector('.ai-message .message-bubble');
   if (existingWelcome && existingWelcome.innerHTML.includes('Kotoha AI')) {
-    const welcomeMessageJa = 'こんにちは！Kotoha AIです。愛媛県での滞在に関するご質問に、なんでもお答えします。上記のサンプル質問をクリックするか、直接ご質問を入力してください。';
-    
-    const welcomeMessage = currentLanguage === 'ja' ? 
-      welcomeMessageJa : await translateText(welcomeMessageJa, currentLanguage);
-    
-    const formattedMessage = welcomeMessage.replace(/\n/g, '<br>');
-    existingWelcome.innerHTML = formattedMessage;
+    existingWelcome.innerHTML = t.chatWelcomeMessage;
   }
 }
+
+// 質問とカテゴリのマッピング（多言語対応）
+const questionToCategory = {
+  // 日本語
+  'バスの乗り方がわかりません。どうすればいいですか？': 'transportation',
+  'バスの乗り方は？': 'transportation',
+  '病院に行きたいのですが、予約は必要ですか？': 'medical',
+  '病院の予約は必要？': 'medical',
+  'Wi-Fiが使える場所を教えてください。': 'connectivity',
+  'Wi-Fi利用場所は？': 'connectivity',
+  '日本のマナーで注意すべきことはありますか？': 'culture',
+  '日本のマナーは？': 'culture',
+  '緊急時はどこに連絡すればいいですか？': 'general',
+  '緊急時の連絡先は？': 'general',
+  
+  // 英語
+  'How to use the bus?': 'transportation',
+  'Do I need a reservation for the hospital?': 'medical',
+  'Where can I find Wi-Fi?': 'connectivity',
+  'What Japanese manners should I know?': 'culture',
+  'Emergency contact information?': 'general',
+  
+  // 韓国語
+  '버스 이용 방법은?': 'transportation',
+  '병원 예약이 필요한가요?': 'medical',
+  'Wi-Fi 이용 장소는?': 'connectivity',
+  '일본 매너는?': 'culture',
+  '응급 상황 연락처는?': 'general',
+  
+  // 中国語
+  '如何乘坐公交车？': 'transportation',
+  '看病需要预约吗？': 'medical',
+  'Wi-Fi使用地点？': 'connectivity',
+  '日本礼仪注意事项？': 'culture',
+  '紧急联系方式？': 'general'
+};
 
 // 質問からカテゴリを推測する関数（多言語対応強化）
 function guessCategory(userMessage) {
@@ -573,7 +839,9 @@ function guessCategory(userMessage) {
   if (message.includes('バス') || message.includes('電車') || message.includes('交通') || 
       message.includes('移動') || message.includes('タクシー') || message.includes('アクセス') ||
       message.includes('train') || message.includes('bus') || message.includes('transport') ||
-      message.includes('airport') || message.includes('station')) {
+      message.includes('버스') || message.includes('전철') || message.includes('교통') ||
+      message.includes('公交') || message.includes('地铁') || message.includes('交通') ||
+      message.includes('移动') || message.includes('출租车') || message.includes('택시')) {
     return 'transportation';
   }
   
@@ -581,14 +849,17 @@ function guessCategory(userMessage) {
   if (message.includes('病院') || message.includes('医療') || message.includes('薬') || 
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
       message.includes('hospital') || message.includes('doctor') || message.includes('medicine') ||
-      message.includes('pharmacy') || message.includes('health')) {
+      message.includes('병원') || message.includes('의료') || message.includes('약') ||
+      message.includes('医院') || message.includes('医生') || message.includes('药')) {
     return 'medical';
   }
   
   // ネット関連キーワード（多言語）
   if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') || 
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
-      message.includes('internet') || message.includes('network') || message.includes('data')) {
+      message.includes('internet') || message.includes('network') ||
+      message.includes('인터넷') || message.includes('통신') ||
+      message.includes('网络') || message.includes('互联网')) {
     return 'connectivity';
   }
   
@@ -596,7 +867,8 @@ function guessCategory(userMessage) {
   if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') || 
       message.includes('住居') || message.includes('部屋') ||
       message.includes('hotel') || message.includes('accommodation') || message.includes('room') ||
-      message.includes('stay') || message.includes('lodging')) {
+      message.includes('숙박') || message.includes('호텔') ||
+      message.includes('住宿') || message.includes('酒店') || message.includes('房间')) {
     return 'accommodation';
   }
   
@@ -604,7 +876,8 @@ function guessCategory(userMessage) {
   if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') || 
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
       message.includes('culture') || message.includes('manner') || message.includes('etiquette') ||
-      message.includes('custom') || message.includes('tradition')) {
+      message.includes('문화') || message.includes('매너') || message.includes('예의') ||
+      message.includes('文化') || message.includes('礼仪') || message.includes('习俗')) {
     return 'culture';
   }
   
@@ -700,10 +973,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- プロフィールの言語選択時の自動切り替え ---
   const primaryLanguageSelect = document.getElementById('primary-language');
   if (primaryLanguageSelect) {
-    primaryLanguageSelect.addEventListener('change', async (e) => {
+    primaryLanguageSelect.addEventListener('change', (e) => {
       const selectedLang = e.target.value;
-      console.log('Language selected:', selectedLang);
-      
       // 言語コードマッピング
       const languageCodeMap = {
         '日本語': 'ja',
@@ -719,19 +990,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       const langCode = languageCodeMap[selectedLang];
-      console.log('Mapped language code:', langCode);
-      
-      if (langCode) {
-        currentLanguage = langCode;
-        console.log('Current language set to:', currentLanguage);
-        
-        // 即座に更新
-        setTimeout(async () => {
-          console.log('Starting immediate update after language change');
-          updatePageTexts();
-          await updateFAQQuestions(selectedCategory);
-          await updateChatWelcomeMessage();
-        }, 50);
+      if (langCode && translations[langCode]) {
+        switchLanguage(langCode);
       }
     });
   }
@@ -1004,10 +1264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const conversations = await getAllConversations();
       
       if (conversations.length === 0) {
-        const t = translations[currentLanguage] || translations['ja'];
         historyContainer.innerHTML = `
           <div class="no-history">
-            <p>${t.noHistory}</p>
+            <p>まだ相談履歴はありません。</p>
+            <p>No consultation history yet.</p>
           </div>
         `;
         return;
@@ -1015,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       // 履歴の表示
       let historyHTML = '';
-      for (const conv of conversations) {
+      conversations.forEach(conv => {
         const date = new Date(conv.timestamp.seconds * 1000);
         const formattedDate = date.toLocaleDateString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US');
         const formattedTime = date.toLocaleTimeString(currentLanguage === 'ja' ? 'ja-JP' : 'en-US', { 
@@ -1023,19 +1283,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           minute: '2-digit' 
         });
         
-        // カテゴリ名を動的翻訳
-        const categoryNamesJa = {
-          'transportation': '交通・移動',
-          'medical': '医療・健康',
-          'connectivity': 'ネット・通信',
-          'accommodation': '住居・宿泊',
-          'culture': '文化・マナー',
-          'general': '一般相談'
+        // カテゴリ名の翻訳
+        const categoryNames = {
+          'transportation': currentLanguage === 'ja' ? '交通・移動' : 'Transportation',
+          'medical': currentLanguage === 'ja' ? '医療・健康' : 'Medical',
+          'connectivity': currentLanguage === 'ja' ? 'ネット・通信' : 'Internet',
+          'accommodation': currentLanguage === 'ja' ? '住居・宿泊' : 'Housing',
+          'culture': currentLanguage === 'ja' ? '文化・マナー' : 'Culture',
+          'general': currentLanguage === 'ja' ? '一般相談' : 'General'
         };
         
-        const categoryJa = categoryNamesJa[conv.category] || conv.category;
-        const categoryName = currentLanguage === 'ja' ? 
-          categoryJa : await translateText(categoryJa, currentLanguage);
+        const categoryName = categoryNames[conv.category] || conv.category;
         
         historyHTML += `
           <div class="history-item">
@@ -1053,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           </div>
         `;
-      }
+      });
       
       historyContainer.innerHTML = historyHTML;
       
@@ -1077,41 +1335,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sectionNum === 4) {
       setTimeout(loadConsultationHistory, 100);
     }
-    
-    // 相談画面表示時によくある質問を更新
-    if (sectionNum === 3) {
-      setTimeout(async () => {
-        console.log('Section 3 shown, updating FAQ');
-        await updateFAQQuestions(selectedCategory);
-      }, 200);
-    }
   };
+
+  // --- カテゴリ選択関数 ---
+  function selectCategory(categoryValue) {
+    console.log('Selecting category:', categoryValue);
+    selectedCategory = categoryValue;
+    
+    if (selectedCategoryBox) {
+      selectedCategoryBox.style.display = 'block';
+    }
+    
+    // カテゴリカードを視覚的に選択状態にする
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.classList.remove('selected', 'active');
+      if (card.getAttribute('data-category') === categoryValue) {
+        card.classList.add('selected', 'active');
+        
+        if (selectedCategoryName) {
+          const categoryNameElement = card.querySelector('.category-name');
+          if (categoryNameElement) {
+            selectedCategoryName.textContent = categoryNameElement.textContent;
+          }
+        }
+      }
+    });
+    
+    updateSendButton();
+  }
 
   // --- 相談カテゴリ選択 ---
   categoryCards.forEach((card, index) => {
-    card.addEventListener('click', async () => {
+    card.addEventListener('click', () => {
       const categoryValue = card.getAttribute('data-category');
       selectCategory(categoryValue);
-      
-      // カテゴリ名を動的翻訳
-      const categoryNamesJa = {
-        transportation: '交通・移動',
-        medical: '医療・健康',
-        connectivity: 'ネット・通信',
-        accommodation: '住居・宿泊',
-        culture: '文化・マナー',
-        general: '一般相談'
-      };
-      
-      const categoryJa = categoryNamesJa[categoryValue] || categoryValue;
-      const categoryName = currentLanguage === 'ja' ? 
-        categoryJa : await translateText(categoryJa, currentLanguage);
-      
-      const selectedMessage = currentLanguage === 'ja' ? 
-        `${categoryName} を選択しました。` : 
-        await translateText(`${categoryJa} を選択しました。`, currentLanguage);
-      
-      showMessage(selectedMessage, 'info');
+      showMessage(`${card.querySelector('.category-name').textContent} を選択しました。`, 'info');
     });
   });
 
@@ -1125,23 +1383,62 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('.category-card').forEach(c => {
         c.classList.remove('selected', 'active');
       });
-      
-      // デフォルトのよくある質問に戻す
-      updateFAQQuestions();
-      
       updateSendButton();
     });
   }
 
+  // --- よくある質問クリックで入力欄に転記 + カテゴリ自動選択 ---
+  document.querySelectorAll('.question-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const question = btn.getAttribute('data-question') || btn.textContent.trim();
+      
+      if (chatInput) {
+        chatInput.value = question;
+        
+        // 質問に対応するカテゴリを自動選択
+        const relatedCategory = questionToCategory[question] || guessCategory(question);
+        if (relatedCategory) {
+          selectCategory(relatedCategory);
+        }
+        
+        updateSendButton();
+        chatInput.focus();
+      }
+    });
+  });
+
   // --- チャット入力・送信ボタン制御 ---
-  function updateSendButtonLocal() {
-    updateSendButton();
+  function updateSendButton() {
+    const inputValue = chatInput ? chatInput.value.trim() : '';
+    const hasInput = inputValue.length > 0;
+    
+    // カテゴリが選択されていない場合は、入力内容から推測
+    if (hasInput && !selectedCategory) {
+      const guessedCategory = guessCategory(inputValue);
+      selectCategory(guessedCategory);
+    }
+    
+    const hasCategory = selectedCategory.length > 0;
+
+    if (sendButton) {
+      const shouldEnable = hasInput && hasCategory && !isAIChatting;
+      sendButton.disabled = !shouldEnable;
+      
+      // 送信ボタンの見た目を改善
+      if (shouldEnable) {
+        sendButton.style.opacity = '1';
+        sendButton.style.cursor = 'pointer';
+      } else {
+        sendButton.style.opacity = '0.5';
+        sendButton.style.cursor = 'not-allowed';
+      }
+    }
   }
 
   // チャット入力のイベントリスナー
   if (chatInput) {
     chatInput.addEventListener('input', () => {
-      updateSendButtonLocal();
+      updateSendButton();
     });
 
     // Enterキーで送信
@@ -1210,7 +1507,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify({
           message: userMessage,
           userId: currentUser ? currentUser.uid : null,
-          language: currentLanguage, // 言語情報を追加
           context: {
             category: selectedCategory,
             userProfile: userProfile,
@@ -1271,15 +1567,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- 初期表示時のテキスト更新 ---
   updatePageTexts();
   
-  // よくある質問の初期化（少し遅延させて確実に）
-  setTimeout(async () => {
-    console.log('Initializing FAQ with language:', currentLanguage);
-    await updateFAQQuestions();
-  }, 300);
-  
   // チャット画面の初期化
-  setTimeout(async () => {
-    await initializeChatWithWelcomeMessage();
+  setTimeout(() => {
+    initializeChatWithWelcomeMessage();
   }, 500);
 });
 
@@ -1344,12 +1634,12 @@ async function cleanOldConversations() {
 }
 
 // 最近の会話履歴を取得（AI文脈用）
-async function getRecentConversations(limitCount = 3) {
+async function getRecentConversations(limit = 3) {
   if (!currentUser) return [];
 
   try {
     const conversationsRef = collection(db, 'kotoha_users', currentUser.uid, 'conversations');
-    const q = query(conversationsRef, orderBy('timestamp', 'desc'), limit(limitCount));
+    const q = query(conversationsRef, orderBy('timestamp', 'desc'), limit(limit));
     const snapshot = await getDocs(q);
     
     const conversations = [];
@@ -1434,7 +1724,6 @@ function manualMarkdownToHTML(text) {
   
   return html;
 }
-
 function appendTypingIndicator() {
   const chatMessages = document.getElementById('chat-messages');
   if (!chatMessages) return;
@@ -1564,26 +1853,8 @@ async function loadProfileFormFromFirestore() {
         };
         
         const langCode = languageCodeMap[data.primaryLanguage];
-        if (langCode) {
-          currentLanguage = langCode;
-          console.log('Profile load: Setting language to:', currentLanguage);
-          
-          // ヘッダーボタンの状態更新
-          document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          const langBtn = document.getElementById(`lang-${langCode}`);
-          if (langBtn) {
-            langBtn.classList.add('active');
-          }
-          
-          // テキスト更新（複数回実行で確実に）
-          setTimeout(async () => {
-            console.log('Profile load: First update');
-            updatePageTexts();
-            await updateFAQQuestions(selectedCategory);
-            await updateChatWelcomeMessage();
-          }, 100);
+        if (langCode && translations[langCode]) {
+          switchLanguage(langCode);
         }
       }
     } else {
