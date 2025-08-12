@@ -97,6 +97,16 @@ const translations = {
     consultationTitle: 'AI相談',
     consultationDesc: 'カテゴリを選択して、気軽にご質問ください',
     categoryTitle: '相談カテゴリ',
+    frequentlyAskedQuestions: 'よくある質問',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: 'バスの乗り方は？',
+      hospitalReservation: '病院の予約は必要？',
+      wifiLocation: 'Wi-Fi利用場所は？',
+      japaneseManners: '日本のマナーは？',
+      emergencyContact: '緊急時の連絡先は？'
+    },
     
     // 履歴画面
     historyTitle: '相談履歴',
@@ -144,6 +154,16 @@ const translations = {
     consultationTitle: 'AI Consultation',
     consultationDesc: 'Select a category and feel free to ask questions',
     categoryTitle: 'Category',
+    frequentlyAskedQuestions: 'Frequently Asked Questions',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: 'How to use the bus?',
+      hospitalReservation: 'Do I need a reservation for the hospital?',
+      wifiLocation: 'Where can I find Wi-Fi?',
+      japaneseManners: 'What Japanese manners should I know?',
+      emergencyContact: 'Emergency contact information?'
+    },
     
     // 履歴画面
     historyTitle: 'Consultation History',
@@ -187,12 +207,22 @@ const translations = {
     stayPeriod: '체류 기간',
     saveProfileBtn: '프로필 저장',
     
-    // 相談画面
+    // 相談画면
     consultationTitle: 'AI 상담',
     consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
     categoryTitle: '상담 카테고리',
+    frequentlyAskedQuestions: '자주 묻는 질문',
     
-    // 履歴画面
+    // よくある質問
+    faqQuestions: {
+      busUsage: '버스 이용 방법은?',
+      hospitalReservation: '병원 예약이 필요한가요?',
+      wifiLocation: 'Wi-Fi 이용 장소는?',
+      japaneseManners: '일본 매너는?',
+      emergencyContact: '응급 상황 연락처는?'
+    },
+    
+    // 履歴画면
     historyTitle: '상담 이력',
     historyDesc: '과거 상담 내용을 확인할 수 있습니다',
     backToConsultation: '상담으로 돌아가기',
@@ -238,6 +268,16 @@ const translations = {
     consultationTitle: 'AI咨询',
     consultationDesc: '请选择类别，随时提问',
     categoryTitle: '咨询类别',
+    frequentlyAskedQuestions: '常见问题',
+    
+    // よくある質問
+    faqQuestions: {
+      busUsage: '如何乘坐公交车？',
+      hospitalReservation: '看病需要预约吗？',
+      wifiLocation: 'Wi-Fi使用地点？',
+      japaneseManners: '日本礼仪注意事项？',
+      emergencyContact: '紧急联系方式？'
+    },
     
     // 履歴画面
     historyTitle: '咨询历史',
@@ -660,6 +700,29 @@ function updatePageTexts() {
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) logoutBtn.textContent = t.logout;
   
+  // よくある質問タイトル
+  const faqTitle = document.querySelector('.frequently-asked-questions h3');
+  if (faqTitle) faqTitle.textContent = `💡 ${t.frequentlyAskedQuestions}`;
+  
+  // よくある質問の質問ボタンを更新
+  const questionChips = document.querySelectorAll('.question-chip');
+  if (questionChips.length > 0 && t.faqQuestions) {
+    const questions = [
+      { key: 'busUsage', selector: '[data-question*="バス"], [data-question*="bus"], [data-question*="버스"], [data-question*="公交"]' },
+      { key: 'hospitalReservation', selector: '[data-question*="病院"], [data-question*="hospital"], [data-question*="병원"], [data-question*="医院"]' },
+      { key: 'wifiLocation', selector: '[data-question*="Wi-Fi"], [data-question*="wifi"], [data-question*="网络"]' },
+      { key: 'japaneseManners', selector: '[data-question*="マナー"], [data-question*="manner"], [data-question*="매너"], [data-question*="礼仪"]' },
+      { key: 'emergencyContact', selector: '[data-question*="緊急"], [data-question*="emergency"], [data-question*="응급"], [data-question*="紧急"]' }
+    ];
+    
+    questions.forEach((q, index) => {
+      if (questionChips[index] && t.faqQuestions[q.key]) {
+        questionChips[index].textContent = t.faqQuestions[q.key];
+        questionChips[index].setAttribute('data-question', t.faqQuestions[q.key]);
+      }
+    });
+  }
+  
   // セレクトボックスのデフォルトオプション
   document.querySelectorAll('select option[value=""]').forEach(option => {
     option.textContent = t.select;
@@ -671,51 +734,89 @@ function updatePageTexts() {
   }
 }
 
-// 質問とカテゴリのマッピング
+// 質問とカテゴリのマッピング（多言語対応）
 const questionToCategory = {
+  // 日本語
   'バスの乗り方がわかりません。どうすればいいですか？': 'transportation',
+  'バスの乗り方は？': 'transportation',
   '病院に行きたいのですが、予約は必要ですか？': 'medical',
+  '病院の予約は必要？': 'medical',
   'Wi-Fiが使える場所を教えてください。': 'connectivity',
+  'Wi-Fi利用場所は？': 'connectivity',
   '日本のマナーで注意すべきことはありますか？': 'culture',
-  '緊急時はどこに連絡すればいいですか？': 'general'
+  '日本のマナーは？': 'culture',
+  '緊急時はどこに連絡すればいいですか？': 'general',
+  '緊急時の連絡先は？': 'general',
+  
+  // 英語
+  'How to use the bus?': 'transportation',
+  'Do I need a reservation for the hospital?': 'medical',
+  'Where can I find Wi-Fi?': 'connectivity',
+  'What Japanese manners should I know?': 'culture',
+  'Emergency contact information?': 'general',
+  
+  // 韓国語
+  '버스 이용 방법은?': 'transportation',
+  '병원 예약이 필요한가요?': 'medical',
+  'Wi-Fi 이용 장소는?': 'connectivity',
+  '일본 매너는?': 'culture',
+  '응급 상황 연락처는?': 'general',
+  
+  // 中国語
+  '如何乘坐公交车？': 'transportation',
+  '看病需要预约吗？': 'medical',
+  'Wi-Fi使用地点？': 'connectivity',
+  '日本礼仪注意事项？': 'culture',
+  '紧急联系方式？': 'general'
 };
 
-// 質問からカテゴリを推測する関数
+// 質問からカテゴリを推測する関数（多言語対応強化）
 function guessCategory(userMessage) {
   const message = userMessage.toLowerCase();
   
-  // 交通関連キーワード
+  // 交通関連キーワード（多言語）
   if (message.includes('バス') || message.includes('電車') || message.includes('交通') || 
       message.includes('移動') || message.includes('タクシー') || message.includes('アクセス') ||
-      message.includes('train') || message.includes('bus') || message.includes('transport')) {
+      message.includes('train') || message.includes('bus') || message.includes('transport') ||
+      message.includes('버스') || message.includes('전철') || message.includes('교통') ||
+      message.includes('公交') || message.includes('地铁') || message.includes('交通') ||
+      message.includes('移动') || message.includes('출租车') || message.includes('택시')) {
     return 'transportation';
   }
   
-  // 医療関連キーワード
+  // 医療関連キーワード（多言語）
   if (message.includes('病院') || message.includes('医療') || message.includes('薬') || 
       message.includes('体調') || message.includes('風邪') || message.includes('怪我') ||
-      message.includes('hospital') || message.includes('doctor') || message.includes('medicine')) {
+      message.includes('hospital') || message.includes('doctor') || message.includes('medicine') ||
+      message.includes('병원') || message.includes('의료') || message.includes('약') ||
+      message.includes('医院') || message.includes('医生') || message.includes('药')) {
     return 'medical';
   }
   
-  // ネット関連キーワード
+  // ネット関連キーワード（多言語）
   if (message.includes('wifi') || message.includes('wi-fi') || message.includes('インターネット') || 
       message.includes('sim') || message.includes('スマホ') || message.includes('通信') ||
-      message.includes('internet') || message.includes('network')) {
+      message.includes('internet') || message.includes('network') ||
+      message.includes('인터넷') || message.includes('통신') ||
+      message.includes('网络') || message.includes('互联网')) {
     return 'connectivity';
   }
   
-  // 宿泊関連キーワード
+  // 宿泊関連キーワード（多言語）
   if (message.includes('宿泊') || message.includes('ホテル') || message.includes('民泊') || 
       message.includes('住居') || message.includes('部屋') ||
-      message.includes('hotel') || message.includes('accommodation') || message.includes('room')) {
+      message.includes('hotel') || message.includes('accommodation') || message.includes('room') ||
+      message.includes('숙박') || message.includes('호텔') ||
+      message.includes('住宿') || message.includes('酒店') || message.includes('房间')) {
     return 'accommodation';
   }
   
-  // 文化関連キーワード
+  // 文化関連キーワード（多言語）
   if (message.includes('文化') || message.includes('マナー') || message.includes('習慣') || 
       message.includes('礼儀') || message.includes('作法') || message.includes('お辞儀') ||
-      message.includes('culture') || message.includes('manner') || message.includes('etiquette')) {
+      message.includes('culture') || message.includes('manner') || message.includes('etiquette') ||
+      message.includes('문화') || message.includes('매너') || message.includes('예의') ||
+      message.includes('文化') || message.includes('礼仪') || message.includes('习俗')) {
     return 'culture';
   }
   
@@ -828,7 +929,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       
       const langCode = languageCodeMap[selectedLang];
-      if (langCode) {
+      if (langCode && translations[langCode]) {
         switchLanguage(langCode);
       }
     });
@@ -1702,7 +1803,7 @@ async function loadProfileFormFromFirestore() {
         };
         
         const langCode = languageCodeMap[data.primaryLanguage];
-        if (langCode) {
+        if (langCode && translations[langCode]) {
           switchLanguage(langCode);
         }
       }
