@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - さらに改良版
+// Firebase v10.12.2 本番版 app.js - セキュア版
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -27,20 +27,31 @@ import {
   deleteDoc
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-// --- Firebase Configuration ---
-const firebaseConfig = {
-  apiKey: "AIzaSyAW9NZHS6Gj9MYQiMnczwnGyq1eGfYq63U",
-  authDomain: "kotoha-personalize-app.firebaseapp.com",
-  projectId: "kotoha-personalize-app",
-  storageBucket: "kotoha-personalize-app.appspot.com",
-  messagingSenderId: "400606506364",
-  appId: "1:400606506364:web:bfb9d0554b111fbd1a08f9",
-  databaseURL: "https://kotoha-personalize-app-default-rtdb.firebaseio.com"
-};
+// --- Firebase Configuration - サーバーから取得 ---
+let app, auth, db;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Firebase設定をサーバーから取得して初期化
+async function initializeFirebase() {
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) {
+      throw new Error('Failed to get Firebase configuration');
+    }
+    
+    const firebaseConfig = await response.json();
+    
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    console.log('Firebase initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('Firebase initialization failed:', error);
+    showMessage('設定の読み込みに失敗しました。ページを再読み込みしてください。', 'error');
+    return false;
+  }
+}
 
 let currentUser = null;
 let currentSection = 1;
@@ -165,7 +176,7 @@ const translations = {
     showSignupBtn: '계정 생성',
     showLoginBtn: '로그인으로 돌아가기',
     
-    // プロフィール画면
+    // プロフィール画面
     profileTitle: '프로필 설정',
     profileDesc: '더 적절한 지원을 제공하기 위해 기본 정보를 알려주세요',
     displayName: '표시 이름',
@@ -176,12 +187,12 @@ const translations = {
     stayPeriod: '체류 기간',
     saveProfileBtn: '프로필 저장',
     
-    // 相談画면
+    // 相談画面
     consultationTitle: 'AI 상담',
     consultationDesc: '카테고리를 선택하고 편하게 질문해 주세요',
     categoryTitle: '상담 카테고리',
     
-    // 履歴画면
+    // 履歴画面
     historyTitle: '상담 이력',
     historyDesc: '과거 상담 내용을 확인할 수 있습니다',
     backToConsultation: '상담으로 돌아가기',
@@ -505,7 +516,7 @@ const translations = {
     stayPeriod: 'Период Пребывания',
     saveProfileBtn: 'Сохранить Профиль',
     
-    // 相談画면
+    // 相談画面
     consultationTitle: 'ИИ-Консультация',
     consultationDesc: 'Выберите категорию и свободно задавайте вопросы',
     categoryTitle: 'Категория',
@@ -713,8 +724,15 @@ function guessCategory(userMessage) {
 }
 
 // --- DOMContentLoaded Listener ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, initializing enhanced app...');
+  
+  // Firebase初期化を最初に実行
+  const firebaseInitialized = await initializeFirebase();
+  if (!firebaseInitialized) {
+    console.error('Firebase initialization failed, cannot proceed');
+    return;
+  }
   
   // --- UI Element References ---
   const loginForm = document.getElementById('login-form');
