@@ -23,9 +23,7 @@ app.use(helmet({
         directives: {
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
             "script-src": ["'self'", "https://www.gstatic.com", "https://cdnjs.cloudflare.com"],
-            // ▼▼▼ FIX: Added Firebase Auth domain to connect-src ▼▼▼
             "connect-src": ["'self'", "https://generativelanguage.googleapis.com", "https://*.firebaseio.com", "https://www.googleapis.com", "https://firestore.googleapis.com", "https://identitytoolkit.googleapis.com"],
-            // ▲▲▲ FIX: Added Firebase Auth domain to connect-src ▲▲▲
             "frame-src": ["'self'", "https://kotoha-personalize-app.firebaseapp.com"],
             "img-src": ["'self'", "data:", "https://www.google.com"],
         },
@@ -63,16 +61,6 @@ const rateLimiterMiddleware = (req, res, next) => {
 const apiRouter = express.Router();
 apiRouter.use(rateLimiterMiddleware);
 
-// Health check endpoint for Render
-apiRouter.get('/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        geminiApi: process.env.GEMINI_API_KEY ? 'configured' : 'missing'
-    });
-});
-
 // Endpoint to provide Firebase config to the client
 apiRouter.get('/firebase-config', (req, res) => {
     res.json({
@@ -105,16 +93,16 @@ apiRouter.post('/chat', async (req, res) => {
     }
 });
 
-// Use the API router
+// Health check endpoint for Render
+apiRouter.get('/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 app.use('/api', apiRouter);
 
 
 // --- Frontend Serving ---
-app.use(express.static(path.join(__dirname, '.'), {
-    setHeaders: (res, path) => {
-        if (path.endsWith('.js')) res.set('Content-Type', 'application/javascript; charset=utf-8');
-    }
-}));
+app.use(express.static(path.join(__dirname, '.')));
 
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
