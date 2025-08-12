@@ -6,8 +6,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
-// firebase-admin はサーバー側では不要なため削除しました
-// import admin from 'firebase-admin';
 
 // 環境変数の読み込み
 dotenv.config();
@@ -21,17 +19,27 @@ const PORT = process.env.PORT || 3000;
 
 // Security middleware
 app.use(helmet({
-    contentSecurityPolicy: false
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "script-src": ["'self'", "https://www.gstatic.com", "https://cdnjs.cloudflare.com"],
+            "connect-src": ["'self'", "https://generativelanguage.googleapis.com", "https://*.firebaseio.com", "https://www.googleapis.com", "https://firestore.googleapis.com"],
+            "frame-src": ["'self'", "https://kotoha-personalize-app.firebaseapp.com"],
+            "img-src": ["'self'", "data:", "https://www.google.com"],
+        },
+    },
 }));
+
 
 // CORS configuration
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production'
-        ? [process.env.RENDER_EXTERNAL_URL, `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`]
-        : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        ? process.env.RENDER_EXTERNAL_URL
+        : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://127.0.0.1:5500'], // 開発用に5500も追加
     credentials: true,
     optionsSuccessStatus: 200
 };
+
 
 app.use(cors(corsOptions));
 app.use(compression());
@@ -41,7 +49,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Rate limiting
 const rateLimiter = new RateLimiterMemory({
     keyPrefix: 'middleware',
-    points: 15,
+    points: 20, // 少し緩和
     duration: 60,
 });
 
@@ -61,6 +69,20 @@ app.use(express.static(path.join(__dirname, '.'), {
 // API Routes
 app.use('/api', rateLimiterMiddleware);
 
+// Endpoint to provide Firebase config to the client
+app.get('/api/firebase-config', (req, res) => {
+    res.json({
+        apiKey: process.env.FIREBASE_API_KEY,
+        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.FIREBASE_APP_ID,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+    });
+});
+
+
 // AI Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
@@ -70,10 +92,10 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Invalid message' });
         }
         if (!process.env.GEMINI_API_KEY) {
+            console.error('GEMINI_API_KEY is not set in environment variables.');
             return res.status(500).json({ error: 'Server configuration error: API key is missing.' });
         }
 
-        // サーバー側ではユーザープロファイルは直接扱わず、クライアントから渡されたコンテキストのみ利用
         const response = await callGeminiAPI(message.trim(), context);
         
         res.json({ success: true, response });
@@ -107,50 +129,43 @@ async function callGeminiAPI(message, context = {}) {
     
     let systemPrompt = `あなたは「Kotoha AI」という、愛媛県での滞在をサポートする非常に親切で有能なAIアシスタントです。`;
 
-    // 言語設定の追加
-    let responseLanguage = 'Japanese';
-    if (userProfile && userProfile.primaryLanguage) {
-        responseLanguage = getLanguageCode(userProfile.primaryLanguage);
+    if (userProfile?.primaryLanguage) {
         systemPrompt += `\n\n# 重要な言語指示\n**必ず${userProfile.primaryLanguage}で回答してください。質問が日本語で書かれていても、回答は${userProfile.primaryLanguage}で統一してください。**`;
     }
 
     if (userProfile) {
-        systemPrompt += `\n\n# ユーザー情報\n`;
-        if (userProfile.displayName) systemPrompt += `- 名前: ${userProfile.displayName}\n`;
-        if (userProfile.nationality) systemPrompt += `- 国籍: ${userProfile.nationality}\n`;
-        if (userProfile.primaryLanguage) systemPrompt += `- 使用言語: ${userProfile.primaryLanguage}\n`;
-        if (userProfile.stayLocation) systemPrompt += `- 滞在地: ${userProfile.stayLocation}\n`;
-        if (userProfile.stayPurpose) systemPrompt += `- 滞在目的: ${userProfile.stayPurpose}\n`;
+        const profileDetails = [
+            userProfile.displayName && `- 名前: ${userProfile.displayName}`,
+            userProfile.nationality && `- 国籍: ${userProfile.nationality}`,
+            userProfile.primaryLanguage && `- 使用言語: ${userProfile.primaryLanguage}`,
+            userProfile.stayLocation && `- 滞在地: ${userProfile.stayLocation}`,
+            userProfile.stayPurpose && `- 滞在目的: ${userProfile.stayPurpose}`
+        ].filter(Boolean).join('\n');
+        systemPrompt += `\n\n# ユーザー情報\n${profileDetails}`;
     }
     
-    // 会話履歴の追加
-    if (recentConversations && recentConversations.length > 0) {
-        systemPrompt += `\n\n# 過去の相談履歴\n`;
-        systemPrompt += `このユーザーとの過去の会話履歴です。文脈を理解して、継続的なサポートを提供してください：\n\n`;
-        
-        recentConversations.forEach((conv, index) => {
+    if (recentConversations?.length > 0) {
+        const history = recentConversations.map((conv, index) => {
             const date = new Date(conv.timestamp.seconds * 1000).toLocaleDateString('ja-JP');
-            systemPrompt += `## ${index + 1}. ${date} (${conv.category})\n`;
-            systemPrompt += `**ユーザー:** ${conv.userMessage}\n`;
-            systemPrompt += `**AI回答:** ${conv.aiResponse.substring(0, 200)}...\n\n`;
-        });
-        
-        systemPrompt += `上記の履歴を踏まえ、必要に応じて「前回ご相談いただいた〜について」などの言及をして、継続性のある回答をしてください。\n`;
+            return `## ${index + 1}. ${date} (${conv.category})\n**ユーザー:** ${conv.userMessage}\n**AI回答:** ${conv.aiResponse.substring(0, 200)}...`;
+        }).join('\n\n');
+        systemPrompt += `\n\n# 過去の相談履歴\nこのユーザーとの過去の会話履歴です。文脈を理解して、継続的なサポートを提供してください：\n\n${history}\n\n上記の履歴を踏まえ、必要に応じて「前回ご相談いただいた〜について」などの言及をして、継続性のある回答をしてください。`;
     }
     
     if (category) {
-        systemPrompt += `\n# 現在の相談カテゴリ\n- ${category}\n`;
+        systemPrompt += `\n\n# 現在の相談カテゴリ\n- ${category}`;
     }
 
-    systemPrompt += `\n# あなたの役割と指示\n- ユーザー情報と相談カテゴリを強く意識し、パーソナライズされた回答を生成してください。\n- 愛媛県の実情に合わせた、具体的で実践的なアドバイスを心がけてください。\n- 外国人ユーザーにも分かりやすいように、専門用語を避け、丁寧な言葉遣いで説明してください。\n- 回答はMarkdown形式で、見出しやリストを活用して分かりやすく構成してください。\n- 緊急性が高いと判断した場合は、必ず警察(110)や救急(119)などの公的な連絡先を案内してください。\n- 常に親しみやすく、ユーザーに寄り添う姿勢で回答してください。`;
+    systemPrompt += `\n\n# あなたの役割と指示\n- ユーザー情報と相談カテゴリを強く意識し、パーソナライズされた回答を生成してください。\n- 愛媛県の実情に合わせた、具体的で実践的なアドバイスを心がけてください。\n- 外国人ユーザーにも分かりやすいように、専門用語を避け、丁寧な言葉遣いで説明してください。\n- 回答はMarkdown形式で、見出しやリストを活用して分かりやすく構成してください。\n- 緊急性が高いと判断した場合は、必ず警察(110)や救急(119)などの公的な連絡先を案内してください。\n- 常に親しみやすく、ユーザーに寄り添う姿勢で回答してください。`;
 
-    // 特定地域の情報を優先する指示を追加
-    if (userProfile && userProfile.stayLocation) {
+    if (userProfile?.stayLocation) {
         systemPrompt += `\n- 特に${userProfile.stayLocation}の情報を優先して提供してください。一般的な愛媛県情報よりも、${userProfile.stayLocation}特有の情報があれば詳しく案内してください。`;
     }
 
+    const fullPrompt = `${systemPrompt}\n\n# ユーザーからの質問\n${message}`;
+
     const requestBody = {
-        contents: [{ parts: [{ text: systemPrompt + "\n\n# ユーザーからの質問\n" + message }] }],
+        contents: [{ parts: [{ text: fullPrompt }] }],
         generationConfig: {
             temperature: 0.7,
             topK: 40,
@@ -172,15 +187,17 @@ async function callGeminiAPI(message, context = {}) {
 
     if (!response.ok) {
         const errorText = await response.text();
+        console.error(`Gemini API Error: ${response.status}`, errorText);
         throw new Error(`API request failed with status ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
     
-    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content) {
+    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
         return data.candidates[0].content.parts[0].text;
     } else {
-        return '申し訳ありません、その質問にはお答えできません。別の質問を試してみてください。';
+        console.warn('No content returned from Gemini API:', JSON.stringify(data, null, 2));
+        return '申し訳ありません、現在AIからの応答を取得できません。しばらくしてからもう一度お試しください。';
     }
 }
 
@@ -195,19 +212,24 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve frontend files
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ error: 'API endpoint not found' });
+        return next();
     }
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Error handling
+// Error handling for 404 on API routes
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// General error handling
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);
     res.status(500).json({
         error: 'Internal server error',
-        message: 'サーバー内部エラーが発生しました。'
+        message: 'サーバー内部で予期せぬエラーが発生しました。'
     });
 });
 
