@@ -1,4 +1,4 @@
-// Firebase v10.12.2 本番版 app.js - セキュア版 (最適化) - 多言語対応強化
+// Firebase v10.12.2 本番版 app.js - セキュア版 (最適化)
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -310,10 +310,8 @@ async function translateText(text, targetLanguage) {
   return text;
 }
 
-// 言語切り替え関数（強化版）
+// 言語切り替え関数
 function switchLanguage(langCode) {
-  console.log('Switching language to:', langCode);
-  const previousLanguage = currentLanguage;
   currentLanguage = langCode;
   
   // ヘッダーボタンの状態更新
@@ -325,26 +323,14 @@ function switchLanguage(langCode) {
     langBtn.classList.add('active');
   }
   
-  // 複数回更新で確実に反映
-  setTimeout(async () => {
-    console.log('Language switch: First update');
-    updatePageTexts();
-    await updateFAQQuestions(selectedCategory);
-  }, 50);
+  // テキスト更新
+  updatePageTexts();
   
-  setTimeout(async () => {
-    console.log('Language switch: Second update');
-    await updateChatWelcomeMessage();
-  }, 200);
+  // よくある質問を現在のカテゴリーで更新
+  updateFAQQuestions(selectedCategory);
   
-  setTimeout(async () => {
-    console.log('Language switch: Final update');
-    updatePageTexts();
-    await updateFAQQuestions(selectedCategory);
-    await updateChatWelcomeMessage();
-  }, 500);
-  
-  console.log('Language switched from', previousLanguage, 'to', currentLanguage);
+  // チャット初期メッセージの更新
+  updateChatWelcomeMessage();
 }
 
 // ページテキスト更新関数（静的翻訳部分のみ）
@@ -744,6 +730,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           console.log('Starting immediate update after language change');
           updatePageTexts();
           await updateFAQQuestions(selectedCategory);
+          await updateChatWelcomeMessage();
         }, 50);
       }
     });
@@ -951,7 +938,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     handleAuthError(error);
   });
 
-  // --- プロフィール保存（強化版） ---
+  // --- プロフィール保存 ---
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', async () => {
       if (!currentUser) {
@@ -966,45 +953,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const stayPurpose = document.getElementById('stay-purpose')?.value ?? '';
       const stayFrom = document.getElementById('stay-from')?.value ?? '';
       const stayTo = document.getElementById('stay-to')?.value ?? '';
-      
-      // 選択された言語に基づいて、即座にアプリの言語を切り替え
-      if (primaryLanguage) {
-        const languageCodeMap = {
-          '日本語': 'ja',
-          'English': 'en', 
-          '한국어': 'ko',
-          '中文': 'zh',
-          'Español': 'es',
-          'Français': 'fr',
-          'Deutsch': 'de',
-          'Italiano': 'it',
-          'Português': 'pt',
-          'Русский': 'ru'
-        };
-        
-        const langCode = languageCodeMap[primaryLanguage];
-        if (langCode && langCode !== currentLanguage) {
-          console.log('Profile save: Changing language from', currentLanguage, 'to', langCode);
-          currentLanguage = langCode;
-          
-          // 言語ボタンの状態更新
-          document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.remove('active');
-          });
-          const langBtn = document.getElementById(`lang-${langCode}`);
-          if (langBtn) {
-            langBtn.classList.add('active');
-          }
-          
-          // UI即座更新
-          setTimeout(async () => {
-            console.log('Profile save: Updating UI for new language');
-            updatePageTexts();
-            await updateFAQQuestions(selectedCategory);
-            await updateChatWelcomeMessage();
-          }, 100);
-        }
-      }
       
       const userRef = doc(db, 'kotoha_users', currentUser.uid);
       try {
@@ -1021,43 +969,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         await setDoc(userRef, {
           profile: profileData
         }, { merge: true });
-        
-        // 成功メッセージも多言語対応
-        const successMessages = {
-          'ja': 'プロフィールを保存しました。',
-          'en': 'Profile saved successfully.',
-          'ko': '프로필이 저장되었습니다.',
-          'zh': '个人资料已保存。',
-          'es': 'Perfil guardado exitosamente.',
-          'fr': 'Profil sauvegardé avec succès.',
-          'de': 'Profil erfolgreich gespeichert.',
-          'it': 'Profilo salvato con successo.',
-          'pt': 'Perfil salvo com sucesso.',
-          'ru': 'Профиль успешно сохранен.'
-        };
-        
-        const successMsg = successMessages[currentLanguage] || successMessages['ja'];
-        showMessage(successMsg, 'success');
+        showMessage('プロフィールを保存しました。', 'success');
         showSection(3);
       } catch (e) {
         console.error('Profile save error:', e);
-        
-        // エラーメッセージも多言語対応
-        const errorMessages = {
-          'ja': 'プロフィール保存に失敗しました: ',
-          'en': 'Failed to save profile: ',
-          'ko': '프로필 저장에 실패했습니다: ',
-          'zh': '个人资料保存失败：',
-          'es': 'Error al guardar perfil: ',
-          'fr': 'Échec de la sauvegarde du profil: ',
-          'de': 'Profil speichern fehlgeschlagen: ',
-          'it': 'Salvataggio profilo fallito: ',
-          'pt': 'Falha ao salvar perfil: ',
-          'ru': 'Не удалось сохранить профиль: '
-        };
-        
-        const errorMsg = errorMessages[currentLanguage] || errorMessages['ja'];
-        showMessage(errorMsg + e.message, 'error');
+        showMessage('プロフィール保存に失敗しました: ' + e.message, 'error');
       }
     });
   }
@@ -1246,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // --- AIチャット送信（サーバーAPI使用版）- 多言語対応を強化 ---
+  // --- AIチャット送信（サーバーAPI使用版）- プロフィール情報と会話履歴を含むよう修正 ---
   async function handleSendMessage() {
     if (!chatInput || !chatInput.value.trim() || isAIChatting) {
       return;
@@ -1254,7 +1170,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const userMessage = chatInput.value.trim();
     console.log('Sending message to AI:', userMessage);
-    console.log('Current language:', currentLanguage);
     
     // カテゴリが選択されていない場合は推測
     if (!selectedCategory) {
@@ -1288,15 +1203,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const recentConversations = await getRecentConversations(3);
       console.log('Recent conversations:', recentConversations);
       
-      // サーバーのAI APIを呼び出し（プロフィール情報と履歴、言語情報を含む）
-      console.log('Calling API with language:', currentLanguage);
+      // サーバーのAI APIを呼び出し（プロフィール情報と履歴を含む）
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
           userId: currentUser ? currentUser.uid : null,
-          language: currentLanguage, // 必ず現在の言語を送信
+          language: currentLanguage, // 言語情報を追加
           context: {
             category: selectedCategory,
             userProfile: userProfile,
@@ -1313,11 +1227,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const data = await response.json();
-      console.log('API response received:', { 
-        responseLength: data.response?.length, 
-        language: data.language,
-        firstChars: data.response?.substring(0, 100) 
-      });
       
       // Markdownを適用してAIレスポンスを表示
       let formattedResponse = formatMarkdownResponse(data.response);
@@ -1331,30 +1240,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('AI chat error:', error);
       removeTypingIndicator();
       
-      // フォールバック：言語対応ローカルレスポンス
-      const fallbackResponse = generateBetterResponse(userMessage, selectedCategory, currentLanguage);
+      // フォールバック：ローカルレスポンス
+      const fallbackResponse = generateBetterResponse(userMessage, selectedCategory);
       const formattedFallback = formatMarkdownResponse(fallbackResponse);
       appendChatMessage('ai', formattedFallback);
       
       // フォールバック応答も保存
       await saveConversation(userMessage, fallbackResponse, selectedCategory);
       
-      // エラーメッセージも多言語対応
-      const errorMessages = {
-        'ja': 'AI接続エラー。ローカル応答を表示しています。',
-        'en': 'AI connection error. Showing local response.',
-        'ko': 'AI 연결 오류. 로컬 응답을 표시합니다.',
-        'zh': 'AI连接错误。显示本地响应。',
-        'es': 'Error de conexión AI. Mostrando respuesta local.',
-        'fr': 'Erreur de connexion AI. Affichage de la réponse locale.',
-        'de': 'AI-Verbindungsfehler. Lokale Antwort wird angezeigt.',
-        'it': 'Errore di connessione AI. Visualizzazione della risposta locale.',
-        'pt': 'Erro de conexão AI. Exibindo resposta local.',
-        'ru': 'Ошибка подключения ИИ. Показ локального ответа.'
-      };
-      
-      const errorMsg = errorMessages[currentLanguage] || errorMessages['ja'];
-      showMessage(errorMsg, 'warning');
+      showMessage('AI接続エラー。ローカル応答を表示しています。', 'warning');
     } finally {
       isAIChatting = false;
       updateSendButton();
@@ -1568,59 +1462,42 @@ function removeTypingIndicator() {
   if (indicator) indicator.remove();
 }
 
-// --- 改良されたレスポンス生成（フォールバック用）- 多言語対応 ---
-function generateBetterResponse(userMessage, category, language = 'ja') {
+// --- 改良されたレスポンス生成（フォールバック用） ---
+function generateBetterResponse(userMessage, category) {
   const responses = {
-    ja: {
-      transportation: [
-        "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n🚌 バス：ICカード「い～カード」が便利\n🚃 市内電車：道後温泉や松山城へのアクセスに最適\n🚗 タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
-        "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n• 松山市内：市内電車・バスで十分\n• 今治・新居浜：JR予讃線が便利\n• しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
-      ],
-      medical: [
-        "愛媛県での医療についてサポートします！\n\n【主要病院】\n🏥 愛媛大学医学部附属病院（東温市）\n🏥 松山赤十字病院（松山市）\n🏥 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番\n医療相談：#7119（24時間）"
-      ],
-      general: [
-        "愛媛での生活・観光についてお答えします！\n\n【観光スポット】\n🏯 松山城：市内中心の歴史ある城\n♨️ 道後温泉：日本最古の温泉地\n🌉 しまなみ海道：サイクリングで有名\n\n【愛媛グルメ】\n🐟 鯛めし（郷土料理）\n🐠 じゃこ天（練り物）\n🍊 愛媛みかん（11-3月が旬）\n\n【ショッピング】\n大街道・銀天街が松山の繁華街です！"
-      ]
-    },
-    en: {
-      transportation: [
-        "I'll help you with public transportation in Ehime Prefecture!\n\n**Main Transportation in Matsuyama City:**\n- Iyotetsu Bus\n- City Tram (Streetcar)\n\n**Recommended Transportation Methods:**\n🚌 Bus: IC card \"i-Card\" is convenient\n🚃 City Tram: Perfect for accessing Dogo Onsen and Matsuyama Castle\n🚗 Taxi: For late nights or when carrying luggage\n\nYou can check fares and schedules on the Iyotetsu official website."
-      ],
-      medical: [
-        "I'll support you with medical services in Ehime Prefecture!\n\n**Major Hospitals:**\n🏥 Ehime University Hospital (Toon City)\n🏥 Matsuyama Red Cross Hospital (Matsuyama City)\n🏥 Saiseikai Matsuyama Hospital (Matsuyama City)\n\n**Medical Visit Process:**\n1. Bring insurance card (30% co-payment with national health insurance)\n2. Fill out medical questionnaire at reception\n3. Examination and tests\n4. Payment\n\n**Emergency:** Ambulance: 119\nMedical Consultation: #7119 (24 hours)"
-      ],
-      general: [
-        "I'll help you with life and tourism in Ehime!\n\n**Tourist Spots:**\n🏯 Matsuyama Castle: Historic castle in city center\n♨️ Dogo Onsen: Japan's oldest hot spring resort\n🌉 Shimanami Kaido: Famous for cycling\n\n**Ehime Cuisine:**\n🐟 Tai-meshi (local sea bream rice dish)\n🐠 Jakoten (fish cake)\n🍊 Ehime Mikan (citrus, in season Nov-Mar)\n\n**Shopping:**\nOkaido and Gintengai are Matsuyama's main shopping districts!"
-      ]
-    },
-    zh: {
-      transportation: [
-        "我来为您介绍爱媛县的公共交通！\n\n**松山市内主要交通工具：**\n- 伊予铁巴士\n- 市内电车（有轨电车）\n\n**推荐交通方式：**\n🚌 巴士：IC卡"i-Card"很方便\n🚃 市内电车：前往道后温泉和松山城的最佳选择\n🚗 出租车：深夜或行李较多时\n\n可在伊予铁道官网查看票价和时刻表。"
-      ],
-      medical: [
-        "我来为您介绍爱媛县的医疗服务！\n\n**主要医院：**\n🏥 爱媛大学医学部附属医院（东温市）\n🏥 松山红十字医院（松山市）\n🏥 济生会松山医院（松山市）\n\n**就诊流程：**\n1. 携带保险证（国民健康保险自付30%）\n2. 在接待处填写问诊表\n3. 诊察・检查\n4. 结算\n\n**紧急情况：**急救：119\n医疗咨询：#7119（24小时）"
-      ],
-      general: [
-        "我来为您介绍爱媛的生活和观光！\n\n**观光景点：**\n🏯 松山城：市中心的历史古城\n♨️ 道后温泉：日本最古老的温泉地\n🌉 濑户内海道：以骑行闻名\n\n**爱媛美食：**\n🐟 鲷鱼饭（乡土料理）\n🐠 鱼糕天（鱼糕）\n🍊 爱媛蜜柑（11-3月为旺季）\n\n**购物：**\n大街道・银天街是松山的繁华街区！"
-      ]
-    },
-    ko: {
-      transportation: [
-        "에히메현의 대중교통에 대해 안내드리겠습니다!\n\n**마츠야마시내 주요 교통수단:**\n- 이요테츠 버스\n- 시내전차(노면전차)\n\n**추천 교통수단:**\n🚌 버스: IC카드 \"i-Card\"가 편리\n🚃 시내전차: 도고온천과 마츠야마성 접근에 최적\n🚗 택시: 심야시간이나 짐이 많을 때\n\n요금과 시간표는 이요테츠도 공식 사이트에서 확인할 수 있습니다."
-      ],
-      medical: [
-        "에히메현의 의료 서비스에 대해 도와드리겠습니다!\n\n**주요 병원:**\n🏥 에히메대학 의학부 부속병원(도온시)\n🏥 마츠야마 적십자병원(마츠야마시)\n🏥 사이세이카이 마츠야마병원(마츠야마시)\n\n**진료 과정:**\n1. 보험증 지참(국민건강보험 시 30% 본인부담)\n2. 접수처에서 문진표 작성\n3. 진찰・검사\n4. 수납\n\n**응급상황:** 구급차: 119\n의료 상담: #7119(24시간)"
-      ],
-      general: [
-        "에히메의 생활과 관광에 대해 안내드리겠습니다!\n\n**관광 명소:**\n🏯 마츠야마성: 시내 중심의 역사적인 성\n♨️ 도고온천: 일본 최고(最古)의 온천지\n🌉 시마나미 해도: 사이클링으로 유명\n\n**에히메 음식:**\n🐟 도미밥(향토요리)\n🐠 자코텐(어묵)\n🍊 에히메 귤(11-3월이 제철)\n\n**쇼핑:**\n오카이도・긴텐가이가 마츠야마의 번화가입니다!"
-      ]
-    }
+    transportation: [
+      "愛媛県の公共交通についてお答えします！\n\n松山市内では「伊予鉄バス」と「市内電車（路面電車）」が主要な交通手段です。\n\n【おすすめの移動方法】\n🚌 バス：ICカード「い～カード」が便利\n🚃 市内電車：道後温泉や松山城へのアクセスに最適\n🚗 タクシー：深夜や荷物が多い時に\n\n料金や時刻表は伊予鉄道の公式サイトで確認できます。",
+      
+      "愛媛での交通手段について詳しくご案内します。\n\n【エリア別アクセス】\n• 松山市内：市内電車・バスで十分\n• 今治・新居浜：JR予讃線が便利\n• しまなみ海道：レンタサイクルがおすすめ\n\n【お得情報】\n1日乗車券や観光パスもあります！\n具体的な目的地があれば、ルートをお調べしますよ。"
+    ],
+    medical: [
+      "愛媛県での医療についてサポートします！\n\n【主要病院】\n🏥 愛媛大学医学部附属病院（東温市）\n🏥 松山赤十字病院（松山市）\n🏥 済生会松山病院（松山市）\n\n【受診の流れ】\n1. 保険証持参（国民健康保険なら3割負担）\n2. 受付で問診票記入\n3. 診察・検査\n4. 会計\n\n【緊急時】救急：119番\n医療相談：#7119（24時間）",
+      
+      "医療機関について詳しくお答えします。\n\n【薬局・ドラッグストア】\nマツモトキヨシ、ウエルシア、ツルハドラッグが各地にあります。\n\n【英語対応】\n松山市内の一部病院では英語対応可能です。\n事前に電話で確認することをお勧めします。\n\n【保険】\n海外旅行保険や国民健康保険について、不明点があればお聞きください。"
+    ],
+    connectivity: [
+      "愛媛でのインターネット環境についてご案内します！\n\n【無料Wi-Fi】\n📶 松山空港・JR松山駅\n📶 コンビニ（セブン、ローソン等）\n📶 カフェ（スタバ、ドトール等）\n📶 松山市役所・図書館\n\n【SIMカード】\n家電量販店でプリペイドSIM購入可能\n\n【推奨プラン】\n短期：コンビニプリペイド\n長期：格安SIM（楽天モバイル等）",
+      
+      "ネット環境について詳しくサポートします。\n\n【市内Wi-Fi】\n松山市内では「Matsuyama City Wi-Fi」が利用可能です。\n\n【データプラン比較】\n• 1週間以下：プリペイドSIM（2,000-3,000円）\n• 1ヶ月程度：格安SIM（月3,000-5,000円）\n• 長期滞在：大手キャリア契約\n\n滞在期間とデータ使用量を教えていただければ、最適なプランをご提案します！"
+    ],
+    accommodation: [
+      "愛媛での宿泊についてご案内します！\n\n【おすすめエリア】\n🏨 道後温泉周辺：温泉旅館・観光便利\n🏨 松山市駅周辺：交通アクセス良好\n🏨 大街道周辺：繁華街・買い物便利\n\n【価格目安】\nビジネスホテル：6,000-10,000円/泊\n民泊：4,000-8,000円/泊\nシェアハウス：40,000-60,000円/月\n\n予約は早めがお得です！",
+      
+      "住居・宿泊オプションについて詳しくお答えします。\n\n【長期滞在向け】\n• マンスリーマンション\n• シェアハウス（国際交流も可能）\n• 民泊（Airbnb等）\n\n【予約のコツ】\n平日は料金が安く、連泊割引もあります。\n\n【必要書類】\n長期滞在の場合、住民票登録が必要な場合があります。\n\nご希望の条件を詳しく教えてください！"
+    ],
+    culture: [
+      "愛媛・日本の文化とマナーについてご説明します！\n\n【基本マナー】\n🙏 挨拶：軽いお辞儀と「おはようございます」\n👟 靴：玄関で脱ぐ（スリッパに履き替え）\n🍽️ 食事：「いただきます」「ごちそうさま」\n\n【公共交通】\n電車内での通話は控えめに\n優先席では携帯の電源OFF\n\n【愛媛特有】\n🍊 みかんは愛媛の誇り！\n♨️ 道後温泉では入浴マナーを守って",
+      
+      "日本・愛媛の文化について詳しくお答えします。\n\n【コミュニケーション】\n愛媛の人は温和で親切です。困った時は「すみません」と声をかけてください。\n\n【食事文化】\n• 愛媛グルメ：じゃこ天、鯛めし、みかん\n• 居酒屋では「乾杯」でスタート\n• チップの習慣はありません\n\n【季節行事】\n春：お花見、夏：祭り、秋：みかん狩り\n\n具体的なシチュエーションでのマナーもお答えできます！"
+    ],
+    general: [
+      "愛媛での生活・観光についてお答えします！\n\n【観光スポット】\n🏯 松山城：市内中心の歴史ある城\n♨️ 道後温泉：日本最古の温泉地\n🌉 しまなみ海道：サイクリングで有名\n\n【愛媛グルメ】\n🐟 鯛めし（郷土料理）\n🐠 じゃこ天（練り物）\n🍊 愛媛みかん（11-3月が旬）\n\n【ショッピング】\n大街道・銀天街が松山の繁華街です！",
+      
+      "愛媛での生活について幅広くサポートします！\n\n【日用品】\nコンビニ：24時間、基本的な物は揃います\nスーパー：フジ、マルナカ、イオンが主要\n100円ショップ：ダイソー、セリア\n\n【便利アプリ】\n• Google翻訳（カメラ機能で看板翻訳）\n• Yahoo!天気（詳細な天気予報）\n\n【緊急連絡先】\n警察：110、消防・救急：119\n\n他にも知りたいことがあれば何でもお聞きください！"
+    ]
   };
 
-  // 언어 폴백: 지정 언어가 없는 경우는 일본어
-  const langResponses = responses[language] || responses['ja'];
-  const categoryResponses = langResponses[category] || langResponses['general'] || responses['ja']['general'];
+  const categoryResponses = responses[category] || responses.general;
   const randomIndex = Math.floor(Math.random() * categoryResponses.length);
   return categoryResponses[randomIndex];
 }
@@ -1644,7 +1521,7 @@ function clearProfileForm() {
   if (stayToInput) stayToInput.value = '';
 }
 
-// --- Firestore→フォーム反映関数（強化版） ---
+// --- Firestore→フォーム反映関数 ---
 async function loadProfileFormFromFirestore() {
   if (!currentUser) return;
   
@@ -1671,7 +1548,7 @@ async function loadProfileFormFromFirestore() {
       if (stayFromField) stayFromField.value = data.stayFrom ?? '';
       if (stayToField) stayToField.value = data.stayTo ?? '';
       
-      // 言語設定があれば自動でページ言語も切り替え（確実に実行）
+      // 言語設定があれば自動でページ言語も切り替え
       if (data.primaryLanguage) {
         const languageCodeMap = {
           '日本語': 'ja',
@@ -1688,10 +1565,8 @@ async function loadProfileFormFromFirestore() {
         
         const langCode = languageCodeMap[data.primaryLanguage];
         if (langCode) {
-          console.log('Profile load: Setting language to:', langCode, 'from profile:', data.primaryLanguage);
-          
-          // 即座に言語を変更
           currentLanguage = langCode;
+          console.log('Profile load: Setting language to:', currentLanguage);
           
           // ヘッダーボタンの状態更新
           document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -1702,28 +1577,13 @@ async function loadProfileFormFromFirestore() {
             langBtn.classList.add('active');
           }
           
-          // 段階的にUI更新（確実に反映するため）
+          // テキスト更新（複数回実行で確実に）
           setTimeout(async () => {
-            console.log('Profile load: First language update');
-            updatePageTexts();
-          }, 50);
-          
-          setTimeout(async () => {
-            console.log('Profile load: FAQ update');
-            await updateFAQQuestions(selectedCategory);
-          }, 150);
-          
-          setTimeout(async () => {
-            console.log('Profile load: Chat welcome update');
-            await updateChatWelcomeMessage();
-          }, 250);
-          
-          setTimeout(async () => {
-            console.log('Profile load: Final comprehensive update');
+            console.log('Profile load: First update');
             updatePageTexts();
             await updateFAQQuestions(selectedCategory);
             await updateChatWelcomeMessage();
-          }, 400);
+          }, 100);
         }
       }
     } else {
